@@ -100,3 +100,18 @@ describe('text coercion in operators and numeric arguments', () => {
     expect(evalFormula('LEN(1E+20)')).toBe(5);
   });
 });
+
+describe('logical values in references and arrays', () => {
+  it('are ignored by aggregates, while literal logical arguments count', () => {
+    const vals: Record<string, FormulaResult> = { A1: 5, A2: 'abc', A3: true, B1: false };
+    expect(evalFormula('SUM(A1:A3)', vals)).toBe(5);
+    expect(evalFormula('SUM(A3,2)', vals)).toBe(2);
+    expect(evalFormula('SUM({1,"2",TRUE})')).toBe(1);
+    expect(evalFormula('SUM(TRUE,2)')).toBe(3);
+    expect(evalFormula('MAX(A3,-1)', vals)).toBe(-1);
+    expect(evalFormula('MIN(A1,B1)', vals)).toBe(5);
+    expect(evalFormula('AVERAGE(A1:A3)', vals)).toBe(5);
+    expect(evalFormula('MEDIAN({1,TRUE,5})')).toBe(3);
+    expect(evalFormula('SUM(--(A1:A1>1))', vals)).toBe(1);
+  });
+});

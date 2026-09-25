@@ -169,7 +169,7 @@ export function makeSpill(values: FormulaResult[][]): FunctionReturnValue {
  * Resolve function arguments into numeric values.
  * For range/array arguments, resolves/flattens each cell and extracts numeric values.
  * Options:
- * - skipNonNumeric: skip non-numeric values in ranges/arrays (for SUM, AVERAGE, etc.)
+ * - skipNonNumeric: skip text and logical values in ranges/arrays (for SUM, AVERAGE, etc.)
  * - strictScalar: requires all args to be scalar values, and they must be numeric. A 1x1 range/array
  *   (e.g. a bare cell reference, which arrives as a 1x1 range) counts as a scalar.
  */
@@ -188,6 +188,8 @@ export function resolveNumericArgs(
         if (typeof val === 'number') {
           result.push(val);
         } else if (typeof val === 'boolean') {
+          // Like text, logical values in a reference or array are ignored (a literal TRUE still counts)
+          if (options.skipNonNumeric) continue;
           result.push(val ? 1 : 0);
         } else if (typeof val === 'string') {
           if (val === '') continue; // Skip empty cells
