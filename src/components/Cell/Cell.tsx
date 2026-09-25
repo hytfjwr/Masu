@@ -5,6 +5,7 @@ import { getCellDisplay } from '../../utils/cellDisplay';
 import { computeSparklineCommands } from '../../sparkline/renderer';
 import { applyCommands } from '../../sparkline/canvasApplier';
 import { noteCellCommit } from '../../devtools/renderStats';
+import { useI18n } from '../../i18n/useI18n';
 
 const VERTICAL_ALIGN_ITEMS = { top: 'flex-start', middle: 'center', bottom: 'flex-end' } as const;
 const HORIZONTAL_ALIGN_JUSTIFY = {
@@ -88,6 +89,7 @@ export const Cell = memo(function Cell({
   flashScope,
   sortMotion,
 }: CellProps) {
+  const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -410,7 +412,10 @@ export const Cell = memo(function Cell({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={onMouseLeave}
       title={
-        invalidMessage ?? (data?.parseError ? `数式エラー: ${data.parseError.message}` : undefined)
+        invalidMessage ??
+        (data?.parseError
+          ? t('grid.cell.formulaError', { message: data.parseError.message })
+          : undefined)
       }
       {...(isActive && activeOutline ? { 'data-active-cell-indicator': true } : {})}
     >

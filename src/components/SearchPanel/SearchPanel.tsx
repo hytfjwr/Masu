@@ -3,6 +3,7 @@ import type { CellPosition, SheetData } from '../../types/grid';
 import { parseCellKey } from '../../utils/coordinates';
 import { findMatches, replaceInText } from '../../utils/findReplace';
 import type { FindMatch, FindReplaceOptions, SearchableCell } from '../../utils/findReplace';
+import { useI18n } from '../../i18n/useI18n';
 
 export type { FindMatch as SearchMatch };
 
@@ -69,6 +70,7 @@ export const SearchPanel = memo(function SearchPanel({
   hiddenRows,
   dataVersion,
 }: SearchPanelProps) {
+  const { t } = useI18n();
   const [searchText, setSearchText] = useState('');
   const [replaceText, setReplaceText] = useState('');
   const [options, setOptions] = useState<FindReplaceOptions>(DEFAULT_OPTIONS);
@@ -221,7 +223,7 @@ export const SearchPanel = memo(function SearchPanel({
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="検索..."
+            placeholder={t('grid.searchPanel.searchPlaceholder')}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             className="flex-1 h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none focus:border-accent-selection"
@@ -231,7 +233,7 @@ export const SearchPanel = memo(function SearchPanel({
             {matches.length > 0
               ? `${currentIndex + 1} / ${matches.length}`
               : searchText
-                ? '0 件'
+                ? t('grid.searchPanel.noResults')
                 : ''}
           </span>
           <button
@@ -239,7 +241,7 @@ export const SearchPanel = memo(function SearchPanel({
             className="h-7 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40 disabled:opacity-30"
             onClick={goPrev}
             disabled={matches.length === 0}
-            title="前を検索 (Shift+Enter)"
+            title={t('grid.searchPanel.prevTitle')}
           >
             ▲
           </button>
@@ -248,7 +250,7 @@ export const SearchPanel = memo(function SearchPanel({
             className="h-7 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40 disabled:opacity-30"
             onClick={goNext}
             disabled={matches.length === 0}
-            title="次を検索 (Enter)"
+            title={t('grid.searchPanel.nextTitle')}
           >
             ▼
           </button>
@@ -256,7 +258,7 @@ export const SearchPanel = memo(function SearchPanel({
             type="button"
             className="h-7 px-2 text-xs text-text-primary/60 hover:text-text-primary"
             onClick={onClose}
-            title="閉じる (Esc)"
+            title={t('grid.searchPanel.closeTitle')}
           >
             ✕
           </button>
@@ -267,7 +269,7 @@ export const SearchPanel = memo(function SearchPanel({
           <input
             ref={replaceInputRef}
             type="text"
-            placeholder="置換..."
+            placeholder={t('grid.searchPanel.replacePlaceholder')}
             value={replaceText}
             onChange={(e) => setReplaceText(e.target.value)}
             className="flex-1 h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none focus:border-accent-selection"
@@ -280,7 +282,7 @@ export const SearchPanel = memo(function SearchPanel({
             disabled={!currentIsReplaceable}
             data-testid="replace-button"
           >
-            置換
+            {t('grid.searchPanel.replaceButton')}
           </button>
           <button
             type="button"
@@ -289,7 +291,7 @@ export const SearchPanel = memo(function SearchPanel({
             disabled={matches.length === 0}
             data-testid="replace-all-button"
           >
-            すべて置換
+            {t('grid.searchPanel.replaceAllButton')}
           </button>
         </div>
 
@@ -303,7 +305,7 @@ export const SearchPanel = memo(function SearchPanel({
               onChange={() => setAllSheets(false)}
               className="w-3 h-3"
             />
-            このシート
+            {t('grid.searchPanel.scopeThisSheet')}
           </label>
           <label className="flex items-center gap-1 cursor-pointer">
             <input
@@ -313,14 +315,14 @@ export const SearchPanel = memo(function SearchPanel({
               onChange={() => setAllSheets(true)}
               className="w-3 h-3"
             />
-            すべてのシート
+            {t('grid.searchPanel.scopeAllSheets')}
           </label>
           <button
             type="button"
             className="ml-auto text-accent-selection hover:underline"
             onClick={() => setShowOptions((o) => !o)}
           >
-            {showOptions ? 'オプションを隠す ▾' : 'オプション ▸'}
+            {showOptions ? t('grid.searchPanel.hideOptions') : t('grid.searchPanel.showOptions')}
           </button>
         </div>
 
@@ -334,7 +336,7 @@ export const SearchPanel = memo(function SearchPanel({
                 onChange={() => toggleOption('caseSensitive')}
                 className="w-3 h-3"
               />
-              大文字と小文字を区別する
+              {t('grid.searchPanel.optionCaseSensitive')}
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input
@@ -343,7 +345,7 @@ export const SearchPanel = memo(function SearchPanel({
                 onChange={() => toggleOption('wholeCell')}
                 className="w-3 h-3"
               />
-              セルの内容全体が一致
+              {t('grid.searchPanel.optionWholeCell')}
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input
@@ -352,7 +354,7 @@ export const SearchPanel = memo(function SearchPanel({
                 onChange={() => toggleOption('useRegex')}
                 className="w-3 h-3"
               />
-              正規表現を使用した検索
+              {t('grid.searchPanel.optionUseRegex')}
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input
@@ -361,7 +363,7 @@ export const SearchPanel = memo(function SearchPanel({
                 onChange={() => toggleOption('searchFormulas')}
                 className="w-3 h-3"
               />
-              数式内も検索
+              {t('grid.searchPanel.optionSearchFormulas')}
             </label>
           </div>
         )}

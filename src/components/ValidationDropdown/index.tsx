@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useClampFixedToViewport } from '../../hooks/useClampToViewport';
+import { useI18n } from '../../i18n/useI18n';
 
 interface ValidationDropdownProps {
   /** Dropdown option list (already deduplicated). */
@@ -26,6 +27,7 @@ export const ValidationDropdown = memo(function ValidationDropdown({
   onSelect,
   onClose,
 }: ValidationDropdownProps) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   useClampFixedToViewport(ref, x, y);
   const [query, setQuery] = useState('');
@@ -89,12 +91,14 @@ export const ValidationDropdown = memo(function ValidationDropdown({
         autoFocus
         value={query}
         onChange={handleQueryChange}
-        placeholder="検索"
+        placeholder={t('grid.validationDropdown.searchPlaceholder')}
         className="w-full h-7 px-2 mb-1 text-xs bg-ui-bg text-text-primary border-b border-grid-line outline-none"
       />
       <div className="max-h-48 overflow-y-auto">
         {filtered.length === 0 ? (
-          <div className="px-3 py-1.5 text-xs text-text-primary/40">該当する項目がありません</div>
+          <div className="px-3 py-1.5 text-xs text-text-primary/40">
+            {t('grid.validationDropdown.noResults')}
+          </div>
         ) : (
           filtered.map((opt, idx) => (
             <button

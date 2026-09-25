@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
 import type { GroupRange } from '../../types/grid';
+import { useI18n } from '../../i18n/useI18n';
 
 const GROUP_INDENT = 16;
 
@@ -20,6 +21,7 @@ export const ColGroupBar = memo(function ColGroupBar({
   onSetExpandLevel,
   totalWidth,
 }: ColGroupBarProps) {
+  const { t } = useI18n();
   const handleLevelClick = useCallback(
     (level: number) => {
       onSetExpandLevel(level);
@@ -50,7 +52,7 @@ export const ColGroupBar = memo(function ColGroupBar({
             type="button"
             className="text-[9px] text-text-primary hover:bg-accent-selection/10 w-4 h-4 flex items-center justify-center"
             onClick={() => handleLevelClick(i + 1)}
-            title={`レベル ${i + 1}`}
+            title={t('grid.groupBar.level', { level: i + 1 })}
           >
             {i + 1}
           </button>
@@ -84,7 +86,7 @@ export const ColGroupBar = memo(function ColGroupBar({
                 left: buttonLeft - 2,
               }}
               onClick={() => onToggleCollapse(group.id)}
-              title="展開"
+              title={t('grid.groupBar.expand')}
             >
               +
             </button>
@@ -118,7 +120,7 @@ export const ColGroupBar = memo(function ColGroupBar({
                 left: barRight - 8,
               }}
               onClick={() => onToggleCollapse(group.id)}
-              title="折りたたみ"
+              title={t('grid.groupBar.collapse')}
             >
               −
             </button>
