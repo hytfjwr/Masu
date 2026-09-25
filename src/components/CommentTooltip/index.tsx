@@ -2,8 +2,8 @@ import { memo } from 'react';
 
 interface CommentTooltipProps {
   comment: string;
-  x: number;  // clientX position
-  y: number;  // clientY position
+  x: number; // clientX position
+  y: number; // clientY position
 }
 
 export const CommentTooltip = memo(function CommentTooltip({ comment, x, y }: CommentTooltipProps) {

@@ -2,7 +2,12 @@
  * Conditional format evaluation engine.
  */
 
-import type { CellStyle, ColorScalePoint, ConditionalFormatRule, ConditionalRuleKind } from '../types/grid';
+import type {
+  CellStyle,
+  ColorScalePoint,
+  ConditionalFormatRule,
+  ConditionalRuleKind,
+} from '../types/grid';
 import type { FormulaResult, FormulaValue } from '../engine/types';
 import { isFormulaError } from '../engine/types';
 import { toBoolean } from '../engine/coerce';
@@ -92,8 +97,9 @@ export function evaluateCondition(cellValue: string, rule: ConditionalFormatRule
  * Check if a cell position is within a rule's range.
  */
 function isInRange(col: number, row: number, range: ConditionalFormatRule['range']): boolean {
-  return col >= range.startCol && col <= range.endCol &&
-         row >= range.startRow && row <= range.endRow;
+  return (
+    col >= range.startCol && col <= range.endCol && row >= range.startRow && row <= range.endRow
+  );
 }
 
 /**
@@ -107,8 +113,7 @@ export function getConditionalStyle(
   rules: ConditionalFormatRule[],
 ): Partial<CellStyle> | null {
   // Filter to enabled rules that include this cell in their range
-  const applicableRules = rules
-    .filter(r => r.enabled && isInRange(col, row, r.range));
+  const applicableRules = rules.filter((r) => r.enabled && isInRange(col, row, r.range));
 
   if (applicableRules.length === 0) return null;
 
@@ -188,11 +193,16 @@ interface ColorScaleStats {
 
 function resolveColorScalePoint(point: ColorScalePoint, stats: ColorScaleStats): number {
   switch (point.type) {
-    case 'min': return stats.min;
-    case 'max': return stats.max;
-    case 'number': return point.value ?? 0;
-    case 'percent': return stats.min + (stats.max - stats.min) * (point.value ?? 0) / 100;
-    case 'percentile': return percentileInc(stats.sortedAsc, point.value ?? 0);
+    case 'min':
+      return stats.min;
+    case 'max':
+      return stats.max;
+    case 'number':
+      return point.value ?? 0;
+    case 'percent':
+      return stats.min + ((stats.max - stats.min) * (point.value ?? 0)) / 100;
+    case 'percentile':
+      return percentileInc(stats.sortedAsc, point.value ?? 0);
   }
 }
 
@@ -205,7 +215,7 @@ export function createConditionalFormatter(
   rules: ConditionalFormatRule[],
   ctx: CfContext,
 ): (col: number, row: number) => Partial<CellStyle> | undefined {
-  const enabledRules = rules.filter(r => r.enabled).sort((a, b) => a.priority - b.priority);
+  const enabledRules = rules.filter((r) => r.enabled).sort((a, b) => a.priority - b.priority);
 
   const rangeValuesCache = new WeakMap<ConditionalFormatRule, FormulaResult[]>();
   const numericValuesCache = new WeakMap<ConditionalFormatRule, number[]>();
@@ -252,7 +262,9 @@ export function createConditionalFormatter(
   function getColorScaleStats(rule: ConditionalFormatRule): ColorScaleStats {
     const cached = colorScaleStatsCache.get(rule);
     if (cached) return cached;
-    const sortedAsc = getNumericValues(rule).slice().sort((a, b) => a - b);
+    const sortedAsc = getNumericValues(rule)
+      .slice()
+      .sort((a, b) => a - b);
     const stats: ColorScaleStats = {
       sortedAsc,
       min: sortedAsc.length ? sortedAsc[0] : 0,
@@ -270,13 +282,18 @@ export function createConditionalFormatter(
     return avg;
   }
 
-  function getTopBottomThreshold(rule: ConditionalFormatRule, kind: 'top' | 'bottom'): number | undefined {
+  function getTopBottomThreshold(
+    rule: ConditionalFormatRule,
+    kind: 'top' | 'bottom',
+  ): number | undefined {
     if (thresholdCache.has(rule)) return thresholdCache.get(rule);
     const nums = getNumericValues(rule);
     let threshold: number | undefined;
     if (nums.length > 0) {
       const sorted = nums.slice().sort((a, b) => (kind === 'top' ? b - a : a - b));
-      const rawCount = rule.percent ? Math.ceil((sorted.length * (rule.rank ?? 0)) / 100) : (rule.rank ?? 0);
+      const rawCount = rule.percent
+        ? Math.ceil((sorted.length * (rule.rank ?? 0)) / 100)
+        : (rule.rank ?? 0);
       const count = Math.max(1, rawCount);
       const idx = Math.min(count, sorted.length) - 1;
       threshold = sorted[idx];

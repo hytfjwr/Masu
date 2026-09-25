@@ -42,9 +42,21 @@ interface FilterMenuProps {
   style: React.CSSProperties;
 }
 
-export function FilterMenu({ colIndex, values, selectedValues, condition, onClose, onApply, onSortAsc, onSortDesc, style }: FilterMenuProps) {
+export function FilterMenu({
+  colIndex,
+  values,
+  selectedValues,
+  condition,
+  onClose,
+  onApply,
+  onSortAsc,
+  onSortDesc,
+  style,
+}: FilterMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const [checkedValues, setCheckedValues] = useState<Set<string>>(() => selectedValues ?? new Set(values));
+  const [checkedValues, setCheckedValues] = useState<Set<string>>(
+    () => selectedValues ?? new Set(values),
+  );
   const [search, setSearch] = useState('');
   const [conditionOpen, setConditionOpen] = useState(!!condition);
   const [operator, setOperator] = useState<ConditionalOperator | ''>(condition?.operator ?? '');
@@ -60,24 +72,26 @@ export function FilterMenu({ colIndex, values, selectedValues, condition, onClos
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
 
-  const filteredValues = values.filter(v => v.toLowerCase().includes(search.toLowerCase()));
+  const filteredValues = values.filter((v) => v.toLowerCase().includes(search.toLowerCase()));
 
   const toggleValue = (value: string) => {
     const next = new Set(checkedValues);
-    if (next.has(value)) next.delete(value); else next.add(value);
+    if (next.has(value)) next.delete(value);
+    else next.add(value);
     setCheckedValues(next);
   };
 
   const selectAll = () => setCheckedValues(new Set(values));
   const clearAll = () => setCheckedValues(new Set());
 
-  const selectedOperator = OPERATOR_OPTIONS.find(o => o.value === operator);
+  const selectedOperator = OPERATOR_OPTIONS.find((o) => o.value === operator);
 
   const handleOk = () => {
     const valuesToApply = checkedValues.size === values.length ? undefined : new Set(checkedValues);
-    const conditionToApply: FilterCondition | undefined = conditionOpen && operator
-      ? { operator, value1: value1 || undefined, value2: value2 || undefined }
-      : undefined;
+    const conditionToApply: FilterCondition | undefined =
+      conditionOpen && operator
+        ? { operator, value1: value1 || undefined, value2: value2 || undefined }
+        : undefined;
     onApply(valuesToApply, conditionToApply);
     onClose();
   };
@@ -110,7 +124,7 @@ export function FilterMenu({ colIndex, values, selectedValues, condition, onClos
       <button
         type="button"
         className="w-full flex items-center justify-between px-3 py-1.5 text-xs text-text-primary hover:bg-accent-selection/10"
-        onClick={() => setConditionOpen(o => !o)}
+        onClick={() => setConditionOpen((o) => !o)}
       >
         <span>条件でフィルタ</span>
         <span className="text-text-primary/40">{conditionOpen ? '▾' : '▸'}</span>
@@ -124,8 +138,10 @@ export function FilterMenu({ colIndex, values, selectedValues, condition, onClos
             data-testid={`filter-condition-operator-${colIndex}`}
           >
             <option value="">なし</option>
-            {OPERATOR_OPTIONS.map(o => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+            {OPERATOR_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
             ))}
           </select>
           {selectedOperator && selectedOperator.valueCount >= 1 && (
@@ -162,14 +178,34 @@ export function FilterMenu({ colIndex, values, selectedValues, condition, onClos
           onChange={(e) => setSearch(e.target.value)}
         />
         <div className="flex gap-1 mb-1">
-          <button type="button" className="text-[10px] text-accent-selection hover:underline" onClick={selectAll}>すべて選択</button>
+          <button
+            type="button"
+            className="text-[10px] text-accent-selection hover:underline"
+            onClick={selectAll}
+          >
+            すべて選択
+          </button>
           <span className="text-[10px] text-text-primary/30">|</span>
-          <button type="button" className="text-[10px] text-accent-selection hover:underline" onClick={clearAll}>クリア</button>
+          <button
+            type="button"
+            className="text-[10px] text-accent-selection hover:underline"
+            onClick={clearAll}
+          >
+            クリア
+          </button>
         </div>
         <div className="max-h-[160px] overflow-y-auto">
           {filteredValues.map((value) => (
-            <label key={value} className="flex items-center gap-2 py-0.5 text-xs text-text-primary hover:bg-accent-selection/10 cursor-pointer">
-              <input type="checkbox" checked={checkedValues.has(value)} onChange={() => toggleValue(value)} className="w-3 h-3" />
+            <label
+              key={value}
+              className="flex items-center gap-2 py-0.5 text-xs text-text-primary hover:bg-accent-selection/10 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={checkedValues.has(value)}
+                onChange={() => toggleValue(value)}
+                className="w-3 h-3"
+              />
               <span className="truncate">{value || '(空白)'}</span>
             </label>
           ))}
@@ -178,10 +214,20 @@ export function FilterMenu({ colIndex, values, selectedValues, condition, onClos
 
       <div className="border-t border-grid-line my-1" />
       <div className="flex justify-end gap-2 px-3 py-1.5">
-        <button type="button" className="h-6 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40" onClick={onClose}>
+        <button
+          type="button"
+          className="h-6 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40"
+          onClick={onClose}
+        >
           キャンセル
         </button>
-        <button type="button" data-btn-primary className="h-6 px-2 text-xs text-white bg-accent-selection rounded hover:opacity-90" onClick={handleOk} data-testid={`filter-menu-ok-${colIndex}`}>
+        <button
+          type="button"
+          data-btn-primary
+          className="h-6 px-2 text-xs text-white bg-accent-selection rounded hover:opacity-90"
+          onClick={handleOk}
+          data-testid={`filter-menu-ok-${colIndex}`}
+        >
           OK
         </button>
       </div>

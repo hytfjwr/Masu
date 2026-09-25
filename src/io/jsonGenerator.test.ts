@@ -3,7 +3,13 @@ import { generateJSON } from './jsonGenerator';
 
 describe('generateJSON', () => {
   it('generates array-of-objects from headers and rows', () => {
-    const result = generateJSON(['name', 'age'], [['Alice', '30'], ['Bob', '25']]);
+    const result = generateJSON(
+      ['name', 'age'],
+      [
+        ['Alice', '30'],
+        ['Bob', '25'],
+      ],
+    );
     const parsed = JSON.parse(result);
     expect(parsed).toEqual([
       { name: 'Alice', age: 30 },

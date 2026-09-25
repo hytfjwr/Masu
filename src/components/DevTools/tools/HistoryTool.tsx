@@ -23,7 +23,8 @@ function cachedSummary(before: { sheets: SheetData[] }, after: { sheets: SheetDa
   return summary;
 }
 
-const time = (t: number | null) => (t === null ? '—' : new Date(t).toLocaleTimeString(undefined, { hour12: false }));
+const time = (t: number | null) =>
+  t === null ? '—' : new Date(t).toLocaleTimeString(undefined, { hour12: false });
 
 function relative(t: number | null, now: number): string {
   if (t === null) return '最初の状態';
@@ -57,28 +58,31 @@ export const HistoryTool = memo(function HistoryTool({ host }: { host: DevToolsH
 
   // What changed going from state i-1 to state i (newest first for display)
   const rows = useMemo(() => {
-    return timeline.map((entry, i) => {
-      if (i === 0) return { entry, i, summary: '履歴の起点' };
-      const prevSnap = i - 1 === currentIndex ? null : host.getHistorySnapshot(i - 1);
-      const curSnap = i === currentIndex ? null : host.getHistorySnapshot(i);
-      let summary = '—';
-      if (prevSnap && curSnap) summary = cachedSummary(prevSnap, curSnap);
-      else if (prevSnap || curSnap) {
-        // One side is the live workbook (mutated in place): always recompute
-        const prev = prevSnap?.sheets ?? host.sheets;
-        const cur = curSnap?.sheets ?? host.sheets;
-        summary = describeDiff(diffWorkbooks(prev, cur));
-      }
-      return { entry, i, summary };
-    }).reverse();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return timeline
+      .map((entry, i) => {
+        if (i === 0) return { entry, i, summary: '履歴の起点' };
+        const prevSnap = i - 1 === currentIndex ? null : host.getHistorySnapshot(i - 1);
+        const curSnap = i === currentIndex ? null : host.getHistorySnapshot(i);
+        let summary = '—';
+        if (prevSnap && curSnap) summary = cachedSummary(prevSnap, curSnap);
+        else if (prevSnap || curSnap) {
+          // One side is the live workbook (mutated in place): always recompute
+          const prev = prevSnap?.sheets ?? host.sheets;
+          const cur = curSnap?.sheets ?? host.sheets;
+          summary = describeDiff(diffWorkbooks(prev, cur));
+        }
+        return { entry, i, summary };
+      })
+      .reverse();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeline, host.version]);
 
   return (
     <div className="devtools-tool history-tool">
       <div className="devtools-toolbar">
         <span className="devtools-muted">
-          {timeline.length} 状態（Undo {currentIndex} ・ Redo {timeline.length - 1 - currentIndex}）・ 最大 100 件
+          {timeline.length} 状態（Undo {currentIndex} ・ Redo {timeline.length - 1 - currentIndex}
+          ）・ 最大 100 件
         </span>
       </div>
       <div className="history-scrubber">
@@ -97,7 +101,11 @@ export const HistoryTool = memo(function HistoryTool({ host }: { host: DevToolsH
         />
         <div className="history-scrubber-labels">
           <span>最古</span>
-          <span>{pending !== null && pending !== currentIndex ? `#${pending} へ移動（離すと移動）` : `#${currentIndex} / ${timeline.length - 1}`}</span>
+          <span>
+            {pending !== null && pending !== currentIndex
+              ? `#${pending} へ移動（離すと移動）`
+              : `#${currentIndex} / ${timeline.length - 1}`}
+          </span>
           <span>最新</span>
         </div>
       </div>
@@ -117,7 +125,9 @@ export const HistoryTool = memo(function HistoryTool({ host }: { host: DevToolsH
               >
                 <span className="history-index">#{i}</span>
                 <span className="history-summary">{summary}</span>
-                <span className="history-time" title={time(entry.time)}>{entry.current ? '現在' : relative(entry.time, now)}</span>
+                <span className="history-time" title={time(entry.time)}>
+                  {entry.current ? '現在' : relative(entry.time, now)}
+                </span>
               </button>
             </li>
           ))}

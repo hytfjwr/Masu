@@ -6,7 +6,8 @@ import { createEmptySheet } from '../../utils/sheetUtils';
 
 function makeSheet() {
   const sheet = createEmptySheet('Sheet1');
-  for (const key of ['A1', 'A2', 'A3']) sheet.cells.set(key, { rawValue: 'apple', displayValue: 'apple', computed: 'apple' });
+  for (const key of ['A1', 'A2', 'A3'])
+    sheet.cells.set(key, { rawValue: 'apple', displayValue: 'apple', computed: 'apple' });
   return sheet;
 }
 
@@ -23,7 +24,9 @@ describe('SearchPanel navigation', () => {
       onReplaceOne: () => {},
       onReplaceAll: () => {},
     };
-    const { rerender, getByPlaceholderText, getByTitle } = render(<SearchPanel {...props} hiddenRows={new Set()} />);
+    const { rerender, getByPlaceholderText, getByTitle } = render(
+      <SearchPanel {...props} hiddenRows={new Set()} />,
+    );
     const input = getByPlaceholderText(/検索/);
     fireEvent.change(input, { target: { value: 'apple' } });
     expect(onNavigate).toHaveBeenLastCalledWith(sheet.id, { col: 0, row: 0 });

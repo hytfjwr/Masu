@@ -187,7 +187,16 @@ const ERROR_TYPE: FunctionMeta = {
 };
 
 export const infoFunctions: FunctionMeta[] = [
-  ISBLANK, ISNUMBER, ISTEXT, ISNONTEXT, ISLOGICAL,
-  ISERROR, ISERR, ISNA,
-  N, NA, TYPE, ERROR_TYPE,
+  ISBLANK,
+  ISNUMBER,
+  ISTEXT,
+  ISNONTEXT,
+  ISLOGICAL,
+  ISERROR,
+  ISERR,
+  ISNA,
+  N,
+  NA,
+  TYPE,
+  ERROR_TYPE,
 ];

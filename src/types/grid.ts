@@ -84,7 +84,13 @@ export interface MergeInfo {
 }
 
 /** Validation rule type */
-export type ValidationType = 'list' | 'number' | 'textLength' | 'checkbox' | 'date' | 'customFormula';
+export type ValidationType =
+  | 'list'
+  | 'number'
+  | 'textLength'
+  | 'checkbox'
+  | 'date'
+  | 'customFormula';
 
 /** Comparison operator for number/date/textLength validation rules */
 export type ValidationOperator =
@@ -343,7 +349,7 @@ export interface WorkbookData {
 export const GRID_CONSTANTS = {
   DEFAULT_COL_COUNT: 26,
   DEFAULT_ROW_COUNT: 100,
-  MAX_COL_COUNT: 16384,   // Excel limit: XFD
+  MAX_COL_COUNT: 16384, // Excel limit: XFD
   MAX_ROW_COUNT: 1048576, // Excel limit
   DEFAULT_COL_WIDTH: 100,
   DEFAULT_ROW_HEIGHT: 24,

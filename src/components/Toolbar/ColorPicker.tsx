@@ -25,7 +25,11 @@ export const ColorPicker = memo(function ColorPicker({
     if (!isOpen) return;
     const handler = (e: MouseEvent) => {
       const target = e.target as Node;
-      if (containerRef.current && !containerRef.current.contains(target) && !dropdownRef.current?.contains(target)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        !dropdownRef.current?.contains(target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -74,7 +78,11 @@ export const ColorPicker = memo(function ColorPicker({
         </span>
       </button>
       {isOpen && (
-        <FloatingPanel anchorRef={containerRef} panelRef={dropdownRef} className="glass-surface rounded-xl p-2 w-52 animate-slide-down">
+        <FloatingPanel
+          anchorRef={containerRef}
+          panelRef={dropdownRef}
+          className="glass-surface rounded-xl p-2 w-52 animate-slide-down"
+        >
           <div className="grid grid-cols-8 gap-1 mb-2">
             {PRESET_COLORS.map((color) => (
               <button

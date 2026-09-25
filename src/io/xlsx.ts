@@ -99,7 +99,10 @@ const GENERIC_FONT_MAP: Record<string, string> = {
 };
 
 function excelFontName(fontFamily: string): string {
-  const first = fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '');
+  const first = fontFamily
+    .split(',')[0]
+    .trim()
+    .replace(/^["']|["']$/g, '');
   return GENERIC_FONT_MAP[first] ?? first;
 }
 
@@ -130,15 +133,36 @@ function buildExcelStyle(style: CellStyle | undefined): Partial<ExcelJSNamespace
 
   const font: Partial<ExcelJSNamespace.Font> = {};
   let hasFont = false;
-  if (style.bold !== undefined) { font.bold = style.bold; hasFont = true; }
-  if (style.italic !== undefined) { font.italic = style.italic; hasFont = true; }
-  if (style.underline !== undefined) { font.underline = style.underline; hasFont = true; }
-  if (style.strikethrough !== undefined) { font.strike = style.strikethrough; hasFont = true; }
-  if (style.fontSize !== undefined) { font.size = style.fontSize; hasFont = true; }
-  if (style.fontFamily) { font.name = excelFontName(style.fontFamily); hasFont = true; }
+  if (style.bold !== undefined) {
+    font.bold = style.bold;
+    hasFont = true;
+  }
+  if (style.italic !== undefined) {
+    font.italic = style.italic;
+    hasFont = true;
+  }
+  if (style.underline !== undefined) {
+    font.underline = style.underline;
+    hasFont = true;
+  }
+  if (style.strikethrough !== undefined) {
+    font.strike = style.strikethrough;
+    hasFont = true;
+  }
+  if (style.fontSize !== undefined) {
+    font.size = style.fontSize;
+    hasFont = true;
+  }
+  if (style.fontFamily) {
+    font.name = excelFontName(style.fontFamily);
+    hasFont = true;
+  }
   if (style.textColor) {
     const argb = hexToArgb(style.textColor);
-    if (argb) { font.color = { argb }; hasFont = true; }
+    if (argb) {
+      font.color = { argb };
+      hasFont = true;
+    }
   }
   if (hasFont) result.font = font;
 
@@ -151,9 +175,18 @@ function buildExcelStyle(style: CellStyle | undefined): Partial<ExcelJSNamespace
 
   const alignment: Partial<ExcelJSNamespace.Alignment> = {};
   let hasAlignment = false;
-  if (style.textAlign) { alignment.horizontal = style.textAlign; hasAlignment = true; }
-  if (style.verticalAlign) { alignment.vertical = style.verticalAlign; hasAlignment = true; }
-  if (style.wrapText !== undefined) { alignment.wrapText = style.wrapText; hasAlignment = true; }
+  if (style.textAlign) {
+    alignment.horizontal = style.textAlign;
+    hasAlignment = true;
+  }
+  if (style.verticalAlign) {
+    alignment.vertical = style.verticalAlign;
+    hasAlignment = true;
+  }
+  if (style.wrapText !== undefined) {
+    alignment.wrapText = style.wrapText;
+    hasAlignment = true;
+  }
   if (hasAlignment) result.alignment = alignment;
 
   if (style.borders) {
@@ -163,7 +196,10 @@ function buildExcelStyle(style: CellStyle | undefined): Partial<ExcelJSNamespace
       const edge = style.borders?.[side];
       if (edge) {
         const argb = hexToArgb(edge.color);
-        border[side] = { style: EXPORT_BORDER_STYLE[edge.style], ...(argb ? { color: { argb } } : {}) };
+        border[side] = {
+          style: EXPORT_BORDER_STYLE[edge.style],
+          ...(argb ? { color: { argb } } : {}),
+        };
         hasBorder = true;
       }
     });
@@ -361,7 +397,12 @@ export async function exportXlsx(options: XlsxExportOptions): Promise<ArrayBuffe
     for (const info of sheet.merges.values()) {
       if (info.colSpan > 0 || info.rowSpan > 0) {
         const { col: anchorCol, row: anchorRow } = parseCellKey(info.anchorKey);
-        ws.mergeCells(anchorRow + 1, anchorCol + 1, anchorRow + info.rowSpan, anchorCol + info.colSpan);
+        ws.mergeCells(
+          anchorRow + 1,
+          anchorCol + 1,
+          anchorRow + info.rowSpan,
+          anchorCol + info.colSpan,
+        );
       }
     }
 
@@ -374,8 +415,12 @@ export async function exportXlsx(options: XlsxExportOptions): Promise<ArrayBuffe
     const rowHeightsForSheet = sheetSizes?.rowHeights ?? options.rowHeights;
     // Sheet defaults: always written, so columns/rows without their own size open in Excel at the
     // size they had here (the app's defaults differ from Excel's)
-    ws.properties.defaultColWidth = pxToColWidth(sheetSizes?.defaultColWidth ?? GRID_CONSTANTS.DEFAULT_COL_WIDTH);
-    ws.properties.defaultRowHeight = pxToPt(sheetSizes?.defaultRowHeight ?? GRID_CONSTANTS.DEFAULT_ROW_HEIGHT);
+    ws.properties.defaultColWidth = pxToColWidth(
+      sheetSizes?.defaultColWidth ?? GRID_CONSTANTS.DEFAULT_COL_WIDTH,
+    );
+    ws.properties.defaultRowHeight = pxToPt(
+      sheetSizes?.defaultRowHeight ?? GRID_CONSTANTS.DEFAULT_ROW_HEIGHT,
+    );
     for (const [index, px] of colWidthsForSheet) {
       ws.getColumn(index + 1).width = pxToColWidth(px);
     }
@@ -402,7 +447,11 @@ export async function exportXlsx(options: XlsxExportOptions): Promise<ArrayBuffe
 
   const raw = await workbook.xlsx.writeBuffer();
   if (raw instanceof ArrayBuffer) return raw;
-  const view = raw as unknown as { buffer: ArrayBufferLike; byteOffset: number; byteLength: number };
+  const view = raw as unknown as {
+    buffer: ArrayBufferLike;
+    byteOffset: number;
+    byteLength: number;
+  };
   return view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength) as ArrayBuffer;
 }
 
@@ -411,13 +460,22 @@ export async function exportXlsx(options: XlsxExportOptions): Promise<ArrayBuffe
 /** Convert a Date to an Excel date serial number (days since 1899-12-30, UTC-based). */
 function dateToSerial(d: Date): number {
   return (
-    (Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()) -
+    (Date.UTC(
+      d.getUTCFullYear(),
+      d.getUTCMonth(),
+      d.getUTCDate(),
+      d.getUTCHours(),
+      d.getUTCMinutes(),
+      d.getUTCSeconds(),
+    ) -
       Date.UTC(1899, 11, 30)) /
     86400000
   );
 }
 
-function commentTextFromNote(note: string | ExcelJSNamespace.Comment | undefined): string | undefined {
+function commentTextFromNote(
+  note: string | ExcelJSNamespace.Comment | undefined,
+): string | undefined {
   if (!note) return undefined;
   if (typeof note === 'string') return note;
   if (note.texts) return note.texts.map((t) => toPlainText(t.text)).join('');
@@ -436,7 +494,8 @@ function toPlainText(v: unknown): string {
   if (Array.isArray(v)) return v.map(toPlainText).join('');
   if (typeof v === 'object') {
     const o = v as { richText?: unknown; text?: unknown; result?: unknown; error?: unknown };
-    if (Array.isArray(o.richText)) return o.richText.map((rt) => toPlainText((rt as { text?: unknown }).text)).join('');
+    if (Array.isArray(o.richText))
+      return o.richText.map((rt) => toPlainText((rt as { text?: unknown }).text)).join('');
     if (o.text !== undefined) return toPlainText(o.text);
     if (o.result !== undefined) return toPlainText(o.result);
     if (typeof o.error === 'string') return o.error;
@@ -445,7 +504,10 @@ function toPlainText(v: unknown): string {
 }
 
 /** Convert a non-formula cell value into { rawValue, isDate }. */
-function convertCellValue(value: ExcelJSNamespace.CellValue): { rawValue: string; isDate: boolean } {
+function convertCellValue(value: ExcelJSNamespace.CellValue): {
+  rawValue: string;
+  isDate: boolean;
+} {
   if (value === null || value === undefined) {
     return { rawValue: '', isDate: false };
   }
@@ -468,7 +530,10 @@ function convertCellValue(value: ExcelJSNamespace.CellValue): { rawValue: string
     const label = toPlainText(value.text);
     const url = toPlainText(value.hyperlink);
     if (!url) return { rawValue: label, isDate: false };
-    return { rawValue: `=HYPERLINK("${url.replace(/"/g, '""')}","${label.replace(/"/g, '""')}")`, isDate: false };
+    return {
+      rawValue: `=HYPERLINK("${url.replace(/"/g, '""')}","${label.replace(/"/g, '""')}")`,
+      isDate: false,
+    };
   }
   if ('error' in value) {
     return { rawValue: toPlainText(value.error), isDate: false };
@@ -576,10 +641,7 @@ export async function importXlsx(buffer: ArrayBuffer): Promise<DeserializeResult
             const result = (cell.value as ExcelJSNamespace.CellFormulaValue).result;
             rawValue = `=${formulaText}`;
             displayValue = formulaResultToDisplay(result);
-          } else if (
-            cell.formulaType === ExcelJS.FormulaType.Shared &&
-            cell.model.sharedFormula
-          ) {
+          } else if (cell.formulaType === ExcelJS.FormulaType.Shared && cell.model.sharedFormula) {
             // Shared formula whose master could not be resolved: fall back to the cached result only.
             const result = (cell.value as ExcelJSNamespace.CellSharedFormulaValue).result;
             rawValue = formulaResultToDisplay(result);
@@ -599,7 +661,11 @@ export async function importXlsx(buffer: ArrayBuffer): Promise<DeserializeResult
 
         const style = cellStyleFromExcel(cell.style);
         if (isDate && (!style || !style.numberFormatPattern)) {
-          const dateStyle: CellStyle = { ...(style ?? {}), numberFormat: 'custom', numberFormatPattern: 'yyyy/mm/dd' };
+          const dateStyle: CellStyle = {
+            ...(style ?? {}),
+            numberFormat: 'custom',
+            numberFormatPattern: 'yyyy/mm/dd',
+          };
           sheet.cells.set(key, { rawValue, displayValue, style: dateStyle });
         } else {
           sheet.cells.set(key, {
@@ -629,11 +695,12 @@ export async function importXlsx(buffer: ArrayBuffer): Promise<DeserializeResult
     // a cell whose *only* content is a data validation rule (no value) is invisible to that
     // iteration even with includeEmpty:true (verified empirically), so it must be picked up
     // here directly from the worksheet's internal validation model.
-    const validationModel = (
-      ws as unknown as {
-        dataValidations?: { model?: Record<string, ExcelJSNamespace.DataValidation | undefined> };
-      }
-    ).dataValidations?.model ?? {};
+    const validationModel =
+      (
+        ws as unknown as {
+          dataValidations?: { model?: Record<string, ExcelJSNamespace.DataValidation | undefined> };
+        }
+      ).dataValidations?.model ?? {};
     for (const [address, dv] of Object.entries(validationModel)) {
       if (!dv || dv.type !== 'list' || sheet.cells.has(address)) continue;
       const listValues = resolveListValidationValues(ws, dv);
@@ -708,7 +775,12 @@ export async function importXlsx(buffer: ArrayBuffer): Promise<DeserializeResult
     });
     if (hiddenCols.length > 0) sheet.hiddenCols = hiddenCols;
 
-    sizesBySheet.set(sheet.id, { colWidths: sheetColWidths, rowHeights: sheetRowHeights, defaultColWidth, defaultRowHeight });
+    sizesBySheet.set(sheet.id, {
+      colWidths: sheetColWidths,
+      rowHeights: sheetRowHeights,
+      defaultColWidth,
+      defaultRowHeight,
+    });
     sheets.push(sheet);
   });
 

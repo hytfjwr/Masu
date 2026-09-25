@@ -20,9 +20,12 @@ export const ColGroupBar = memo(function ColGroupBar({
   onSetExpandLevel,
   totalWidth,
 }: ColGroupBarProps) {
-  const handleLevelClick = useCallback((level: number) => {
-    onSetExpandLevel(level);
-  }, [onSetExpandLevel]);
+  const handleLevelClick = useCallback(
+    (level: number) => {
+      onSetExpandLevel(level);
+    },
+    [onSetExpandLevel],
+  );
 
   if (maxLevel === 0) return null;
 
@@ -35,10 +38,7 @@ export const ColGroupBar = memo(function ColGroupBar({
   }
 
   return (
-    <div
-      className="relative"
-      style={{ width: totalWidth, height }}
-    >
+    <div className="relative" style={{ width: totalWidth, height }}>
       {/* Level buttons on the left */}
       <div
         className="sticky left-0 flex items-center gap-0 bg-header-bg z-10 border-r border-grid-line"

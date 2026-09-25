@@ -121,7 +121,8 @@ export function buildDependencyGraph(host: GraphHost, sheetId: string, key: stri
             id,
             level,
             kind: 'range',
-            label: r.sheetId === sheetId ? rangeLabel(r) : `${sheetName(r.sheetId)}!${rangeLabel(r)}`,
+            label:
+              r.sheetId === sheetId ? rangeLabel(r) : `${sheetName(r.sheetId)}!${rangeLabel(r)}`,
             detail: '範囲',
             sheetId: r.sheetId,
             col: r.startCol,

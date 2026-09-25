@@ -70,7 +70,7 @@ describe('parseJSON', () => {
   });
 
   it('handles Japanese text', () => {
-    const input = JSON.stringify([{ '名前': '太郎', '年齢': 25 }]);
+    const input = JSON.stringify([{ 名前: '太郎', 年齢: 25 }]);
     const result = parseJSON(input);
     expect(result.headers).toEqual(['名前', '年齢']);
     expect(result.rows).toEqual([['太郎', '25']]);

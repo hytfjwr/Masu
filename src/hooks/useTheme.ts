@@ -42,7 +42,11 @@ function isDarkApplied(): boolean {
  * circle growing from `origin`. Falls back to an instant switch when unsupported / reduced motion /
  * the light-dark appearance doesn't actually change.
  */
-function withThemeReveal(update: () => void, willBeDark: boolean, origin: ThemeRevealOrigin | undefined): void {
+function withThemeReveal(
+  update: () => void,
+  willBeDark: boolean,
+  origin: ThemeRevealOrigin | undefined,
+): void {
   const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   if (!origin || !document.startViewTransition || reducedMotion || willBeDark === isDarkApplied()) {
     update();
@@ -56,12 +60,25 @@ function withThemeReveal(update: () => void, willBeDark: boolean, origin: ThemeR
     Math.max(origin.x, window.innerWidth - origin.x),
     Math.max(origin.y, window.innerHeight - origin.y),
   );
-  transition.ready.then(() => {
-    root.animate(
-      { clipPath: [`circle(0px at ${origin.x}px ${origin.y}px)`, `circle(${radius}px at ${origin.x}px ${origin.y}px)`] },
-      { duration: REVEAL_DURATION_MS, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', pseudoElement: '::view-transition-new(root)' },
-    );
-  }).catch(() => { /* transition skipped — the theme was still applied by update() */ });
+  transition.ready
+    .then(() => {
+      root.animate(
+        {
+          clipPath: [
+            `circle(0px at ${origin.x}px ${origin.y}px)`,
+            `circle(${radius}px at ${origin.x}px ${origin.y}px)`,
+          ],
+        },
+        {
+          duration: REVEAL_DURATION_MS,
+          easing: 'cubic-bezier(0.65, 0, 0.35, 1)',
+          pseudoElement: '::view-transition-new(root)',
+        },
+      );
+    })
+    .catch(() => {
+      /* transition skipped — the theme was still applied by update() */
+    });
   transition.finished.finally(() => root.classList.remove('theme-reveal'));
 }
 
@@ -92,12 +109,17 @@ export function useTheme(): UseThemeReturn {
 
   const setTheme = useCallback((mode: ThemeMode, origin?: ThemeRevealOrigin) => {
     localStorage.setItem(STORAGE_KEY, mode);
-    const willBeDark = resolveTheme(mode, window.matchMedia('(prefers-color-scheme: dark)').matches) === 'dark';
-    withThemeReveal(() => {
-      // flushSync so the new-state snapshot also shows the updated toggle
-      flushSync(() => setThemeState(mode));
-      applyTheme(mode);
-    }, willBeDark, origin);
+    const willBeDark =
+      resolveTheme(mode, window.matchMedia('(prefers-color-scheme: dark)').matches) === 'dark';
+    withThemeReveal(
+      () => {
+        // flushSync so the new-state snapshot also shows the updated toggle
+        flushSync(() => setThemeState(mode));
+        applyTheme(mode);
+      },
+      willBeDark,
+      origin,
+    );
   }, []);
 
   return { theme, setTheme };

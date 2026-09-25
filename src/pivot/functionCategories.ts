@@ -24,23 +24,46 @@ export interface FunctionCategory {
 
 /** Statistical function names (split from math/lookup into their own category) */
 const STAT_NAMES = new Set([
-  'AVERAGE', 'COUNT', 'COUNTA', 'COUNTIF', 'COUNTIFS',
-  'AVERAGEIF', 'AVERAGEIFS', 'STDEV', 'VAR', 'LARGE',
-  'SMALL', 'RANK', 'MEDIAN', 'MAX', 'MIN', 'MINIFS', 'MAXIFS', 'SUBTOTAL',
+  'AVERAGE',
+  'COUNT',
+  'COUNTA',
+  'COUNTIF',
+  'COUNTIFS',
+  'AVERAGEIF',
+  'AVERAGEIFS',
+  'STDEV',
+  'VAR',
+  'LARGE',
+  'SMALL',
+  'RANK',
+  'MEDIAN',
+  'MAX',
+  'MIN',
+  'MINIFS',
+  'MAXIFS',
+  'SUBTOTAL',
 ]);
 
 /** All categories with Japanese labels */
 const CATEGORIES: FunctionCategory[] = [
-  { id: 'math', label: '数学', functions: mathFunctions.filter(f => !STAT_NAMES.has(f.name)) },
-  { id: 'stat', label: '統計', functions: [
-    ...mathFunctions.filter(f => STAT_NAMES.has(f.name)),
-    ...lookupFunctions.filter(f => STAT_NAMES.has(f.name)),
-    ...statsFunctions,
-  ] },
+  { id: 'math', label: '数学', functions: mathFunctions.filter((f) => !STAT_NAMES.has(f.name)) },
+  {
+    id: 'stat',
+    label: '統計',
+    functions: [
+      ...mathFunctions.filter((f) => STAT_NAMES.has(f.name)),
+      ...lookupFunctions.filter((f) => STAT_NAMES.has(f.name)),
+      ...statsFunctions,
+    ],
+  },
   { id: 'financial', label: '財務', functions: financialFunctions },
   { id: 'logic', label: '論理', functions: logicFunctions },
   { id: 'text', label: 'テキスト', functions: textFunctions },
-  { id: 'lookup', label: '検索', functions: lookupFunctions.filter(f => !STAT_NAMES.has(f.name)) },
+  {
+    id: 'lookup',
+    label: '検索',
+    functions: lookupFunctions.filter((f) => !STAT_NAMES.has(f.name)),
+  },
   { id: 'date', label: '日付', functions: dateFunctions },
   { id: 'array', label: '配列', functions: arrayFunctions },
   { id: 'info', label: '情報', functions: infoFunctions },

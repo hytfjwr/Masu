@@ -14,12 +14,12 @@ export function useToast() {
   const nextIdRef = useRef(0);
 
   const dismissToast = useCallback((id: number) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   const showToast = useCallback((message: string, variant: ToastVariant = 'info') => {
     const id = nextIdRef.current++;
-    setToasts(prev => [...prev, { id, message, variant }]);
+    setToasts((prev) => [...prev, { id, message, variant }]);
   }, []);
 
   return { toasts, showToast, dismissToast };

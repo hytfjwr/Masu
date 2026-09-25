@@ -26,7 +26,8 @@ interface PDFGeneratorOptions {
  * クライアントサイドで PDF を生成してダウンロードする。
  */
 export async function generatePDF(options: PDFGeneratorOptions): Promise<void> {
-  const { settings, getCellData, colWidths, rowHeights, dataRange, sheetName, documentTitle } = options;
+  const { settings, getCellData, colWidths, rowHeights, dataRange, sheetName, documentTitle } =
+    options;
   const margins = resolveMargins(settings);
   const paper = PAPER_DIMENSIONS[settings.paperSize];
   const pageW = settings.orientation === 'landscape' ? paper.height : paper.width;
@@ -68,10 +69,17 @@ export async function generatePDF(options: PDFGeneratorOptions): Promise<void> {
         doc.text(expandHeaderFooterTemplate(settings.header.left, ctx), margins.left, headerY);
       }
       if (settings.header.center) {
-        doc.text(expandHeaderFooterTemplate(settings.header.center, ctx), pageW / 2, headerY, { align: 'center' });
+        doc.text(expandHeaderFooterTemplate(settings.header.center, ctx), pageW / 2, headerY, {
+          align: 'center',
+        });
       }
       if (settings.header.right) {
-        doc.text(expandHeaderFooterTemplate(settings.header.right, ctx), pageW - margins.right, headerY, { align: 'right' });
+        doc.text(
+          expandHeaderFooterTemplate(settings.header.right, ctx),
+          pageW - margins.right,
+          headerY,
+          { align: 'right' },
+        );
       }
     }
 
@@ -84,10 +92,17 @@ export async function generatePDF(options: PDFGeneratorOptions): Promise<void> {
         doc.text(expandHeaderFooterTemplate(settings.footer.left, ctx), margins.left, footerY);
       }
       if (settings.footer.center) {
-        doc.text(expandHeaderFooterTemplate(settings.footer.center, ctx), pageW / 2, footerY, { align: 'center' });
+        doc.text(expandHeaderFooterTemplate(settings.footer.center, ctx), pageW / 2, footerY, {
+          align: 'center',
+        });
       }
       if (settings.footer.right) {
-        doc.text(expandHeaderFooterTemplate(settings.footer.right, ctx), pageW - margins.right, footerY, { align: 'right' });
+        doc.text(
+          expandHeaderFooterTemplate(settings.footer.right, ctx),
+          pageW - margins.right,
+          footerY,
+          { align: 'right' },
+        );
       }
     }
 

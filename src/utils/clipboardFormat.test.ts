@@ -13,7 +13,10 @@ describe('toTSV / parseTSV', () => {
   });
 
   it('parses simple tab/newline separated text', () => {
-    expect(parseTSV('a\tb\n1\t2\n')).toEqual([['a', 'b'], ['1', '2']]);
+    expect(parseTSV('a\tb\n1\t2\n')).toEqual([
+      ['a', 'b'],
+      ['1', '2'],
+    ]);
   });
 
   it('returns a single blank cell for empty text', () => {
@@ -34,7 +37,8 @@ describe('toHTMLTable / parseHTMLTable', () => {
   });
 
   it('parses Google Sheets style HTML with bold + textColor', () => {
-    const html = '<google-sheets-html-origin><table><tbody><tr><td style="font-weight:bold;color:#ff0000;">見出し</td><td>1</td></tr></tbody></table>';
+    const html =
+      '<google-sheets-html-origin><table><tbody><tr><td style="font-weight:bold;color:#ff0000;">見出し</td><td>1</td></tr></tbody></table>';
     const parsed = parseHTMLTable(html);
     expect(parsed).not.toBeNull();
     expect(parsed![0][0].value).toBe('見出し');
@@ -49,7 +53,8 @@ describe('toHTMLTable / parseHTMLTable', () => {
   });
 
   it('normalizes rgb() background-color to lowercase hex', () => {
-    const html = '<table><tr><td style="background-color:rgb(255, 255, 0)">yellow</td></tr></table>';
+    const html =
+      '<table><tr><td style="background-color:rgb(255, 255, 0)">yellow</td></tr></table>';
     const parsed = parseHTMLTable(html);
     expect(parsed![0][0].style?.backgroundColor).toBe('#ffff00');
   });

@@ -211,7 +211,10 @@ export const FormulaBar = memo(function FormulaBar({
       if (fRef.start > lastEnd) {
         segments.push({ text: text.substring(lastEnd, fRef.start) });
       }
-      segments.push({ text: text.substring(fRef.start, fRef.end), color: refColors[i % refColors.length] });
+      segments.push({
+        text: text.substring(fRef.start, fRef.end),
+        color: refColors[i % refColors.length],
+      });
       lastEnd = fRef.end;
     }
     if (lastEnd < text.length) {
@@ -264,7 +267,7 @@ export const FormulaBar = memo(function FormulaBar({
                 const val = nameBoxValue.trim();
                 if (val) {
                   // Check if it matches an existing named range
-                  const existing = namedRanges?.find(nr => nr.name === val);
+                  const existing = namedRanges?.find((nr) => nr.name === val);
                   if (existing && onNameBoxSelect) {
                     onNameBoxSelect(val);
                   } else if (onNameBoxCreate) {
@@ -305,7 +308,10 @@ export const FormulaBar = memo(function FormulaBar({
         )}
         {/* Named range dropdown */}
         {nameBoxDropdownOpen && namedRanges && namedRanges.length > 0 && (
-          <div data-dropdown className="absolute top-7 left-0 w-48 glass-surface rounded-xl z-50 max-h-40 overflow-auto animate-slide-down">
+          <div
+            data-dropdown
+            className="absolute top-7 left-0 w-48 glass-surface rounded-xl z-50 max-h-40 overflow-auto animate-slide-down"
+          >
             {namedRanges.map((nr) => (
               <div
                 key={nr.name}
@@ -350,7 +356,11 @@ export const FormulaBar = memo(function FormulaBar({
             className="absolute inset-0 h-6 px-[9px] border border-transparent rounded text-[13px] text-transparent whitespace-pre overflow-hidden pointer-events-none leading-6"
           >
             <span>{errorView.before}</span>
-            {errorView.error ? <span className="formula-error-span">{errorView.error}</span> : <span className="formula-error-caret" />}
+            {errorView.error ? (
+              <span className="formula-error-span">{errorView.error}</span>
+            ) : (
+              <span className="formula-error-caret" />
+            )}
             <span>{errorView.after}</span>
           </div>
         )}
@@ -378,7 +388,11 @@ export const FormulaBar = memo(function FormulaBar({
           onScroll={hasColoredRefs || errorView ? syncScroll : undefined}
           readOnly={!isEditing}
           className={`w-full h-6 px-2 border border-grid-line bg-ui-bg rounded text-[13px] outline-none focus:border-accent-selection ${hasColoredRefs ? '' : 'text-text-primary'}`}
-          style={hasColoredRefs ? { color: 'transparent', caretColor: 'var(--color-text-primary)' } : undefined}
+          style={
+            hasColoredRefs
+              ? { color: 'transparent', caretColor: 'var(--color-text-primary)' }
+              : undefined
+          }
           data-testid="formula-bar-input"
         />
         {isEditing && suggestions.length > 0 && hasFocus && (
@@ -393,10 +407,27 @@ export const FormulaBar = memo(function FormulaBar({
         )}
       </div>
       {errorView && parseError && (
-        <div key={`${parseError.message}:${parseError.start}`} className="formula-error-chip animate-fade-in-scale" role="status" data-testid="formula-error">
+        <div
+          key={`${parseError.message}:${parseError.start}`}
+          className="formula-error-chip animate-fade-in-scale"
+          role="status"
+          data-testid="formula-error"
+        >
           <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
-            <path d="M6 1.2 11 10.2H1z" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round" />
-            <path d="M6 4.6v2.6M6 8.6v.2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            <path
+              d="M6 1.2 11 10.2H1z"
+              fill="currentColor"
+              fillOpacity="0.18"
+              stroke="currentColor"
+              strokeWidth="1.1"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M6 4.6v2.6M6 8.6v.2"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+            />
           </svg>
           <span className="truncate">{parseError.message}</span>
           <span className="formula-error-where">{errorView.where}</span>

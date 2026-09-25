@@ -6,7 +6,13 @@
  * Excel sign convention: cash paid out (e.g. loan payments) is negative,
  * cash received (e.g. loan principal, deposits) is positive.
  */
-import type { FormulaError, FormulaResult, FunctionArgValue, FunctionContext, FunctionMeta } from '../types';
+import type {
+  FormulaError,
+  FormulaResult,
+  FunctionArgValue,
+  FunctionContext,
+  FunctionMeta,
+} from '../types';
 import { isFormulaError, makeError } from '../types';
 import { argToFlat, resolveNumber, resolveNumericArgs } from './helpers';
 import { toNumber } from '../coerce';
@@ -33,7 +39,13 @@ function computePV(rate: number, nper: number, pmt: number, fv: number, type: 0 
   return -(fv + pmt * (1 + rate * type) * ((pow - 1) / rate)) / pow;
 }
 
-function computeNPER(rate: number, pmt: number, pv: number, fv: number, type: 0 | 1): number | FormulaError {
+function computeNPER(
+  rate: number,
+  pmt: number,
+  pv: number,
+  fv: number,
+  type: 0 | 1,
+): number | FormulaError {
   if (rate === 0) {
     if (pmt === 0) return makeError('#DIV/0!');
     return -(pv + fv) / pmt;
@@ -49,7 +61,14 @@ function computeNPER(rate: number, pmt: number, pv: number, fv: number, type: 0 
 }
 
 /** Interest component of payment number `per`, via the balance-at-start-of-period approach. */
-function computeIPMT(rate: number, per: number, nper: number, pv: number, fv: number, type: 0 | 1): number {
+function computeIPMT(
+  rate: number,
+  per: number,
+  nper: number,
+  pv: number,
+  fv: number,
+  type: 0 | 1,
+): number {
   const pmt = computePMT(rate, nper, pv, fv, type);
   if (per === 1) {
     return type === 1 ? 0 : -pv * rate;
@@ -305,7 +324,10 @@ function readValueDatePair(
   datesArg: FunctionArgValue,
   ctx: FunctionContext,
 ): { values: number[]; dates: number[] } | FormulaError {
-  if ((valuesArg.kind !== 'range' && valuesArg.kind !== 'array') || (datesArg.kind !== 'range' && datesArg.kind !== 'array')) {
+  if (
+    (valuesArg.kind !== 'range' && valuesArg.kind !== 'array') ||
+    (datesArg.kind !== 'range' && datesArg.kind !== 'array')
+  ) {
     return makeError('#VALUE!');
   }
   const valuesFlat = argToFlat(valuesArg, ctx);
@@ -352,7 +374,11 @@ const XNPV: FunctionMeta = {
 };
 
 /** Newton's method with a bisection fallback (used by IRR/XIRR). */
-function solveForRate(guess: number, npvAt: (rate: number) => number, dNpvAt: (rate: number) => number): number | FormulaError {
+function solveForRate(
+  guess: number,
+  npvAt: (rate: number) => number,
+  dNpvAt: (rate: number) => number,
+): number | FormulaError {
   let rate = guess;
   for (let i = 0; i < 100; i++) {
     const f = npvAt(rate);
@@ -436,7 +462,8 @@ const XIRR: FunctionMeta = {
     const d0 = dates[0];
     const npvAt = (rate: number): number => {
       let sum = 0;
-      for (let i = 0; i < nums.length; i++) sum += nums[i] / Math.pow(1 + rate, (dates[i] - d0) / 365);
+      for (let i = 0; i < nums.length; i++)
+        sum += nums[i] / Math.pow(1 + rate, (dates[i] - d0) / 365);
       return sum;
     };
     const dNpvAt = (rate: number): number => {
@@ -582,7 +609,20 @@ const NOMINAL: FunctionMeta = {
 };
 
 export const financialFunctions: FunctionMeta[] = [
-  PMT, IPMT, PPMT, FV, PV, NPER, RATE,
-  NPV, XNPV, IRR, XIRR,
-  SLN, DDB, DB, EFFECT, NOMINAL,
+  PMT,
+  IPMT,
+  PPMT,
+  FV,
+  PV,
+  NPER,
+  RATE,
+  NPV,
+  XNPV,
+  IRR,
+  XIRR,
+  SLN,
+  DDB,
+  DB,
+  EFFECT,
+  NOMINAL,
 ];

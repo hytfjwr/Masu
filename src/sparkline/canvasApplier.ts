@@ -3,10 +3,7 @@ import type { DrawCommand } from './renderer';
 /**
  * Canvas 2D コンテキストに描画コマンドを適用する。
  */
-export function applyCommands(
-  ctx: CanvasRenderingContext2D,
-  commands: DrawCommand[],
-): void {
+export function applyCommands(ctx: CanvasRenderingContext2D, commands: DrawCommand[]): void {
   for (const cmd of commands) {
     switch (cmd.type) {
       case 'line': {

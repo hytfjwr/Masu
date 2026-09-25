@@ -23,7 +23,8 @@ export const FunctionHint = memo(function FunctionHint({ value, caret }: Functio
     const { args } = parseSignature(meta.signature);
     // Past the last parameter, a trailing variadic parameter keeps absorbing arguments
     let active = ctx.argIndex;
-    if (active >= args.length) active = args.length > 0 && args[args.length - 1].variadic ? args.length - 1 : -1;
+    if (active >= args.length)
+      active = args.length > 0 && args[args.length - 1].variadic ? args.length - 1 : -1;
     return { name: meta.name, description: meta.description, args, active };
   }, [value, caret]);
 

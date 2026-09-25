@@ -20,7 +20,7 @@ const slice = (formula: string, node: ASTNode) => {
 };
 
 describe('parser source spans', () => {
-  it('records each node\'s range in the original text, $ markers included', () => {
+  it("records each node's range in the original text, $ markers included", () => {
     const f = 'SUM($A$1:A3)*-2^2%';
     const ast = parse(f);
     expect(slice(f, ast)).toBe(f);
@@ -40,7 +40,10 @@ describe('parser source spans', () => {
   it('returns the token stream with original-text ranges', () => {
     const { tokens } = parseWithTokens('$B$2 + 1');
     expect(tokens.map((t) => [t.value, t.start, t.end])).toEqual([
-      ['B2', 0, 4], ['+', 5, 6], ['1', 7, 8], ['', 8, 8],
+      ['B2', 0, 4],
+      ['+', 5, 6],
+      ['1', 7, 8],
+      ['', 8, 8],
     ]);
   });
 });

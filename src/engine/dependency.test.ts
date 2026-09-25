@@ -15,7 +15,13 @@ describe('DependencyGraph range dependencies', () => {
 
   it('an open-ended range (endRow null) matches cells beyond any fixed bound', () => {
     const graph = new DependencyGraph();
-    const range: GlobalRangeDep = { sheetId: 's1', startCol: 0, startRow: 0, endCol: 0, endRow: null };
+    const range: GlobalRangeDep = {
+      sheetId: 's1',
+      startCol: 0,
+      startRow: 0,
+      endCol: 0,
+      endRow: null,
+    };
     graph.setDependencies('s1:B1', [], [range]);
 
     expect(graph.getDependents('s1:A99999').has('s1:B1')).toBe(true);

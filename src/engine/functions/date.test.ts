@@ -17,11 +17,19 @@ const expandRange: RangeExpander = (start: string, end: string): string[] => {
   return keys;
 };
 
-function evalFormula(formula: string, cellValues: Record<string, FormulaResult> = {}): FormulaResult {
+function evalFormula(
+  formula: string,
+  cellValues: Record<string, FormulaResult> = {},
+): FormulaResult {
   const resolve = (key: string): FormulaResult => cellValues[key] ?? '';
   const ast = parse(formula);
   const result = evaluate(ast, resolve, expandRange);
-  if (typeof result === 'object' && result !== null && 'type' in result && result.type === 'spill') {
+  if (
+    typeof result === 'object' &&
+    result !== null &&
+    'type' in result &&
+    result.type === 'spill'
+  ) {
     return { type: 'error', code: '#VALUE!' };
   }
   return result as FormulaResult;
@@ -145,7 +153,10 @@ describe('DAYS / DAYS360 / YEARFRAC', () => {
   });
 
   it('YEARFRAC with basis 3 (actual/365)', () => {
-    expect(evalFormula('YEARFRAC(DATE(2026,1,1),DATE(2026,7,1),3)')).toBeCloseTo(0.4958904109589041, 9);
+    expect(evalFormula('YEARFRAC(DATE(2026,1,1),DATE(2026,7,1),3)')).toBeCloseTo(
+      0.4958904109589041,
+      9,
+    );
   });
 });
 

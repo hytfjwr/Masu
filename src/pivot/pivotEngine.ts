@@ -58,10 +58,7 @@ export function aggregate(values: number[], type: AggregationType): number {
  *
  * sourceData: 2D array where the first row is headers.
  */
-export function buildPivotTable(
-  sourceData: string[][],
-  config: PivotComputeConfig,
-): PivotCell[][] {
+export function buildPivotTable(sourceData: string[][], config: PivotComputeConfig): PivotCell[][] {
   if (sourceData.length < 2) {
     return [[{ value: '(データなし)', isHeader: true }]];
   }
@@ -103,7 +100,7 @@ export function buildPivotTable(
       const row: PivotCell[] = [];
       // Row field header placeholders
       for (const rf of config.rowFields) {
-        row.push({ value: ci === 0 ? headers[rf] ?? '' : '', isHeader: true });
+        row.push({ value: ci === 0 ? (headers[rf] ?? '') : '', isHeader: true });
       }
       // Column labels
       for (const colKey of colLabels) {

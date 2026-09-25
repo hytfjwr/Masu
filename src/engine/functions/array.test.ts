@@ -18,7 +18,10 @@ const expandRange: RangeExpander = (start: string, end: string): string[] => {
   return keys;
 };
 
-function evalToSpill(formula: string, cellValues: Record<string, FormulaResult>): SpillResult | FormulaResult {
+function evalToSpill(
+  formula: string,
+  cellValues: Record<string, FormulaResult>,
+): SpillResult | FormulaResult {
   const resolve = (key: string): FormulaResult => cellValues[key] ?? '';
   const ast = parse(formula);
   return evaluate(ast, resolve, expandRange);
@@ -27,7 +30,11 @@ function evalToSpill(formula: string, cellValues: Record<string, FormulaResult>)
 describe('UNIQUE', () => {
   it('returns unique values from a range', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 'Apple', A2: 'Banana', A3: 'Apple', A4: 'Cherry', A5: 'Banana',
+      A1: 'Apple',
+      A2: 'Banana',
+      A3: 'Apple',
+      A4: 'Cherry',
+      A5: 'Banana',
     };
     const result = evalToSpill('UNIQUE(A1:A5)', vals);
     expect(isSpillResult(result)).toBe(true);
@@ -37,21 +44,29 @@ describe('UNIQUE', () => {
 
   it('returns unique rows from a multi-column range', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 'A', B1: 1,
-      A2: 'B', B2: 2,
-      A3: 'A', B3: 1,
+      A1: 'A',
+      B1: 1,
+      A2: 'B',
+      B2: 2,
+      A3: 'A',
+      B3: 1,
     };
     const result = evalToSpill('UNIQUE(A1:B3)', vals);
     expect(isSpillResult(result)).toBe(true);
     const spill = result as SpillResult;
-    expect(spill.values).toEqual([['A', 1], ['B', 2]]);
+    expect(spill.values).toEqual([
+      ['A', 1],
+      ['B', 2],
+    ]);
   });
 });
 
 describe('SORT', () => {
   it('sorts ascending by default', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 3, A2: 1, A3: 2,
+      A1: 3,
+      A2: 1,
+      A3: 2,
     };
     const result = evalToSpill('SORT(A1:A3)', vals);
     expect(isSpillResult(result)).toBe(true);
@@ -61,7 +76,9 @@ describe('SORT', () => {
 
   it('sorts descending with sort_order=-1', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 3, A2: 1, A3: 2,
+      A1: 3,
+      A2: 1,
+      A3: 2,
     };
     const result = evalToSpill('SORT(A1:A3,1,-1)', vals);
     expect(isSpillResult(result)).toBe(true);
@@ -71,22 +88,33 @@ describe('SORT', () => {
 
   it('sorts multi-column data by specified column', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 'C', B1: 3,
-      A2: 'A', B2: 1,
-      A3: 'B', B3: 2,
+      A1: 'C',
+      B1: 3,
+      A2: 'A',
+      B2: 1,
+      A3: 'B',
+      B3: 2,
     };
     const result = evalToSpill('SORT(A1:B3,2,1)', vals);
     expect(isSpillResult(result)).toBe(true);
     const spill = result as SpillResult;
-    expect(spill.values).toEqual([['A', 1], ['B', 2], ['C', 3]]);
+    expect(spill.values).toEqual([
+      ['A', 1],
+      ['B', 2],
+      ['C', 3],
+    ]);
   });
 });
 
 describe('FILTER', () => {
   it('filters rows based on boolean include array', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 'Apple', A2: 'Banana', A3: 'Cherry',
-      B1: true, B2: false, B3: true,
+      A1: 'Apple',
+      A2: 'Banana',
+      A3: 'Cherry',
+      B1: true,
+      B2: false,
+      B3: true,
     };
     const result = evalToSpill('FILTER(A1:A3,B1:B3)', vals);
     expect(isSpillResult(result)).toBe(true);
@@ -96,8 +124,12 @@ describe('FILTER', () => {
 
   it('returns #N/A when no matches', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 'Apple', A2: 'Banana', A3: 'Cherry',
-      B1: false, B2: false, B3: false,
+      A1: 'Apple',
+      A2: 'Banana',
+      A3: 'Cherry',
+      B1: false,
+      B2: false,
+      B3: false,
     };
     const result = evalToSpill('FILTER(A1:A3,B1:B3)', vals);
     expect(result).toEqual({ type: 'error', code: '#N/A' });
@@ -105,15 +137,23 @@ describe('FILTER', () => {
 
   it('filters multi-column data', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 'Apple', B1: 100,
-      A2: 'Banana', B2: 200,
-      A3: 'Cherry', B3: 300,
-      C1: true, C2: false, C3: true,
+      A1: 'Apple',
+      B1: 100,
+      A2: 'Banana',
+      B2: 200,
+      A3: 'Cherry',
+      B3: 300,
+      C1: true,
+      C2: false,
+      C3: true,
     };
     const result = evalToSpill('FILTER(A1:B3,C1:C3)', vals);
     expect(isSpillResult(result)).toBe(true);
     const spill = result as SpillResult;
-    expect(spill.values).toEqual([['Apple', 100], ['Cherry', 300]]);
+    expect(spill.values).toEqual([
+      ['Apple', 100],
+      ['Cherry', 300],
+    ]);
   });
 });
 
@@ -129,7 +169,10 @@ describe('SEQUENCE', () => {
     const result = evalToSpill('SEQUENCE(2,3)', {});
     expect(isSpillResult(result)).toBe(true);
     const spill = result as SpillResult;
-    expect(spill.values).toEqual([[1, 2, 3], [4, 5, 6]]);
+    expect(spill.values).toEqual([
+      [1, 2, 3],
+      [4, 5, 6],
+    ]);
   });
 
   it('generates with custom start and step', () => {
@@ -181,8 +224,12 @@ describe('TRANSPOSE', () => {
 describe('SORTBY', () => {
   it('sorts an array by a parallel by_array (ascending default)', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 'C', A2: 'A', A3: 'B',
-      B1: 3, B2: 1, B3: 2,
+      A1: 'C',
+      A2: 'A',
+      A3: 'B',
+      B1: 3,
+      B2: 1,
+      B3: 2,
     };
     const result = evalToSpill('SORTBY(A1:A3,B1:B3)', vals);
     expect(isSpillResult(result)).toBe(true);
@@ -191,8 +238,12 @@ describe('SORTBY', () => {
 
   it('sorts descending with sort_order=-1', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 'C', A2: 'A', A3: 'B',
-      B1: 3, B2: 1, B3: 2,
+      A1: 'C',
+      A2: 'A',
+      A3: 'B',
+      B1: 3,
+      B2: 1,
+      B3: 2,
     };
     const result = evalToSpill('SORTBY(A1:A3,B1:B3,-1)', vals);
     expect(isSpillResult(result)).toBe(true);
@@ -251,7 +302,12 @@ describe('TOCOL / TOROW', () => {
   });
 
   it('TOROW ignores errors when ignore=2', () => {
-    const vals: Record<string, FormulaResult> = { A1: 1, B1: { type: 'error', code: '#N/A' }, A2: 3, B2: 4 };
+    const vals: Record<string, FormulaResult> = {
+      A1: 1,
+      B1: { type: 'error', code: '#N/A' },
+      A2: 3,
+      B2: 4,
+    };
     const result = evalToSpill('TOROW(A1:B2,2)', vals);
     expect(isSpillResult(result)).toBe(true);
     expect((result as SpillResult).values).toEqual([[1, 3, 4]]);
@@ -260,14 +316,21 @@ describe('TOCOL / TOROW', () => {
 
 describe('CHOOSECOLS / CHOOSEROWS', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: 1, B1: 2, C1: 3,
-    A2: 4, B2: 5, C2: 6,
+    A1: 1,
+    B1: 2,
+    C1: 3,
+    A2: 4,
+    B2: 5,
+    C2: 6,
   };
 
   it('CHOOSECOLS picks columns by position', () => {
     const result = evalToSpill('CHOOSECOLS(A1:C2,1,3)', vals);
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[1, 3], [4, 6]]);
+    expect((result as SpillResult).values).toEqual([
+      [1, 3],
+      [4, 6],
+    ]);
   });
 
   it('CHOOSECOLS supports negative indices counting from the end', () => {
@@ -295,33 +358,48 @@ describe('CHOOSECOLS / CHOOSEROWS', () => {
 
 describe('TAKE / DROP', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: 1, B1: 2,
-    A2: 3, B2: 4,
-    A3: 5, B3: 6,
+    A1: 1,
+    B1: 2,
+    A2: 3,
+    B2: 4,
+    A3: 5,
+    B3: 6,
   };
 
   it('TAKE takes the first N rows for a positive count', () => {
     const result = evalToSpill('TAKE(A1:B3,2)', vals);
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[1, 2], [3, 4]]);
+    expect((result as SpillResult).values).toEqual([
+      [1, 2],
+      [3, 4],
+    ]);
   });
 
   it('TAKE takes the last N rows for a negative count', () => {
     const result = evalToSpill('TAKE(A1:B3,-2)', vals);
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[3, 4], [5, 6]]);
+    expect((result as SpillResult).values).toEqual([
+      [3, 4],
+      [5, 6],
+    ]);
   });
 
   it('DROP removes the first N rows for a positive count', () => {
     const result = evalToSpill('DROP(A1:B3,1)', vals);
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[3, 4], [5, 6]]);
+    expect((result as SpillResult).values).toEqual([
+      [3, 4],
+      [5, 6],
+    ]);
   });
 
   it('DROP removes the last N rows for a negative count', () => {
     const result = evalToSpill('DROP(A1:B3,-1)', vals);
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[1, 2], [3, 4]]);
+    expect((result as SpillResult).values).toEqual([
+      [1, 2],
+      [3, 4],
+    ]);
   });
 });
 
@@ -330,7 +408,10 @@ describe('HSTACK / VSTACK', () => {
     const vals: Record<string, FormulaResult> = { A1: 1, A2: 2, B1: 3, B2: 4 };
     const result = evalToSpill('HSTACK(A1:A2,B1:B2)', vals);
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[1, 3], [2, 4]]);
+    expect((result as SpillResult).values).toEqual([
+      [1, 3],
+      [2, 4],
+    ]);
   });
 
   it('HSTACK pads shorter arrays with #N/A', () => {
@@ -348,7 +429,10 @@ describe('HSTACK / VSTACK', () => {
     const vals: Record<string, FormulaResult> = { A1: 1, B1: 2, A2: 3, B2: 4 };
     const result = evalToSpill('VSTACK(A1:B1,A2:B2)', vals);
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[1, 2], [3, 4]]);
+    expect((result as SpillResult).values).toEqual([
+      [1, 2],
+      [3, 4],
+    ]);
   });
 
   it('VSTACK pads narrower rows with #N/A', () => {
@@ -378,7 +462,11 @@ describe('WRAPROWS / WRAPCOLS', () => {
   it('WRAPROWS supports a custom pad_with value', () => {
     const result = evalToSpill('WRAPROWS(A1:A5,2,0)', vals);
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[1, 2], [3, 4], [5, 0]]);
+    expect((result as SpillResult).values).toEqual([
+      [1, 2],
+      [3, 4],
+      [5, 0],
+    ]);
   });
 
   it('WRAPCOLS wraps a vector into columns of the given height', () => {
@@ -399,7 +487,11 @@ describe('EXPAND', () => {
     expect((result as SpillResult).values).toEqual([
       [1, 2, { type: 'error', code: '#N/A' }],
       [3, 4, { type: 'error', code: '#N/A' }],
-      [{ type: 'error', code: '#N/A' }, { type: 'error', code: '#N/A' }, { type: 'error', code: '#N/A' }],
+      [
+        { type: 'error', code: '#N/A' },
+        { type: 'error', code: '#N/A' },
+        { type: 'error', code: '#N/A' },
+      ],
     ]);
   });
 
@@ -407,7 +499,10 @@ describe('EXPAND', () => {
     const vals: Record<string, FormulaResult> = { A1: 1 };
     const result = evalToSpill('EXPAND(A1:A1,2,2,0)', vals);
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[1, 0], [0, 0]]);
+    expect((result as SpillResult).values).toEqual([
+      [1, 0],
+      [0, 0],
+    ]);
   });
 
   it('returns #VALUE! when shrinking rows below the current size', () => {
@@ -430,13 +525,22 @@ describe('ARRAYFORMULA / ARRAY_CONSTRAIN', () => {
 
   it('ARRAY_CONSTRAIN truncates a range to the given shape', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 1, B1: 2, C1: 3,
-      A2: 4, B2: 5, C2: 6,
-      A3: 7, B3: 8, C3: 9,
+      A1: 1,
+      B1: 2,
+      C1: 3,
+      A2: 4,
+      B2: 5,
+      C2: 6,
+      A3: 7,
+      B3: 8,
+      C3: 9,
     };
     const result = evalToSpill('ARRAY_CONSTRAIN(A1:C3,2,2)', vals);
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[1, 2], [4, 5]]);
+    expect((result as SpillResult).values).toEqual([
+      [1, 2],
+      [4, 5],
+    ]);
   });
 });
 
@@ -469,7 +573,10 @@ describe('MMULT', () => {
   it('multiplies two matrices', () => {
     const result = evalToSpill('MMULT({1,2;3,4},{5,6;7,8})', {});
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[19, 22], [43, 50]]);
+    expect((result as SpillResult).values).toEqual([
+      [19, 22],
+      [43, 50],
+    ]);
   });
 
   it('returns #VALUE! when inner dimensions do not match', () => {
@@ -480,8 +587,13 @@ describe('MMULT', () => {
 describe('FREQUENCY', () => {
   it('counts values into bins, returning bins.length+1 buckets', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 1, A2: 5, A3: 10, A4: 15, A5: 20,
-      B1: 5, B2: 15,
+      A1: 1,
+      A2: 5,
+      A3: 10,
+      A4: 15,
+      A5: 20,
+      B1: 5,
+      B2: 15,
     };
     const result = evalToSpill('FREQUENCY(A1:A5,B1:B2)', vals);
     expect(isSpillResult(result)).toBe(true);

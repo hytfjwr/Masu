@@ -35,15 +35,21 @@ describe('findMatches', () => {
   });
 
   it('requires a whole-cell match when wholeCell is set', () => {
-    const cells = [cell({ cellKey: 'A1', displayValue: 'foobar' }), cell({ cellKey: 'A2', displayValue: 'foo' })];
+    const cells = [
+      cell({ cellKey: 'A1', displayValue: 'foobar' }),
+      cell({ cellKey: 'A2', displayValue: 'foo' }),
+    ];
     const matches = findMatches(cells, 'foo', { ...baseOptions, wholeCell: true });
-    expect(matches.map(m => m.cellKey)).toEqual(['A2']);
+    expect(matches.map((m) => m.cellKey)).toEqual(['A2']);
   });
 
   it('supports regex search', () => {
-    const cells = [cell({ cellKey: 'A1', displayValue: '123' }), cell({ cellKey: 'A2', displayValue: 'abc' })];
+    const cells = [
+      cell({ cellKey: 'A1', displayValue: '123' }),
+      cell({ cellKey: 'A2', displayValue: 'abc' }),
+    ];
     const matches = findMatches(cells, '^\\d+$', { ...baseOptions, useRegex: true });
-    expect(matches.map(m => m.cellKey)).toEqual(['A1']);
+    expect(matches.map((m) => m.cellKey)).toEqual(['A1']);
   });
 
   it('treats an invalid regex as no matches instead of throwing', () => {
@@ -52,7 +58,9 @@ describe('findMatches', () => {
   });
 
   it('searches rawValue (formula text) when searchFormulas is on', () => {
-    const cells = [cell({ cellKey: 'A1', displayValue: '3', rawValue: '=SUM(A2:A3)', isFormula: true })];
+    const cells = [
+      cell({ cellKey: 'A1', displayValue: '3', rawValue: '=SUM(A2:A3)', isFormula: true }),
+    ];
     expect(findMatches(cells, 'SUM', { ...baseOptions, searchFormulas: false })).toEqual([]);
     const matches = findMatches(cells, 'SUM', { ...baseOptions, searchFormulas: true });
     expect(matches).toHaveLength(1);
@@ -75,7 +83,10 @@ describe('replaceInText', () => {
   });
 
   it('supports $1 back-references in regex mode', () => {
-    const result = replaceInText('John Smith', '(\\w+) (\\w+)', '$2 $1', { ...baseOptions, useRegex: true });
+    const result = replaceInText('John Smith', '(\\w+) (\\w+)', '$2 $1', {
+      ...baseOptions,
+      useRegex: true,
+    });
     expect(result).toBe('Smith John');
   });
 

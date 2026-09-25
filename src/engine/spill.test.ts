@@ -39,7 +39,10 @@ describe('resolveSpill', () => {
   });
 
   it('creates spill cells for a grid result', () => {
-    const spillResult = makeSpillResult([[1, 2], [3, 4]]);
+    const spillResult = makeSpillResult([
+      [1, 2],
+      [3, 4],
+    ]);
     const cells = makeCellDataMap([]);
 
     const result = resolveSpill(spillResult, 'A1', cells);
@@ -57,9 +60,7 @@ describe('resolveSpill', () => {
 
   it('returns #SPILL! error when target cell has data', () => {
     const spillResult = makeSpillResult([[1], [2], [3]]);
-    const cells = makeCellDataMap([
-      ['A2', { rawValue: 'existing', displayValue: 'existing' }],
-    ]);
+    const cells = makeCellDataMap([['A2', { rawValue: 'existing', displayValue: 'existing' }]]);
 
     const result = resolveSpill(spillResult, 'A1', cells);
     expect('error' in result).toBe(true);
@@ -93,7 +94,10 @@ describe('resolveSpill', () => {
   });
 
   it('spillExtent has correct rows and cols', () => {
-    const spillResult = makeSpillResult([[1, 2, 3], [4, 5, 6]]);
+    const spillResult = makeSpillResult([
+      [1, 2, 3],
+      [4, 5, 6],
+    ]);
     const cells = makeCellDataMap([]);
 
     const result = resolveSpill(spillResult, 'A1', cells);
@@ -119,9 +123,7 @@ describe('clearSpillRange', () => {
   });
 
   it('returns empty array when no spill targets exist', () => {
-    const cells = makeCellDataMap([
-      ['A1', { rawValue: '=1', displayValue: '1', formula: '1' }],
-    ]);
+    const cells = makeCellDataMap([['A1', { rawValue: '=1', displayValue: '1', formula: '1' }]]);
 
     const keysToRemove = clearSpillRange('A1', cells);
     expect(keysToRemove).toHaveLength(0);

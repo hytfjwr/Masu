@@ -1,6 +1,12 @@
 import type { FormulaResult, FunctionArgValue, FunctionContext, FunctionMeta } from '../types';
 import { isFormulaError, makeError } from '../types';
-import { argToFlat, resolveNumber, resolveNumericArgs, resolveNumericValues, resolveScalar } from './helpers';
+import {
+  argToFlat,
+  resolveNumber,
+  resolveNumericArgs,
+  resolveNumericValues,
+  resolveScalar,
+} from './helpers';
 
 // ============================================================
 // SUM
@@ -170,7 +176,7 @@ const CEILING: FunctionMeta = {
     if (isFormulaError(nums)) return nums;
     const [value, significance] = nums;
     if (significance === 0) return 0;
-    if ((value > 0 && significance < 0)) return makeError('#NUM!');
+    if (value > 0 && significance < 0) return makeError('#NUM!');
     return Math.ceil(value / significance) * significance;
   },
 };
@@ -189,7 +195,7 @@ const FLOOR: FunctionMeta = {
     if (isFormulaError(nums)) return nums;
     const [value, significance] = nums;
     if (significance === 0) return makeError('#DIV/0!');
-    if ((value > 0 && significance < 0)) return makeError('#NUM!');
+    if (value > 0 && significance < 0) return makeError('#NUM!');
     return Math.floor(value / significance) * significance;
   },
 };
@@ -1021,8 +1027,8 @@ const GCD: FunctionMeta = {
     if (args.length === 0) return makeError('#VALUE!');
     const nums = resolveNumericArgs(args, ctx, { skipNonNumeric: true });
     if (isFormulaError(nums)) return nums;
-    const ints = nums.map(n => Math.trunc(n));
-    if (ints.some(n => n < 0)) return makeError('#NUM!');
+    const ints = nums.map((n) => Math.trunc(n));
+    if (ints.some((n) => n < 0)) return makeError('#NUM!');
     if (ints.length === 0) return 0;
     return ints.reduce((a, b) => gcdOfTwo(a, b));
   },
@@ -1036,8 +1042,8 @@ const LCM: FunctionMeta = {
     if (args.length === 0) return makeError('#VALUE!');
     const nums = resolveNumericArgs(args, ctx, { skipNonNumeric: true });
     if (isFormulaError(nums)) return nums;
-    const ints = nums.map(n => Math.trunc(n));
-    if (ints.some(n => n < 0)) return makeError('#NUM!');
+    const ints = nums.map((n) => Math.trunc(n));
+    if (ints.some((n) => n < 0)) return makeError('#NUM!');
     if (ints.length === 0) return 0;
     return ints.reduce((a, b) => lcmOfTwo(a, b), 1);
   },
@@ -1094,7 +1100,11 @@ function countANonEmpty(args: FunctionArgValue[], ctx: FunctionContext): number 
   return count;
 }
 
-function subtotalCompute(fnNum: number, args: FunctionArgValue[], ctx: FunctionContext): FormulaResult {
+function subtotalCompute(
+  fnNum: number,
+  args: FunctionArgValue[],
+  ctx: FunctionContext,
+): FormulaResult {
   const base = fnNum > 100 ? fnNum - 100 : fnNum;
 
   if (base === 3) return countANonEmpty(args, ctx);
@@ -1123,13 +1133,15 @@ function subtotalCompute(fnNum: number, args: FunctionArgValue[], ctx: FunctionC
       return nums.length === 0 ? 0 : Math.min(...nums);
     case 6: // PRODUCT
       return nums.length === 0 ? 0 : nums.reduce((p, n) => p * n, 1);
-    case 7: { // STDEV (sample)
+    case 7: {
+      // STDEV (sample)
       if (nums.length <= 1) return makeError('#DIV/0!');
       const mean = nums.reduce((s, n) => s + n, 0) / nums.length;
       const variance = nums.reduce((s, n) => s + (n - mean) ** 2, 0) / (nums.length - 1);
       return Math.sqrt(variance);
     }
-    case 8: { // STDEVP (population)
+    case 8: {
+      // STDEVP (population)
       if (nums.length === 0) return makeError('#DIV/0!');
       const mean = nums.reduce((s, n) => s + n, 0) / nums.length;
       const variance = nums.reduce((s, n) => s + (n - mean) ** 2, 0) / nums.length;
@@ -1137,12 +1149,14 @@ function subtotalCompute(fnNum: number, args: FunctionArgValue[], ctx: FunctionC
     }
     case 9: // SUM
       return nums.reduce((s, n) => s + n, 0);
-    case 10: { // VAR (sample)
+    case 10: {
+      // VAR (sample)
       if (nums.length <= 1) return makeError('#DIV/0!');
       const mean = nums.reduce((s, n) => s + n, 0) / nums.length;
       return nums.reduce((s, n) => s + (n - mean) ** 2, 0) / (nums.length - 1);
     }
-    case 11: { // VARP (population)
+    case 11: {
+      // VARP (population)
       if (nums.length === 0) return makeError('#DIV/0!');
       const mean = nums.reduce((s, n) => s + n, 0) / nums.length;
       return nums.reduce((s, n) => s + (n - mean) ** 2, 0) / nums.length;
@@ -1166,10 +1180,62 @@ const SUBTOTAL: FunctionMeta = {
 };
 
 export const mathFunctions: FunctionMeta[] = [
-  SUM, AVERAGE, MIN, MAX, COUNT, ROUND, ABS, MOD, POWER, CEILING, FLOOR, SQRT, INT,
-  SUMPRODUCT, STDEV, VAR_FN, LARGE, SMALL, RANK,
-  ROUNDUP, ROUNDDOWN, TRUNC, SIGN, EXP, LN, LOG, LOG10, PI, EVEN, ODD, MROUND, QUOTIENT,
-  FACT, COMBIN, PERMUT, DEGREES, RADIANS, SIN, COS, TAN, ASIN, ACOS, ATAN, ATAN2,
-  SINH, COSH, TANH, CEILING_MATH, FLOOR_MATH, ISEVEN, ISODD,
-  PRODUCT, SUMSQ, GCD, LCM, RAND, RANDBETWEEN, SUBTOTAL,
+  SUM,
+  AVERAGE,
+  MIN,
+  MAX,
+  COUNT,
+  ROUND,
+  ABS,
+  MOD,
+  POWER,
+  CEILING,
+  FLOOR,
+  SQRT,
+  INT,
+  SUMPRODUCT,
+  STDEV,
+  VAR_FN,
+  LARGE,
+  SMALL,
+  RANK,
+  ROUNDUP,
+  ROUNDDOWN,
+  TRUNC,
+  SIGN,
+  EXP,
+  LN,
+  LOG,
+  LOG10,
+  PI,
+  EVEN,
+  ODD,
+  MROUND,
+  QUOTIENT,
+  FACT,
+  COMBIN,
+  PERMUT,
+  DEGREES,
+  RADIANS,
+  SIN,
+  COS,
+  TAN,
+  ASIN,
+  ACOS,
+  ATAN,
+  ATAN2,
+  SINH,
+  COSH,
+  TANH,
+  CEILING_MATH,
+  FLOOR_MATH,
+  ISEVEN,
+  ISODD,
+  PRODUCT,
+  SUMSQ,
+  GCD,
+  LCM,
+  RAND,
+  RANDBETWEEN,
+  SUBTOTAL,
 ];

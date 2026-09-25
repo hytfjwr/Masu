@@ -56,7 +56,11 @@ export const NumberFormatDropdown = memo(function NumberFormatDropdown({
     if (!isOpen) return;
     const handler = (e: MouseEvent) => {
       const target = e.target as Node;
-      if (containerRef.current && !containerRef.current.contains(target) && !dropdownRef.current?.contains(target)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        !dropdownRef.current?.contains(target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -117,7 +121,11 @@ export const NumberFormatDropdown = memo(function NumberFormatDropdown({
         123 <span className="text-[9px]">▾</span>
       </button>
       {isOpen && (
-        <FloatingPanel anchorRef={containerRef} panelRef={dropdownRef} className="glass-surface rounded-xl py-1 w-60 animate-slide-down">
+        <FloatingPanel
+          anchorRef={containerRef}
+          panelRef={dropdownRef}
+          className="glass-surface rounded-xl py-1 w-60 animate-slide-down"
+        >
           {!showCustom ? (
             <>
               {FORMAT_ITEMS.map((item) => (
@@ -131,7 +139,9 @@ export const NumberFormatDropdown = memo(function NumberFormatDropdown({
                   }}
                 >
                   <span className="flex items-center gap-1.5">
-                    <span className="w-3 inline-block">{currentFormat === item.format ? '✓' : ''}</span>
+                    <span className="w-3 inline-block">
+                      {currentFormat === item.format ? '✓' : ''}
+                    </span>
                     {item.label}
                   </span>
                   {item.example && <span className="text-text-primary/40">{item.example}</span>}

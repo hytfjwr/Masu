@@ -3,10 +3,19 @@ import { AUTO_SCROLL_EDGE, clampDragPoint, computeAutoScrollDelta } from './drag
 import type { DragViewport } from './dragAutoScroll';
 
 const base: DragViewport = {
-  x: 400, y: 300, viewWidth: 800, viewHeight: 600,
-  frozenWidth: 0, frozenHeight: 0,
-  scrollLeft: 500, scrollTop: 500, maxScrollLeft: 5000, maxScrollTop: 5000,
-  anchorInFrozenCols: false, anchorInFrozenRows: false, axis: 'both',
+  x: 400,
+  y: 300,
+  viewWidth: 800,
+  viewHeight: 600,
+  frozenWidth: 0,
+  frozenHeight: 0,
+  scrollLeft: 500,
+  scrollTop: 500,
+  maxScrollLeft: 5000,
+  maxScrollTop: 5000,
+  anchorInFrozenCols: false,
+  anchorInFrozenRows: false,
+  axis: 'both',
 };
 
 describe('computeAutoScrollDelta', () => {
@@ -23,7 +32,10 @@ describe('computeAutoScrollDelta', () => {
   });
 
   it('scrolls left/up near the start edges only when scrolled', () => {
-    expect(computeAutoScrollDelta({ ...base, x: 5, y: 5 })).toEqual({ dx: expect.any(Number), dy: expect.any(Number) });
+    expect(computeAutoScrollDelta({ ...base, x: 5, y: 5 })).toEqual({
+      dx: expect.any(Number),
+      dy: expect.any(Number),
+    });
     expect(computeAutoScrollDelta({ ...base, x: 5, y: 5 }).dx).toBeLessThan(0);
     expect(computeAutoScrollDelta({ ...base, x: -50, y: 300, scrollLeft: 0 }).dx).toBe(0);
   });
@@ -38,7 +50,9 @@ describe('computeAutoScrollDelta', () => {
   });
 
   it('does not scroll back when the drag started inside the frozen panes', () => {
-    expect(computeAutoScrollDelta({ ...base, frozenHeight: 100, y: 50, anchorInFrozenRows: true }).dy).toBe(0);
+    expect(
+      computeAutoScrollDelta({ ...base, frozenHeight: 100, y: 50, anchorInFrozenRows: true }).dy,
+    ).toBe(0);
   });
 
   it('respects the axis restriction and scroll limits', () => {
@@ -54,11 +68,19 @@ describe('clampDragPoint', () => {
   });
 
   it('maps the frozen area to the first unfrozen column/row while scrolled', () => {
-    expect(clampDragPoint({ ...base, frozenWidth: 200, frozenHeight: 48, x: 100, y: 10 })).toEqual({ x: 200, y: 48 });
+    expect(clampDragPoint({ ...base, frozenWidth: 200, frozenHeight: 48, x: 100, y: 10 })).toEqual({
+      x: 200,
+      y: 48,
+    });
   });
 
   it('selects frozen cells normally when not scrolled or when the drag started in them', () => {
-    expect(clampDragPoint({ ...base, frozenWidth: 200, x: 100, scrollLeft: 0 })).toEqual({ x: 100, y: 300 });
-    expect(clampDragPoint({ ...base, frozenWidth: 200, x: 100, anchorInFrozenCols: true })).toEqual({ x: 100, y: 300 });
+    expect(clampDragPoint({ ...base, frozenWidth: 200, x: 100, scrollLeft: 0 })).toEqual({
+      x: 100,
+      y: 300,
+    });
+    expect(clampDragPoint({ ...base, frozenWidth: 200, x: 100, anchorInFrozenCols: true })).toEqual(
+      { x: 100, y: 300 },
+    );
   });
 });

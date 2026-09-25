@@ -79,7 +79,9 @@ function buildOriented(
 
   const labels: string[] = [];
   for (let s = dataSecondaryStart; s <= secondaryEnd; s++) {
-    labels.push(excludePrimaryHeader ? displayOf(labelCellAt(s)) : String(s - dataSecondaryStart + 1));
+    labels.push(
+      excludePrimaryHeader ? displayOf(labelCellAt(s)) : String(s - dataSecondaryStart + 1),
+    );
   }
 
   const series: ChartSeries[] = [];
@@ -91,7 +93,11 @@ function buildOriented(
     for (let s = dataSecondaryStart; s <= secondaryEnd; s++) {
       values.push(toNumber(cellAt(p, s)));
     }
-    series.push({ name, color: chart.seriesColors?.[idx] ?? palette[idx % palette.length], values });
+    series.push({
+      name,
+      color: chart.seriesColors?.[idx] ?? palette[idx % palette.length],
+      values,
+    });
     idx++;
   }
 
@@ -116,23 +122,34 @@ export function buildChartModel(
   const useHeaderCol = chart.useFirstColumnAsLabels ?? true;
   const seriesIn = chart.seriesIn ?? 'columns';
 
-  const base = seriesIn === 'rows'
-    ? buildOriented(
-        chart, palette,
-        startRow, endRow, startCol, endCol,
-        useHeaderRow, useHeaderCol,
-        (primaryRow, secondaryCol) => getCell(secondaryCol, primaryRow),
-        (primaryRow) => getCell(startCol, primaryRow),
-        (secondaryCol) => getCell(secondaryCol, startRow),
-      )
-    : buildOriented(
-        chart, palette,
-        startCol, endCol, startRow, endRow,
-        useHeaderCol, useHeaderRow,
-        (primaryCol, secondaryRow) => getCell(primaryCol, secondaryRow),
-        (primaryCol) => getCell(primaryCol, startRow),
-        (secondaryRow) => getCell(startCol, secondaryRow),
-      );
+  const base =
+    seriesIn === 'rows'
+      ? buildOriented(
+          chart,
+          palette,
+          startRow,
+          endRow,
+          startCol,
+          endCol,
+          useHeaderRow,
+          useHeaderCol,
+          (primaryRow, secondaryCol) => getCell(secondaryCol, primaryRow),
+          (primaryRow) => getCell(startCol, primaryRow),
+          (secondaryCol) => getCell(secondaryCol, startRow),
+        )
+      : buildOriented(
+          chart,
+          palette,
+          startCol,
+          endCol,
+          startRow,
+          endRow,
+          useHeaderCol,
+          useHeaderRow,
+          (primaryCol, secondaryRow) => getCell(primaryCol, secondaryRow),
+          (primaryCol) => getCell(primaryCol, startRow),
+          (secondaryRow) => getCell(startCol, secondaryRow),
+        );
 
   if (chart.type !== 'scatter') return base;
 

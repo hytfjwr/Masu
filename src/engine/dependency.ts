@@ -31,7 +31,8 @@ function rangeHitsAny(range: GlobalRangeDep, cols: Map<number, number[]>): boole
     let hi = rows.length;
     while (lo < hi) {
       const mid = (lo + hi) >> 1;
-      if (rows[mid] < range.startRow) lo = mid + 1; else hi = mid;
+      if (rows[mid] < range.startRow) lo = mid + 1;
+      else hi = mid;
     }
     if (lo < rows.length && (range.endRow === null || rows[lo] <= range.endRow)) return true;
   }
@@ -94,7 +95,8 @@ class SheetRangeIndex {
   /** Add the formula keys of every range containing (col, row) to `out`. */
   collect(sheetId: string, col: number, row: number, out: Set<string>): void {
     const bucket = this.byCol.get(col);
-    if (bucket) for (const e of bucket) if (inRange(sheetId, col, row, e.range)) out.add(e.formulaKey);
+    if (bucket)
+      for (const e of bucket) if (inRange(sheetId, col, row, e.range)) out.add(e.formulaKey);
     for (const e of this.wide) if (inRange(sheetId, col, row, e.range)) out.add(e.formulaKey);
   }
 
@@ -206,7 +208,9 @@ export class DependencyGraph {
     const coords = parseGlobalCoords(cellKey);
     if (!coords) return result;
 
-    this.rangeDependents.get(coords.sheetId)?.collect(coords.sheetId, coords.col, coords.row, result);
+    this.rangeDependents
+      .get(coords.sheetId)
+      ?.collect(coords.sheetId, coords.col, coords.row, result);
     return result;
   }
 
@@ -235,7 +239,7 @@ export class DependencyGraph {
       if (rangeDeps.length === 0) return false;
       const coords = parseGlobalCoords(key);
       if (!coords) return false;
-      return rangeDeps.some(range => inRange(coords.sheetId, coords.col, coords.row, range));
+      return rangeDeps.some((range) => inRange(coords.sheetId, coords.col, coords.row, range));
     };
 
     const visited = new Set<string>();
@@ -363,7 +367,8 @@ export class DependencyGraph {
     // depends on the affected cells inside it; formulas depend on the virtual node. Many formulas
     // sharing a range (e.g. 3000 × SUM(A:A)) then cost O(formulas + cells) edges instead of their product.
     const RANGE_NODE = '\u0000range:';
-    const rangeNodeKey = (r: GlobalRangeDep) => `${RANGE_NODE}${r.sheetId}|${r.startCol}|${r.startRow}|${r.endCol}|${r.endRow}`;
+    const rangeNodeKey = (r: GlobalRangeDep) =>
+      `${RANGE_NODE}${r.sheetId}|${r.startCol}|${r.startRow}|${r.endCol}|${r.endRow}`;
     const rangeByNode = new Map<string, GlobalRangeDep>();
 
     const prerequisites = (node: string): string[] => {
@@ -400,7 +405,9 @@ export class DependencyGraph {
     const state = new Map<string, 1 | 2>(); // 1 = visiting, 2 = done
     for (const root of cells) {
       if (state.has(root)) continue;
-      const stack: Array<{ key: string; prereqs: string[]; i: number }> = [{ key: root, prereqs: prerequisites(root), i: 0 }];
+      const stack: Array<{ key: string; prereqs: string[]; i: number }> = [
+        { key: root, prereqs: prerequisites(root), i: 0 },
+      ];
       state.set(root, 1);
       while (stack.length > 0) {
         const top = stack[stack.length - 1];
@@ -421,5 +428,4 @@ export class DependencyGraph {
 
     return result;
   }
-
 }

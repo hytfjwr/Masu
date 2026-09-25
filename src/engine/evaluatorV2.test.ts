@@ -2,7 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { evaluate, extractReferences } from './evaluator';
 import { parse } from './parser';
 import { isSpillResult } from './types';
-import type { EvaluateOptions, FormulaResult, NamedRangeResolver, RangeExpander, SheetNameResolver } from './types';
+import type {
+  EvaluateOptions,
+  FormulaResult,
+  NamedRangeResolver,
+  RangeExpander,
+  SheetNameResolver,
+} from './types';
 
 /**
  * Regression/feature tests for the formula engine v2 rewrite: operators (& ^ %),
@@ -28,11 +34,23 @@ const expandRange: RangeExpander = (start: string, end: string): string[] => {
 function evalFormula(
   formula: string,
   cellValues: Record<string, FormulaResult> = {},
-  extra?: { resolveSheetName?: SheetNameResolver; resolveNamedRange?: NamedRangeResolver; options?: EvaluateOptions },
+  extra?: {
+    resolveSheetName?: SheetNameResolver;
+    resolveNamedRange?: NamedRangeResolver;
+    options?: EvaluateOptions;
+  },
 ) {
   const resolve = (key: string): FormulaResult => cellValues[key] ?? '';
   const ast = parse(formula);
-  return evaluate(ast, resolve, expandRange, extra?.resolveSheetName, extra?.resolveNamedRange, undefined, extra?.options);
+  return evaluate(
+    ast,
+    resolve,
+    expandRange,
+    extra?.resolveSheetName,
+    extra?.resolveNamedRange,
+    undefined,
+    extra?.options,
+  );
 }
 
 describe('operators: & ^ %', () => {
@@ -65,7 +83,13 @@ describe('literals: exponent numbers, escaped strings', () => {
 
 describe('array literals', () => {
   it('evaluates a bare array literal to a spill', () => {
-    expect(evalFormula('{1,2;3,4}')).toEqual({ type: 'spill', values: [[1, 2], [3, 4]] });
+    expect(evalFormula('{1,2;3,4}')).toEqual({
+      type: 'spill',
+      values: [
+        [1, 2],
+        [3, 4],
+      ],
+    });
   });
 
   it('SUM accepts an array literal', () => {
@@ -139,7 +163,10 @@ describe('LET / LAMBDA', () => {
 
 describe('MAP / REDUCE / BYROW', () => {
   it('MAP applies a lambda elementwise', () => {
-    expect(evalFormula('MAP({1,2,3}, LAMBDA(v, v*10))')).toEqual({ type: 'spill', values: [[10, 20, 30]] });
+    expect(evalFormula('MAP({1,2,3}, LAMBDA(v, v*10))')).toEqual({
+      type: 'spill',
+      values: [[10, 20, 30]],
+    });
   });
 
   it('REDUCE folds an array to a scalar', () => {
@@ -147,13 +174,19 @@ describe('MAP / REDUCE / BYROW', () => {
   });
 
   it('BYROW applies a lambda per row', () => {
-    expect(evalFormula('BYROW({1,2;3,4}, LAMBDA(r, SUM(r)))')).toEqual({ type: 'spill', values: [[3], [7]] });
+    expect(evalFormula('BYROW({1,2;3,4}, LAMBDA(r, SUM(r)))')).toEqual({
+      type: 'spill',
+      values: [[3], [7]],
+    });
   });
 });
 
 describe('lift (scalar function broadcast over ranges)', () => {
   it('UPPER lifts over a multi-cell range', () => {
-    expect(evalFormula('UPPER(A1:A2)', { A1: 'a', A2: 'b' })).toEqual({ type: 'spill', values: [['A'], ['B']] });
+    expect(evalFormula('UPPER(A1:A2)', { A1: 'a', A2: 'b' })).toEqual({
+      type: 'spill',
+      values: [['A'], ['B']],
+    });
   });
 });
 
@@ -251,8 +284,12 @@ describe('XLOOKUP wildcard mode', () => {
 describe('exact-match lookup index (large ranges)', () => {
   // 40 rows so the range is cached and indexed (>= 32 rows)
   const vals: Record<string, FormulaResult> = {};
-  for (let r = 1; r <= 40; r++) { vals[`A${r}`] = `k${r}`; vals[`B${r}`] = r * 10; }
-  vals.A5 = 'Apple'; vals.A6 = 'apple'; // first occurrence wins, case-insensitive
+  for (let r = 1; r <= 40; r++) {
+    vals[`A${r}`] = `k${r}`;
+    vals[`B${r}`] = r * 10;
+  }
+  vals.A5 = 'Apple';
+  vals.A6 = 'apple'; // first occurrence wins, case-insensitive
   vals.A7 = { type: 'error', code: '#N/A' }; // errors never match
   vals.A8 = 5; // number
   vals.A9 = '5'; // text that equals the number
@@ -265,7 +302,10 @@ describe('exact-match lookup index (large ranges)', () => {
     expect(evalFormula('VLOOKUP("5",A1:B40,2,FALSE)', vals)).toBe(80);
     expect(evalFormula('MATCH("",A1:A40,0)', vals)).toBe(10);
     expect(evalFormula('VLOOKUP("k40",A1:B40,2,FALSE)', vals)).toBe(400);
-    expect(evalFormula('VLOOKUP("nope",A1:B40,2,FALSE)', vals)).toEqual({ type: 'error', code: '#N/A' });
+    expect(evalFormula('VLOOKUP("nope",A1:B40,2,FALSE)', vals)).toEqual({
+      type: 'error',
+      code: '#N/A',
+    });
     expect(evalFormula('MATCH("#N/A",A1:A40,0)', vals)).toEqual({ type: 'error', code: '#N/A' });
   });
 });

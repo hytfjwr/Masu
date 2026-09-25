@@ -22,7 +22,7 @@ export function findDuplicateRows(rows: string[][], checkCols: number[]): Dedupe
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const key = checkCols.map(c => row[c] ?? '').join('\u0000');
+    const key = checkCols.map((c) => row[c] ?? '').join('\u0000');
     if (seen.has(key)) {
       duplicateCount++;
     } else {

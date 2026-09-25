@@ -22,7 +22,9 @@ export function resolveSpill(
   spillResult: SpillResult,
   originKey: string,
   existingCells: CellDataMap,
-): { cells: Map<string, CellData>; spillExtent: { rows: number; cols: number } } | { error: '#SPILL!' } {
+):
+  | { cells: Map<string, CellData>; spillExtent: { rows: number; cols: number } }
+  | { error: '#SPILL!' } {
   const { values } = spillResult;
   const rows = values.length;
   if (rows === 0) return { error: '#SPILL!' };
@@ -77,10 +79,7 @@ export function resolveSpill(
  * Get all spill target cell keys for a given spill origin.
  * Returns the keys that should be cleared when the origin's spill is removed.
  */
-export function clearSpillRange(
-  originKey: string,
-  existingCells: CellDataMap,
-): string[] {
+export function clearSpillRange(originKey: string, existingCells: CellDataMap): string[] {
   const keysToRemove: string[] = [];
   for (const [key, cell] of existingCells) {
     if (cell.spillSource === originKey) {

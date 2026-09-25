@@ -55,5 +55,5 @@ export function computeSortOrder(
     return a.i - b.i; // stable tie-break
   });
 
-  return entries.map(e => e.row);
+  return entries.map((e) => e.row);
 }

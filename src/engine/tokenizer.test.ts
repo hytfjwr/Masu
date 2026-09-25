@@ -15,7 +15,7 @@ describe('tokenizer - sheet references', () => {
     expect(tokens[0]).toEqual({ type: TokenType.SheetCellRef, value: 'Sheet2!A1' });
   });
 
-  it('tokenizes quoted sheet cell reference (\'My Sheet\'!A1)', () => {
+  it("tokenizes quoted sheet cell reference ('My Sheet'!A1)", () => {
     const tokens = tokenize("'My Sheet'!A1");
     expect(tokens[0]).toEqual({ type: TokenType.SheetCellRef, value: 'My Sheet!A1' });
   });
@@ -26,7 +26,7 @@ describe('tokenizer - sheet references', () => {
     expect(tokens[1].type).toBe(TokenType.EOF);
   });
 
-  it('tokenizes quoted sheet range reference (\'My Sheet\'!A1:B3)', () => {
+  it("tokenizes quoted sheet range reference ('My Sheet'!A1:B3)", () => {
     const tokens = tokenize("'My Sheet'!A1:B3");
     expect(tokens[0]).toEqual({ type: TokenType.SheetRangeRef, value: 'My Sheet!A1:B3' });
   });
@@ -40,7 +40,9 @@ describe('tokenizer - sheet references', () => {
   });
 
   it('throws on unterminated quoted sheet name', () => {
-    expect(() => tokenize("'OpenQuote!A1")).toThrow(new FormulaSyntaxError("シート名が閉じられていません（' が必要です）", 0, 13));
+    expect(() => tokenize("'OpenQuote!A1")).toThrow(
+      new FormulaSyntaxError("シート名が閉じられていません（' が必要です）", 0, 13),
+    );
   });
 
   it('throws on quoted sheet name without ! separator', () => {

@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { getCategorizedFunctions, getCategoryForFunction, getAllFunctionNames } from './functionCategories';
+import {
+  getCategorizedFunctions,
+  getCategoryForFunction,
+  getAllFunctionNames,
+} from './functionCategories';
 import { getAllFunctionMetas } from '../engine/functions/index';
 
 describe('getCategorizedFunctions', () => {
   it('returns all categories', () => {
     const categories = getCategorizedFunctions();
-    const ids = categories.map(c => c.id);
+    const ids = categories.map((c) => c.id);
     expect(ids).toContain('math');
     expect(ids).toContain('stat');
     expect(ids).toContain('logic');

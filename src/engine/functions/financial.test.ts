@@ -17,11 +17,19 @@ const expandRange: RangeExpander = (start: string, end: string): string[] => {
   return keys;
 };
 
-function evalFormula(formula: string, cellValues: Record<string, FormulaResult> = {}): FormulaResult {
+function evalFormula(
+  formula: string,
+  cellValues: Record<string, FormulaResult> = {},
+): FormulaResult {
   const resolve = (key: string): FormulaResult => cellValues[key] ?? '';
   const ast = parse(formula);
   const result = evaluate(ast, resolve, expandRange);
-  if (typeof result === 'object' && result !== null && 'type' in result && result.type === 'spill') {
+  if (
+    typeof result === 'object' &&
+    result !== null &&
+    'type' in result &&
+    result.type === 'spill'
+  ) {
     return { type: 'error', code: '#VALUE!' };
   }
   return result as FormulaResult;
@@ -127,15 +135,24 @@ describe('NPV', () => {
 describe('XNPV', () => {
   it('discounts cash flows by actual day counts', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: -10000, A2: 2750, A3: 4250, A4: 3250, A5: 2750,
-      B1: 42005, B2: 42035, B3: 42094, B4: 42186, B5: 42217, // serial dates ~1 month apart
+      A1: -10000,
+      A2: 2750,
+      A3: 4250,
+      A4: 3250,
+      A5: 2750,
+      B1: 42005,
+      B2: 42035,
+      B3: 42094,
+      B4: 42186,
+      B5: 42217, // serial dates ~1 month apart
     };
     const result = evalFormula('XNPV(0.09,A1:A5,B1:B5)', vals) as number;
     // Manually compute the expected value with the same day-count convention.
     const values = [-10000, 2750, 4250, 3250, 2750];
     const dates = [42005, 42035, 42094, 42186, 42217];
     let expected = 0;
-    for (let i = 0; i < values.length; i++) expected += values[i] / Math.pow(1.09, (dates[i] - dates[0]) / 365);
+    for (let i = 0; i < values.length; i++)
+      expected += values[i] / Math.pow(1.09, (dates[i] - dates[0]) / 365);
     expect(result).toBeCloseTo(expected, 6);
   });
 
@@ -161,14 +178,23 @@ describe('IRR', () => {
 describe('XIRR', () => {
   it('finds the rate that zeroes XNPV', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: -10000, A2: 2750, A3: 4250, A4: 3250, A5: 2750,
-      B1: 42005, B2: 42035, B3: 42094, B4: 42186, B5: 42217,
+      A1: -10000,
+      A2: 2750,
+      A3: 4250,
+      A4: 3250,
+      A5: 2750,
+      B1: 42005,
+      B2: 42035,
+      B3: 42094,
+      B4: 42186,
+      B5: 42217,
     };
     const rate = evalFormula('XIRR(A1:A5,B1:B5)', vals) as number;
     const values = [-10000, 2750, 4250, 3250, 2750];
     const dates = [42005, 42035, 42094, 42186, 42217];
     let npvAtRate = 0;
-    for (let i = 0; i < values.length; i++) npvAtRate += values[i] / Math.pow(1 + rate, (dates[i] - dates[0]) / 365);
+    for (let i = 0; i < values.length; i++)
+      npvAtRate += values[i] / Math.pow(1 + rate, (dates[i] - dates[0]) / 365);
     expect(npvAtRate).toBeCloseTo(0, 4);
   });
 

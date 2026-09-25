@@ -30,7 +30,10 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
       const all: FunctionMeta[] = [];
       for (const cat of categories) {
         for (const fn of cat.functions) {
-          if (fn.name.includes(q) || fn.description.toLowerCase().includes(searchQuery.toLowerCase())) {
+          if (
+            fn.name.includes(q) ||
+            fn.description.toLowerCase().includes(searchQuery.toLowerCase())
+          ) {
             all.push(fn);
           }
         }
@@ -216,14 +219,10 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
                           {arg.required ? (
                             <span className="text-red-400 ml-0.5">*</span>
                           ) : (
-                            <span className="text-text-primary/40 ml-1 text-[10px]">
-                              (省略可)
-                            </span>
+                            <span className="text-text-primary/40 ml-1 text-[10px]">(省略可)</span>
                           )}
                           {arg.variadic && (
-                            <span className="text-text-primary/40 ml-1 text-[10px]">
-                              (複数可)
-                            </span>
+                            <span className="text-text-primary/40 ml-1 text-[10px]">(複数可)</span>
                           )}
                         </span>
                         <input
@@ -241,7 +240,9 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
                 {/* Preview */}
                 <div className="bg-ui-bg border border-grid-line rounded p-2">
                   <div className="text-[10px] text-text-primary/60 mb-0.5">数式プレビュー</div>
-                  <div className="text-xs font-mono text-text-primary truncate">{currentFormula}</div>
+                  <div className="text-xs font-mono text-text-primary truncate">
+                    {currentFormula}
+                  </div>
                   {preview && (
                     <div className="mt-1">
                       <div className="text-[10px] text-text-primary/60">計算結果</div>

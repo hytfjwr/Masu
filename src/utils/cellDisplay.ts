@@ -24,7 +24,10 @@ function resolveValue(cell: CellData): number | string | boolean {
  * Compute the effective display text, color and alignment for a cell, matching Google Sheets'
  * number/boolean/text/error rendering rules and honoring `CellStyle.numberFormat(Pattern)`.
  */
-export function getCellDisplay(cell: CellData | undefined, style: CellStyle | undefined): CellDisplay {
+export function getCellDisplay(
+  cell: CellData | undefined,
+  style: CellStyle | undefined,
+): CellDisplay {
   const rawValue = cell?.rawValue ?? '';
   const displayValue = cell?.displayValue ?? '';
 
@@ -45,7 +48,12 @@ export function getCellDisplay(cell: CellData | undefined, style: CellStyle | un
       return { text: rawValue, align: style?.textAlign ?? 'left', kind: 'text' };
     }
     const formatted = pattern ? formatWithPattern(v, pattern) : { text: formatGeneral(v) };
-    return { text: formatted.text, color: formatted.color, align: style?.textAlign ?? 'right', kind: 'number' };
+    return {
+      text: formatted.text,
+      color: formatted.color,
+      align: style?.textAlign ?? 'right',
+      kind: 'number',
+    };
   }
 
   if (typeof v === 'boolean') {
@@ -54,7 +62,12 @@ export function getCellDisplay(cell: CellData | undefined, style: CellStyle | un
 
   if (pattern) {
     const formatted = formatWithPattern(v, pattern);
-    return { text: formatted.text, color: formatted.color, align: style?.textAlign ?? 'left', kind: 'text' };
+    return {
+      text: formatted.text,
+      color: formatted.color,
+      align: style?.textAlign ?? 'left',
+      kind: 'text',
+    };
   }
   return { text: v, align: style?.textAlign ?? 'left', kind: 'text' };
 }

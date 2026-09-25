@@ -17,11 +17,19 @@ const expandRange: RangeExpander = (start: string, end: string): string[] => {
   return keys;
 };
 
-function evalFormula(formula: string, cellValues: Record<string, FormulaResult> = {}): FormulaResult {
+function evalFormula(
+  formula: string,
+  cellValues: Record<string, FormulaResult> = {},
+): FormulaResult {
   const resolve = (key: string): FormulaResult => cellValues[key] ?? '';
   const ast = parse(formula);
   const result = evaluate(ast, resolve, expandRange);
-  if (typeof result === 'object' && result !== null && 'type' in result && result.type === 'spill') {
+  if (
+    typeof result === 'object' &&
+    result !== null &&
+    'type' in result &&
+    result.type === 'spill'
+  ) {
     return { type: 'error', code: '#VALUE!' };
   }
   return result as FormulaResult;

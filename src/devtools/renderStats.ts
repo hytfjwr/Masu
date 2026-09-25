@@ -9,7 +9,10 @@ export const renderStats = {
 };
 
 const FLASH_KEYFRAMES: Keyframe[] = [
-  { boxShadow: 'inset 0 0 0 2px rgb(236 72 153 / 0.95)', backgroundColor: 'rgb(236 72 153 / 0.14)' },
+  {
+    boxShadow: 'inset 0 0 0 2px rgb(236 72 153 / 0.95)',
+    backgroundColor: 'rgb(236 72 153 / 0.14)',
+  },
   { boxShadow: 'inset 0 0 0 2px rgb(236 72 153 / 0)', backgroundColor: 'rgb(236 72 153 / 0)' },
 ];
 

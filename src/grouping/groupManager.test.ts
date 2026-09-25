@@ -11,7 +11,12 @@ import {
 } from './groupManager';
 import type { GroupRange } from '../types/grid';
 
-function makeGroup(start: number, end: number, level: number = 1, collapsed: boolean = false): GroupRange {
+function makeGroup(
+  start: number,
+  end: number,
+  level: number = 1,
+  collapsed: boolean = false,
+): GroupRange {
   return {
     id: `g_${start}_${end}_${level}`,
     start,
@@ -106,33 +111,23 @@ describe('toggleGroupCollapse', () => {
 
 describe('setExpandLevel', () => {
   it('level 1: collapses level 1 and above', () => {
-    const groups = [
-      makeGroup(2, 5, 1, false),
-      makeGroup(3, 4, 2, false),
-    ];
+    const groups = [makeGroup(2, 5, 1, false), makeGroup(3, 4, 2, false)];
     const result = setExpandLevel(groups, 1);
     expect(result[0].collapsed).toBe(true); // level 1 >= 1
     expect(result[1].collapsed).toBe(true); // level 2 >= 1
   });
 
   it('level 2: collapses level 2+, expands level 1', () => {
-    const groups = [
-      makeGroup(2, 8, 1, true),
-      makeGroup(3, 5, 2, false),
-    ];
+    const groups = [makeGroup(2, 8, 1, true), makeGroup(3, 5, 2, false)];
     const result = setExpandLevel(groups, 2);
     expect(result[0].collapsed).toBe(false); // level 1 < 2
-    expect(result[1].collapsed).toBe(true);  // level 2 >= 2
+    expect(result[1].collapsed).toBe(true); // level 2 >= 2
   });
 
   it('level 3: expands all groups (level 3 collapses level 3+)', () => {
-    const groups = [
-      makeGroup(2, 8, 1, true),
-      makeGroup(3, 5, 2, true),
-      makeGroup(4, 4, 3, true),
-    ];
+    const groups = [makeGroup(2, 8, 1, true), makeGroup(3, 5, 2, true), makeGroup(4, 4, 3, true)];
     const result = setExpandLevel(groups, 4);
-    expect(result.every(g => !g.collapsed)).toBe(true);
+    expect(result.every((g) => !g.collapsed)).toBe(true);
   });
 });
 
@@ -150,19 +145,13 @@ describe('computeCollapsedIndices', () => {
   });
 
   it('includes nested group indices when parent is collapsed', () => {
-    const groups = [
-      makeGroup(2, 8, 1, true),
-      makeGroup(3, 5, 2, false),
-    ];
+    const groups = [makeGroup(2, 8, 1, true), makeGroup(3, 5, 2, false)];
     const hidden = computeCollapsedIndices(groups);
     expect(hidden).toEqual(new Set([2, 3, 4, 5, 6, 7, 8]));
   });
 
   it('handles nested group collapsed inside expanded parent', () => {
-    const groups = [
-      makeGroup(2, 8, 1, false),
-      makeGroup(3, 5, 2, true),
-    ];
+    const groups = [makeGroup(2, 8, 1, false), makeGroup(3, 5, 2, true)];
     const hidden = computeCollapsedIndices(groups);
     expect(hidden).toEqual(new Set([3, 4, 5]));
   });
@@ -184,11 +173,7 @@ describe('getMaxGroupLevel', () => {
   });
 
   it('returns 3 for mixed levels', () => {
-    const groups = [
-      makeGroup(2, 8, 1),
-      makeGroup(3, 5, 2),
-      makeGroup(4, 4, 3),
-    ];
+    const groups = [makeGroup(2, 8, 1), makeGroup(3, 5, 2), makeGroup(4, 4, 3)];
     expect(getMaxGroupLevel(groups)).toBe(3);
   });
 });

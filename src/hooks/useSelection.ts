@@ -67,13 +67,7 @@ export function useSelection(): UseSelectionReturn {
   );
 
   const moveActiveCell = useCallback(
-    (
-      deltaCol: number,
-      deltaRow: number,
-      extend: boolean,
-      colCount: number,
-      rowCount: number,
-    ) => {
+    (deltaCol: number, deltaRow: number, extend: boolean, colCount: number, rowCount: number) => {
       if (extend) {
         // Extend selection
         setSelectionRange((prev) => {

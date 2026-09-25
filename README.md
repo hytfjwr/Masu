@@ -28,12 +28,12 @@ pnpm dev
 
 ## Scripts
 
-| Command      | Description                           |
-| ------------ | ------------------------------------- |
-| `pnpm dev`   | Start the Vite dev server             |
-| `pnpm build` | Type-check and build for production   |
-| `pnpm lint`  | Run ESLint                            |
-| `pnpm test`  | Run the test suite with Vitest        |
+| Command      | Description                         |
+| ------------ | ----------------------------------- |
+| `pnpm dev`   | Start the Vite dev server           |
+| `pnpm build` | Type-check and build for production |
+| `pnpm lint`  | Run ESLint                          |
+| `pnpm test`  | Run the test suite with Vitest      |
 
 ## Tech stack
 

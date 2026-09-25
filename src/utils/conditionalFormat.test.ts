@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { createConditionalFormatter, evaluateCondition, getConditionalStyle } from './conditionalFormat';
+import {
+  createConditionalFormatter,
+  evaluateCondition,
+  getConditionalStyle,
+} from './conditionalFormat';
 import type { CfContext } from './conditionalFormat';
 import type { ConditionalFormatRule } from '../types/grid';
 import type { FormulaResult } from '../engine/types';
@@ -24,11 +28,15 @@ function makeRule(overrides: Partial<ConditionalFormatRule> = {}): ConditionalFo
 describe('conditionalFormat', () => {
   describe('evaluateCondition', () => {
     it('greaterThan: 50 > 30 is true', () => {
-      expect(evaluateCondition('50', makeRule({ operator: 'greaterThan', value1: '30' }))).toBe(true);
+      expect(evaluateCondition('50', makeRule({ operator: 'greaterThan', value1: '30' }))).toBe(
+        true,
+      );
     });
 
     it('greaterThan: 20 > 30 is false', () => {
-      expect(evaluateCondition('20', makeRule({ operator: 'greaterThan', value1: '30' }))).toBe(false);
+      expect(evaluateCondition('20', makeRule({ operator: 'greaterThan', value1: '30' }))).toBe(
+        false,
+      );
     });
 
     it('lessThan: 10 < 30 is true', () => {
@@ -36,39 +44,57 @@ describe('conditionalFormat', () => {
     });
 
     it('greaterThanOrEqual: 30 >= 30 is true', () => {
-      expect(evaluateCondition('30', makeRule({ operator: 'greaterThanOrEqual', value1: '30' }))).toBe(true);
+      expect(
+        evaluateCondition('30', makeRule({ operator: 'greaterThanOrEqual', value1: '30' })),
+      ).toBe(true);
     });
 
     it('lessThanOrEqual: 30 <= 30 is true', () => {
-      expect(evaluateCondition('30', makeRule({ operator: 'lessThanOrEqual', value1: '30' }))).toBe(true);
+      expect(evaluateCondition('30', makeRule({ operator: 'lessThanOrEqual', value1: '30' }))).toBe(
+        true,
+      );
     });
 
     it('equal: case insensitive', () => {
-      expect(evaluateCondition('hello', makeRule({ operator: 'equal', value1: 'Hello' }))).toBe(true);
+      expect(evaluateCondition('hello', makeRule({ operator: 'equal', value1: 'Hello' }))).toBe(
+        true,
+      );
     });
 
     it('notEqual', () => {
-      expect(evaluateCondition('hello', makeRule({ operator: 'notEqual', value1: 'world' }))).toBe(true);
+      expect(evaluateCondition('hello', makeRule({ operator: 'notEqual', value1: 'world' }))).toBe(
+        true,
+      );
     });
 
     it('between: 20 in [10, 30] is true', () => {
-      expect(evaluateCondition('20', makeRule({ operator: 'between', value1: '10', value2: '30' }))).toBe(true);
+      expect(
+        evaluateCondition('20', makeRule({ operator: 'between', value1: '10', value2: '30' })),
+      ).toBe(true);
     });
 
     it('between: 5 in [10, 30] is false', () => {
-      expect(evaluateCondition('5', makeRule({ operator: 'between', value1: '10', value2: '30' }))).toBe(false);
+      expect(
+        evaluateCondition('5', makeRule({ operator: 'between', value1: '10', value2: '30' })),
+      ).toBe(false);
     });
 
     it('notBetween: 5 not in [10, 30] is true', () => {
-      expect(evaluateCondition('5', makeRule({ operator: 'notBetween', value1: '10', value2: '30' }))).toBe(true);
+      expect(
+        evaluateCondition('5', makeRule({ operator: 'notBetween', value1: '10', value2: '30' })),
+      ).toBe(true);
     });
 
     it('textContains: case insensitive', () => {
-      expect(evaluateCondition('Hello World', makeRule({ operator: 'textContains', value1: 'world' }))).toBe(true);
+      expect(
+        evaluateCondition('Hello World', makeRule({ operator: 'textContains', value1: 'world' })),
+      ).toBe(true);
     });
 
     it('textNotContains', () => {
-      expect(evaluateCondition('Hello', makeRule({ operator: 'textNotContains', value1: 'world' }))).toBe(true);
+      expect(
+        evaluateCondition('Hello', makeRule({ operator: 'textNotContains', value1: 'world' })),
+      ).toBe(true);
     });
 
     it('isEmpty: empty string is true', () => {
@@ -80,7 +106,9 @@ describe('conditionalFormat', () => {
     });
 
     it('non-numeric cell with numeric operator returns false', () => {
-      expect(evaluateCondition('abc', makeRule({ operator: 'greaterThan', value1: '30' }))).toBe(false);
+      expect(evaluateCondition('abc', makeRule({ operator: 'greaterThan', value1: '30' }))).toBe(
+        false,
+      );
     });
 
     it('disabled rule returns false', () => {
@@ -145,7 +173,9 @@ function makeCfContext(grid: FormulaResult[][]): CfContext {
 
   const evaluateFormulaAt = (formula: string, col: number, row: number): FormulaResult => {
     const ast = parse(formula);
-    const result = evaluate(ast, resolve, expandRange, undefined, undefined, undefined, { currentCell: { col, row } });
+    const result = evaluate(ast, resolve, expandRange, undefined, undefined, undefined, {
+      currentCell: { col, row },
+    });
     return isSpillResult(result) ? makeError('#VALUE!') : result;
   };
 
@@ -187,7 +217,11 @@ describe('createConditionalFormatter', () => {
       ['', 20],
       ['', 15],
     ];
-    const rule = makeRule2({ kind: 'formula', formula: '=$B1>10', range: { startCol: 0, startRow: 0, endCol: 0, endRow: 2 } });
+    const rule = makeRule2({
+      kind: 'formula',
+      formula: '=$B1>10',
+      range: { startCol: 0, startRow: 0, endCol: 0, endRow: 2 },
+    });
 
     it('matches when the shifted formula evaluates to TRUE for that row', () => {
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
@@ -206,7 +240,10 @@ describe('createConditionalFormatter', () => {
       const grid: FormulaResult[][] = [[0], [5], [10]];
       const rule = makeRule2({
         kind: 'colorScale',
-        colorScale: { min: { type: 'min', color: '#ff0000' }, max: { type: 'max', color: '#00ff00' } },
+        colorScale: {
+          min: { type: 'min', color: '#ff0000' },
+          max: { type: 'max', color: '#00ff00' },
+        },
       });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
       expect(formatter(0, 0)).toEqual({ backgroundColor: '#ff0000' });
@@ -250,7 +287,10 @@ describe('createConditionalFormatter', () => {
       const rule = makeRule2({
         kind: 'colorScale',
         range: { startCol: 0, startRow: 0, endCol: 0, endRow: 1 },
-        colorScale: { min: { type: 'min', color: '#ff0000' }, max: { type: 'max', color: '#00ff00' } },
+        colorScale: {
+          min: { type: 'min', color: '#ff0000' },
+          max: { type: 'max', color: '#00ff00' },
+        },
       });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
       expect(formatter(0, 0)).toEqual({ backgroundColor: '#ff0000' });
@@ -260,7 +300,10 @@ describe('createConditionalFormatter', () => {
   describe('duplicate kind', () => {
     it('matches string values that occur more than once, case-insensitively', () => {
       const grid: FormulaResult[][] = [['a'], ['A'], ['b'], ['c']];
-      const rule = makeRule2({ kind: 'duplicate', range: { startCol: 0, startRow: 0, endCol: 0, endRow: 3 } });
+      const rule = makeRule2({
+        kind: 'duplicate',
+        range: { startCol: 0, startRow: 0, endCol: 0, endRow: 3 },
+      });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
       expect(formatter(0, 0)).toEqual({ backgroundColor: '#ff0000' });
       expect(formatter(0, 1)).toEqual({ backgroundColor: '#ff0000' });
@@ -268,7 +311,10 @@ describe('createConditionalFormatter', () => {
 
     it('does not match values that occur only once', () => {
       const grid: FormulaResult[][] = [['a'], ['A'], ['b'], ['c']];
-      const rule = makeRule2({ kind: 'duplicate', range: { startCol: 0, startRow: 0, endCol: 0, endRow: 3 } });
+      const rule = makeRule2({
+        kind: 'duplicate',
+        range: { startCol: 0, startRow: 0, endCol: 0, endRow: 3 },
+      });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
       expect(formatter(0, 2)).toBeUndefined();
       expect(formatter(0, 3)).toBeUndefined();
@@ -278,7 +324,10 @@ describe('createConditionalFormatter', () => {
   describe('unique kind', () => {
     it('matches numeric values that occur exactly once', () => {
       const grid: FormulaResult[][] = [[1], [2], [1], [3]];
-      const rule = makeRule2({ kind: 'unique', range: { startCol: 0, startRow: 0, endCol: 0, endRow: 3 } });
+      const rule = makeRule2({
+        kind: 'unique',
+        range: { startCol: 0, startRow: 0, endCol: 0, endRow: 3 },
+      });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
       expect(formatter(0, 1)).toEqual({ backgroundColor: '#ff0000' });
       expect(formatter(0, 3)).toEqual({ backgroundColor: '#ff0000' });
@@ -286,7 +335,10 @@ describe('createConditionalFormatter', () => {
 
     it('does not match values that occur more than once', () => {
       const grid: FormulaResult[][] = [[1], [2], [1], [3]];
-      const rule = makeRule2({ kind: 'unique', range: { startCol: 0, startRow: 0, endCol: 0, endRow: 3 } });
+      const rule = makeRule2({
+        kind: 'unique',
+        range: { startCol: 0, startRow: 0, endCol: 0, endRow: 3 },
+      });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
       expect(formatter(0, 0)).toBeUndefined();
       expect(formatter(0, 2)).toBeUndefined();
@@ -297,7 +349,11 @@ describe('createConditionalFormatter', () => {
     const grid: FormulaResult[][] = [[10], [20], [30], [40], [50]];
 
     it('matches the top N values by count, including ties at the threshold', () => {
-      const rule = makeRule2({ kind: 'top', rank: 2, range: { startCol: 0, startRow: 0, endCol: 0, endRow: 4 } });
+      const rule = makeRule2({
+        kind: 'top',
+        rank: 2,
+        range: { startCol: 0, startRow: 0, endCol: 0, endRow: 4 },
+      });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
       expect(formatter(0, 3)).toEqual({ backgroundColor: '#ff0000' }); // 40
       expect(formatter(0, 4)).toEqual({ backgroundColor: '#ff0000' }); // 50
@@ -306,7 +362,12 @@ describe('createConditionalFormatter', () => {
 
     it('matches the top N% of values (rounding the count up, minimum 1)', () => {
       const grid10: FormulaResult[][] = Array.from({ length: 10 }, (_, i) => [i + 1]);
-      const rule = makeRule2({ kind: 'top', rank: 25, percent: true, range: { startCol: 0, startRow: 0, endCol: 0, endRow: 9 } });
+      const rule = makeRule2({
+        kind: 'top',
+        rank: 25,
+        percent: true,
+        range: { startCol: 0, startRow: 0, endCol: 0, endRow: 9 },
+      });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid10));
       expect(formatter(0, 7)).toEqual({ backgroundColor: '#ff0000' }); // value 8
       expect(formatter(0, 6)).toBeUndefined(); // value 7
@@ -317,7 +378,11 @@ describe('createConditionalFormatter', () => {
     const grid: FormulaResult[][] = [[10], [20], [30], [40], [50]];
 
     it('matches the bottom N values by count, including ties at the threshold', () => {
-      const rule = makeRule2({ kind: 'bottom', rank: 2, range: { startCol: 0, startRow: 0, endCol: 0, endRow: 4 } });
+      const rule = makeRule2({
+        kind: 'bottom',
+        rank: 2,
+        range: { startCol: 0, startRow: 0, endCol: 0, endRow: 4 },
+      });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
       expect(formatter(0, 0)).toEqual({ backgroundColor: '#ff0000' }); // 10
       expect(formatter(0, 1)).toEqual({ backgroundColor: '#ff0000' }); // 20
@@ -326,7 +391,12 @@ describe('createConditionalFormatter', () => {
 
     it('matches the bottom N% of values (rounding the count up, minimum 1)', () => {
       const grid10: FormulaResult[][] = Array.from({ length: 10 }, (_, i) => [i + 1]);
-      const rule = makeRule2({ kind: 'bottom', rank: 25, percent: true, range: { startCol: 0, startRow: 0, endCol: 0, endRow: 9 } });
+      const rule = makeRule2({
+        kind: 'bottom',
+        rank: 25,
+        percent: true,
+        range: { startCol: 0, startRow: 0, endCol: 0, endRow: 9 },
+      });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid10));
       expect(formatter(0, 2)).toEqual({ backgroundColor: '#ff0000' }); // value 3
       expect(formatter(0, 3)).toBeUndefined(); // value 4
@@ -337,13 +407,19 @@ describe('createConditionalFormatter', () => {
     const grid: FormulaResult[][] = [[10], [20], [30]];
 
     it('matches values strictly greater than the range average', () => {
-      const rule = makeRule2({ kind: 'aboveAverage', range: { startCol: 0, startRow: 0, endCol: 0, endRow: 2 } });
+      const rule = makeRule2({
+        kind: 'aboveAverage',
+        range: { startCol: 0, startRow: 0, endCol: 0, endRow: 2 },
+      });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
       expect(formatter(0, 2)).toEqual({ backgroundColor: '#ff0000' }); // 30
     });
 
     it('does not match the average itself or values below it', () => {
-      const rule = makeRule2({ kind: 'aboveAverage', range: { startCol: 0, startRow: 0, endCol: 0, endRow: 2 } });
+      const rule = makeRule2({
+        kind: 'aboveAverage',
+        range: { startCol: 0, startRow: 0, endCol: 0, endRow: 2 },
+      });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
       expect(formatter(0, 1)).toBeUndefined(); // 20 (== average)
       expect(formatter(0, 0)).toBeUndefined(); // 10
@@ -354,13 +430,19 @@ describe('createConditionalFormatter', () => {
     const grid: FormulaResult[][] = [[10], [20], [30]];
 
     it('matches values strictly less than the range average', () => {
-      const rule = makeRule2({ kind: 'belowAverage', range: { startCol: 0, startRow: 0, endCol: 0, endRow: 2 } });
+      const rule = makeRule2({
+        kind: 'belowAverage',
+        range: { startCol: 0, startRow: 0, endCol: 0, endRow: 2 },
+      });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
       expect(formatter(0, 0)).toEqual({ backgroundColor: '#ff0000' }); // 10
     });
 
     it('does not match the average itself or values above it', () => {
-      const rule = makeRule2({ kind: 'belowAverage', range: { startCol: 0, startRow: 0, endCol: 0, endRow: 2 } });
+      const rule = makeRule2({
+        kind: 'belowAverage',
+        range: { startCol: 0, startRow: 0, endCol: 0, endRow: 2 },
+      });
       const formatter = createConditionalFormatter([rule], makeCfContext(grid));
       expect(formatter(0, 1)).toBeUndefined(); // 20 (== average)
       expect(formatter(0, 2)).toBeUndefined(); // 30
@@ -371,8 +453,20 @@ describe('createConditionalFormatter', () => {
     it('applies only the first matching rule, in priority order', () => {
       const grid: FormulaResult[][] = [[50]];
       const rules = [
-        makeRule2({ id: 'r1', priority: 2, operator: 'greaterThan', value1: '10', style: { backgroundColor: '#00ff00' } }),
-        makeRule2({ id: 'r2', priority: 1, operator: 'greaterThan', value1: '10', style: { backgroundColor: '#ff0000' } }),
+        makeRule2({
+          id: 'r1',
+          priority: 2,
+          operator: 'greaterThan',
+          value1: '10',
+          style: { backgroundColor: '#00ff00' },
+        }),
+        makeRule2({
+          id: 'r2',
+          priority: 1,
+          operator: 'greaterThan',
+          value1: '10',
+          style: { backgroundColor: '#ff0000' },
+        }),
       ];
       const formatter = createConditionalFormatter(rules, makeCfContext(grid));
       expect(formatter(0, 0)).toEqual({ backgroundColor: '#ff0000' });

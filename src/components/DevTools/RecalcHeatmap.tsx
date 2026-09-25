@@ -7,7 +7,10 @@ const MAX_CELLS = 1500;
 interface RecalcHeatmapProps {
   sheetId: string;
   /** Content-space rect of a cell (same coordinates as the grid's cells). */
-  rectFor: (col: number, row: number) => { left: number; top: number; width: number; height: number };
+  rectFor: (
+    col: number,
+    row: number,
+  ) => { left: number; top: number; width: number; height: number };
 }
 
 /**
@@ -30,7 +33,7 @@ export const RecalcHeatmap = memo(function RecalcHeatmap({ sheetId, rectFor }: R
       const { col, row } = parseCellKey(key);
       return { key, ms, t: Math.sqrt(ms / max), rect: rectFor(col, row) };
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sheetId, rectFor, version]);
 
   return (

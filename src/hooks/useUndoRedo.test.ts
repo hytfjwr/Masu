@@ -32,17 +32,23 @@ describe('useUndoRedo timeline', () => {
     act(() => result.current.pushSnapshot(wb('2')));
     // current state is '3' (not stored yet); jump to the oldest
     let restored: unknown;
-    act(() => { restored = result.current.jumpTo(0, wb('3')); });
+    act(() => {
+      restored = result.current.jumpTo(0, wb('3'));
+    });
     expect(a1(restored)).toBe('0');
     expect(result.current.timeline.map((e) => e.current)).toEqual([true, false, false, false]);
     expect(result.current.canUndo).toBe(false);
     expect(result.current.canRedo).toBe(true);
     // and back to the newest
-    act(() => { restored = result.current.jumpTo(3, wb('0')); });
+    act(() => {
+      restored = result.current.jumpTo(3, wb('0'));
+    });
     expect(a1(restored)).toBe('3');
     expect(result.current.timeline).toHaveLength(4);
     // jumping to the current state is a no-op
-    act(() => { restored = result.current.jumpTo(3, wb('3')); });
+    act(() => {
+      restored = result.current.jumpTo(3, wb('3'));
+    });
     expect(restored).toBeUndefined();
   });
 });

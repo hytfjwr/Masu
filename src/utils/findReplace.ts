@@ -48,7 +48,10 @@ function buildRegex(query: string, options: FindReplaceOptions): RegExp {
 }
 
 /** Text a cell is searched against, per the "search formulas" option. */
-function searchTarget(cell: Pick<SearchableCell, 'displayValue' | 'rawValue'>, options: FindReplaceOptions): string {
+function searchTarget(
+  cell: Pick<SearchableCell, 'displayValue' | 'rawValue'>,
+  options: FindReplaceOptions,
+): string {
   return options.searchFormulas ? cell.rawValue : cell.displayValue;
 }
 
@@ -57,7 +60,11 @@ function searchTarget(cell: Pick<SearchableCell, 'displayValue' | 'rawValue'>, o
  * (callers are expected to pass cells pre-sorted in reading order, sheet by sheet).
  * Returns an empty array for an empty query or an invalid regex.
  */
-export function findMatches(cells: SearchableCell[], query: string, options: FindReplaceOptions): FindMatch[] {
+export function findMatches(
+  cells: SearchableCell[],
+  query: string,
+  options: FindReplaceOptions,
+): FindMatch[] {
   if (query === '') return [];
 
   let re: RegExp;
@@ -71,7 +78,13 @@ export function findMatches(cells: SearchableCell[], query: string, options: Fin
   for (const cell of cells) {
     re.lastIndex = 0;
     if (re.test(searchTarget(cell, options))) {
-      results.push({ sheetId: cell.sheetId, col: cell.col, row: cell.row, cellKey: cell.cellKey, isFormula: cell.isFormula });
+      results.push({
+        sheetId: cell.sheetId,
+        col: cell.col,
+        row: cell.row,
+        cellKey: cell.cellKey,
+        isFormula: cell.isFormula,
+      });
     }
   }
   return results;
@@ -82,7 +95,12 @@ export function findMatches(cells: SearchableCell[], query: string, options: Fin
  * back-references in `replacement` are honored (native to RegExp-based String.replace).
  * Returns `text` unchanged for an empty query or an invalid regex.
  */
-export function replaceInText(text: string, query: string, replacement: string, options: FindReplaceOptions): string {
+export function replaceInText(
+  text: string,
+  query: string,
+  replacement: string,
+  options: FindReplaceOptions,
+): string {
   if (query === '') return text;
   let re: RegExp;
   try {

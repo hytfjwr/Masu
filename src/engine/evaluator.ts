@@ -100,10 +100,17 @@ function normalizeTopLevel(v: EvalValue): FormulaResult | SpillResult {
  * large ranges (e.g. A:A) are served without ever materializing thousands of key strings.
  */
 function makeRangeArg(
-  startRow: number, startCol: number, rows: number, cols: number, sheetId: string | undefined,
+  startRow: number,
+  startCol: number,
+  rows: number,
+  cols: number,
+  sheetId: string | undefined,
   makeKeys: () => string[],
 ): Extract<FunctionArgValue, { kind: 'range' }> {
-  const arg = { kind: 'range', rows, cols, startRow, startCol, sheetId } as Extract<FunctionArgValue, { kind: 'range' }>;
+  const arg = { kind: 'range', rows, cols, startRow, startCol, sheetId } as Extract<
+    FunctionArgValue,
+    { kind: 'range' }
+  >;
   Object.defineProperty(arg, 'keys', {
     configurable: true,
     enumerable: true,
@@ -116,7 +123,13 @@ function makeRangeArg(
   return arg;
 }
 
-function gridKeys(startRow: number, startCol: number, rows: number, cols: number, sheetId?: string): string[] {
+function gridKeys(
+  startRow: number,
+  startCol: number,
+  rows: number,
+  cols: number,
+  sheetId?: string,
+): string[] {
   const keys: string[] = [];
   const prefix = sheetId ? `${sheetId}:` : '';
   const letters: string[] = [];
@@ -150,7 +163,7 @@ function resolveRangeShape(
     const end = node.end;
     return makeRangeArg(startRow, startCol, rows, cols, sid, () => {
       const local = ctx.expandRange(start, end);
-      return sid ? local.map(k => `${sid}:${k}`) : local;
+      return sid ? local.map((k) => `${sid}:${k}`) : local;
     });
   }
 
@@ -163,12 +176,16 @@ function resolveRangeShape(
     sheetId = resolved;
   }
   const bounds = ctx.getSheetBounds ? ctx.getSheetBounds(sheetId) : { rows: 1000, cols: 26 };
-  const endCol = node.endCol !== null ? node.endCol : bounds.cols > 0 ? bounds.cols - 1 : node.startCol;
-  const endRow = node.endRow !== null ? node.endRow : bounds.rows > 0 ? bounds.rows - 1 : node.startRow;
+  const endCol =
+    node.endCol !== null ? node.endCol : bounds.cols > 0 ? bounds.cols - 1 : node.startCol;
+  const endRow =
+    node.endRow !== null ? node.endRow : bounds.rows > 0 ? bounds.rows - 1 : node.startRow;
   const rows = Math.max(0, endRow - node.startRow + 1);
   const cols = Math.max(0, endCol - node.startCol + 1);
   const { startRow, startCol } = node;
-  return makeRangeArg(startRow, startCol, rows, cols, sheetId, () => gridKeys(startRow, startCol, rows, cols, sheetId));
+  return makeRangeArg(startRow, startCol, rows, cols, sheetId, () =>
+    gridKeys(startRow, startCol, rows, cols, sheetId),
+  );
 }
 
 /** Reshape a flat row-major key list into a 2D grid of resolved values. */
@@ -207,7 +224,13 @@ function computeRangeShape(
     if (row < minRow) minRow = row;
     if (row > maxRow) maxRow = row;
   }
-  return { startCol: minCol, startRow: minRow, cols: maxCol - minCol + 1, rows: maxRow - minRow + 1, sheetId };
+  return {
+    startCol: minCol,
+    startRow: minRow,
+    cols: maxCol - minCol + 1,
+    rows: maxRow - minRow + 1,
+    sheetId,
+  };
 }
 
 // ============================================================
@@ -250,7 +273,9 @@ function evalNodeInner(node: ASTNode, ctx: FunctionContext): EvalValue {
     }
 
     case 'ArrayLiteral': {
-      const values = node.rows.map(row => row.map(cell => evalNodeInner(cell, ctx) as FormulaResult));
+      const values = node.rows.map((row) =>
+        row.map((cell) => evalNodeInner(cell, ctx) as FormulaResult),
+      );
       return { type: 'spill', values };
     }
 
@@ -290,7 +315,10 @@ function evalNodeInner(node: ASTNode, ctx: FunctionContext): EvalValue {
 
 function mapUnary(op: '-' | '+' | '%', val: EvalValue): EvalValue {
   if (isSpillResult(val)) {
-    return { type: 'spill', values: val.values.map(row => row.map(v => applyUnaryScalar(op, v))) };
+    return {
+      type: 'spill',
+      values: val.values.map((row) => row.map((v) => applyUnaryScalar(op, v))),
+    };
   }
   return applyUnaryScalar(op, val as FormulaResult);
 }
@@ -441,7 +469,15 @@ function toArg(argNode: ASTNode, ctx: FunctionContext): FunctionArgValue | Formu
       const sheetId = ctx.resolveSheetName(argNode.sheetName);
       if (!sheetId) return makeError('#REF!');
       const { col, row } = parseCellKey(argNode.key);
-      return { kind: 'range', keys: [`${sheetId}:${argNode.key}`], rows: 1, cols: 1, startRow: row, startCol: col, sheetId };
+      return {
+        kind: 'range',
+        keys: [`${sheetId}:${argNode.key}`],
+        rows: 1,
+        cols: 1,
+        startRow: row,
+        startCol: col,
+        sheetId,
+      };
     }
 
     case 'RangeRef':
@@ -509,7 +545,12 @@ function argShapeForLift(arg: FunctionArgValue): { rows: number; cols: number } 
   return null;
 }
 
-function argElementAt(arg: FunctionArgValue, r: number, c: number, ctx: FunctionContext): FunctionArgValue {
+function argElementAt(
+  arg: FunctionArgValue,
+  r: number,
+  c: number,
+  ctx: FunctionContext,
+): FunctionArgValue {
   if (arg.kind === 'range') {
     const rr = arg.rows === 1 ? 0 : r;
     const cc = arg.cols === 1 ? 0 : c;
@@ -564,7 +605,11 @@ function evalLifted(
     for (let c = 0; c < cols; c++) {
       const cellArgs = args.map((arg, i) => (exclude.has(i) ? arg : argElementAt(arg, r, c, ctx)));
       const cellResult = impl(cellArgs, ctx);
-      row.push(isSpillResult(cellResult) ? (cellResult.values[0]?.[0] ?? makeError('#VALUE!')) : cellResult);
+      row.push(
+        isSpillResult(cellResult)
+          ? (cellResult.values[0]?.[0] ?? makeError('#VALUE!'))
+          : cellResult,
+      );
     }
     values.push(row);
   }
@@ -579,7 +624,7 @@ function evalFunctionCall(name: string, argNodes: ASTNode[], ctx: FunctionContex
     if (ctx.scope && ctx.scope.has(name)) {
       const v = ctx.scope.get(name)!;
       if (isLambdaValue(v)) {
-        const argVals = argNodes.map(a => ctx.evalNode!(a));
+        const argVals = argNodes.map((a) => ctx.evalNode!(a));
         return ctx.callLambda!(v, argVals);
       }
     }
@@ -606,7 +651,9 @@ function evalFunctionCall(name: string, argNodes: ASTNode[], ctx: FunctionContex
     }
   }
 
-  const result = fn.lift ? evalLifted(args, fn.liftExclude, ctx, fn.impl) : normalizeImplResult(fn.impl(args, ctx));
+  const result = fn.lift
+    ? evalLifted(args, fn.liftExclude, ctx, fn.impl)
+    : normalizeImplResult(fn.impl(args, ctx));
   if (memoKey !== null) {
     ctx.callCache!.set(memoKey, result);
     if (ctx.passStats) ctx.passStats.callMisses++;
@@ -631,7 +678,9 @@ function callMemoKey(name: string, args: FunctionArgValue[], ctx: FunctionContex
     switch (arg.kind) {
       case 'value': {
         const v = arg.value;
-        key += isFormulaError(v) ? `|e${v.code}` : `|${typeof v === 'number' ? 'n' : typeof v === 'boolean' ? 'b' : 's'}${String(v)}`;
+        key += isFormulaError(v)
+          ? `|e${v.code}`
+          : `|${typeof v === 'number' ? 'n' : typeof v === 'boolean' ? 'b' : 's'}${String(v)}`;
         break;
       }
       case 'omitted':
@@ -643,7 +692,10 @@ function callMemoKey(name: string, args: FunctionArgValue[], ctx: FunctionContex
         } else {
           key += '|r' + arg.rows + 'x' + arg.cols;
           for (const row of argToGrid(arg, ctx)) {
-            for (const v of row) key += isFormulaError(v) ? `,e${v.code}` : `,${typeof v === 'number' ? 'n' : typeof v === 'boolean' ? 'b' : 's'}${String(v)}`;
+            for (const v of row)
+              key += isFormulaError(v)
+                ? `,e${v.code}`
+                : `,${typeof v === 'number' ? 'n' : typeof v === 'boolean' ? 'b' : 's'}${String(v)}`;
           }
         }
         break;
@@ -734,7 +786,13 @@ export function extractReferences(
           if (!resolved) break;
           sheetId = resolved;
         }
-        ranges.push({ sheetId, startCol: n.startCol, startRow: n.startRow, endCol: n.endCol, endRow: n.endRow });
+        ranges.push({
+          sheetId,
+          startCol: n.startCol,
+          startRow: n.startRow,
+          endCol: n.endCol,
+          endRow: n.endRow,
+        });
         break;
       }
       case 'NamedRef': {

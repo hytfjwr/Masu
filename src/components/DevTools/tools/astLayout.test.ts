@@ -20,7 +20,10 @@ describe('buildVizTree', () => {
   it('shows array literals as rows of elements and omitted arguments explicitly', () => {
     const arr = tree('{1,2;3,4}');
     expect(arr.label).toBe('{ 2×2 }');
-    expect(arr.children.map((r) => r.children.map((c) => c.label))).toEqual([['1', '2'], ['3', '4']]);
+    expect(arr.children.map((r) => r.children.map((c) => c.label))).toEqual([
+      ['1', '2'],
+      ['3', '4'],
+    ]);
     expect(tree('IF(A1,,1)').children[1].label).toBe('（省略）');
   });
 });
@@ -50,6 +53,8 @@ describe('layoutTree', () => {
     // A binary operator with balanced operands is exactly centered
     const bin = layoutTree(tree('A1+B1'));
     expect(bin.nodes[0].x).toBeCloseTo((bin.nodes[1].x + bin.nodes[2].x) / 2);
-    expect(Math.max(...layout.nodes.map((n) => n.x + n.width / 2))).toBeLessThanOrEqual(layout.width);
+    expect(Math.max(...layout.nodes.map((n) => n.x + n.width / 2))).toBeLessThanOrEqual(
+      layout.width,
+    );
   });
 });

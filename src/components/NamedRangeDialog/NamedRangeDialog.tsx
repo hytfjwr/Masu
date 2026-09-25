@@ -29,11 +29,14 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
   const [formSheetId, setFormSheetId] = useState(currentSheetId);
   const [error, setError] = useState('');
 
-  const handleBackdropMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  }, [onClose]);
+  const handleBackdropMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    },
+    [onClose],
+  );
 
   const resetForm = useCallback(() => {
     setFormName('');
@@ -49,14 +52,17 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
     setIsNew(true);
   }, [resetForm]);
 
-  const handleEditRange = useCallback((nr: NamedRange) => {
-    setEditingName(nr.name);
-    setFormName(nr.name);
-    setFormRange(nr.range);
-    setFormSheetId(nr.refSheetId ?? currentSheetId);
-    setError('');
-    setIsNew(false);
-  }, [currentSheetId]);
+  const handleEditRange = useCallback(
+    (nr: NamedRange) => {
+      setEditingName(nr.name);
+      setFormName(nr.name);
+      setFormRange(nr.range);
+      setFormSheetId(nr.refSheetId ?? currentSheetId);
+      setError('');
+      setIsNew(false);
+    },
+    [currentSheetId],
+  );
 
   const handleSave = useCallback(() => {
     if (!formName.trim()) {
@@ -75,7 +81,12 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
         return;
       }
     } else if (editingName) {
-      const success = onUpdate(editingName, formName.trim(), formRange.trim().toUpperCase(), formSheetId);
+      const success = onUpdate(
+        editingName,
+        formName.trim(),
+        formRange.trim().toUpperCase(),
+        formSheetId,
+      );
       if (!success) {
         setError('名前が無効か、既に存在します');
         return;
@@ -84,12 +95,15 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
     resetForm();
   }, [formName, formRange, formSheetId, isNew, editingName, onAdd, onUpdate, resetForm]);
 
-  const handleDelete = useCallback((name: string) => {
-    onDelete(name);
-    if (editingName === name) {
-      resetForm();
-    }
-  }, [onDelete, editingName, resetForm]);
+  const handleDelete = useCallback(
+    (name: string) => {
+      onDelete(name);
+      if (editingName === name) {
+        resetForm();
+      }
+    },
+    [onDelete, editingName, resetForm],
+  );
 
   if (!visible) return null;
 
@@ -117,18 +131,21 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
             <div className="space-y-1">
               <div className="text-xs font-medium text-text-primary mb-1">定義済みの名前</div>
               {namedRanges.map((nr) => {
-                const sheetName = sheets.find(s => s.id === nr.refSheetId)?.name ?? '';
+                const sheetName = sheets.find((s) => s.id === nr.refSheetId)?.name ?? '';
                 return (
                   <div
                     key={nr.name}
                     className={`flex items-center justify-between px-2 py-1 rounded text-xs border ${
-                      editingName === nr.name ? 'border-accent-selection bg-accent-selection/10' : 'border-grid-line'
+                      editingName === nr.name
+                        ? 'border-accent-selection bg-accent-selection/10'
+                        : 'border-grid-line'
                     }`}
                   >
                     <div className="flex-1 truncate">
                       <span className="font-medium">{nr.name}</span>
                       <span className="text-text-primary/60 ml-2">
-                        {sheetName ? `${sheetName}!` : ''}{nr.range}
+                        {sheetName ? `${sheetName}!` : ''}
+                        {nr.range}
                       </span>
                     </div>
                     <div className="flex gap-1 ml-2">
@@ -193,7 +210,9 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
                   className="w-full h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded"
                 >
                   {sheets.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
                   ))}
                 </select>
               </div>

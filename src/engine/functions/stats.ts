@@ -89,7 +89,7 @@ const MODE_MULT: FunctionMeta = {
         modes.push(n);
       }
     }
-    return makeSpill(modes.map(m => [m as FormulaResult]));
+    return makeSpill(modes.map((m) => [m as FormulaResult]));
   },
 };
 
@@ -234,7 +234,10 @@ const COUNTBLANK: FunctionMeta = {
   impl(args: FunctionArgValue[], ctx: FunctionContext): FormulaResult {
     if (args.length !== 1) return makeError('#VALUE!');
     const arg = args[0];
-    const flat = arg.kind === 'range' || arg.kind === 'array' ? argToFlat(arg, ctx) : [resolveScalar(arg, ctx)];
+    const flat =
+      arg.kind === 'range' || arg.kind === 'array'
+        ? argToFlat(arg, ctx)
+        : [resolveScalar(arg, ctx)];
     let count = 0;
     for (const val of flat) {
       if (!isFormulaError(val) && val === '') count++;
@@ -421,7 +424,10 @@ function collectNumericPairs(
   arg2: FunctionArgValue,
   ctx: FunctionContext,
 ): { xs: number[]; ys: number[] } | FormulaError {
-  if ((arg1.kind !== 'range' && arg1.kind !== 'array') || (arg2.kind !== 'range' && arg2.kind !== 'array')) {
+  if (
+    (arg1.kind !== 'range' && arg1.kind !== 'array') ||
+    (arg2.kind !== 'range' && arg2.kind !== 'array')
+  ) {
     return makeError('#VALUE!');
   }
   const flat1 = argToFlat(arg1, ctx);
@@ -447,7 +453,10 @@ function meanOf(nums: number[]): number {
   return nums.reduce((s, n) => s + n, 0) / nums.length;
 }
 
-function computeSums(xs: number[], ys: number[]): { sxx: number; syy: number; sxy: number; meanX: number; meanY: number } {
+function computeSums(
+  xs: number[],
+  ys: number[],
+): { sxx: number; syy: number; sxy: number; meanX: number; meanY: number } {
   const meanX = meanOf(xs);
   const meanY = meanOf(ys);
   let sxx = 0;
@@ -613,7 +622,7 @@ const GEOMEAN: FunctionMeta = {
     const nums = resolveNumericArgs(args, ctx, { skipNonNumeric: true });
     if (isFormulaError(nums)) return nums;
     if (nums.length === 0) return makeError('#DIV/0!');
-    if (nums.some(n => n <= 0)) return makeError('#NUM!');
+    if (nums.some((n) => n <= 0)) return makeError('#NUM!');
     return Math.exp(nums.reduce((s, n) => s + Math.log(n), 0) / nums.length);
   },
 };
@@ -627,7 +636,7 @@ const HARMEAN: FunctionMeta = {
     const nums = resolveNumericArgs(args, ctx, { skipNonNumeric: true });
     if (isFormulaError(nums)) return nums;
     if (nums.length === 0) return makeError('#DIV/0!');
-    if (nums.some(n => n <= 0)) return makeError('#NUM!');
+    if (nums.some((n) => n <= 0)) return makeError('#NUM!');
     return nums.length / nums.reduce((s, n) => s + 1 / n, 0);
   },
 };
@@ -675,7 +684,10 @@ const KURT: FunctionMeta = {
     const sd = Math.sqrt(variance);
     if (sd === 0) return makeError('#DIV/0!');
     const sum4 = nums.reduce((s, x) => s + ((x - mean) / sd) ** 4, 0);
-    return ((n * (n + 1)) / ((n - 1) * (n - 2) * (n - 3))) * sum4 - (3 * (n - 1) ** 2) / ((n - 2) * (n - 3));
+    return (
+      ((n * (n + 1)) / ((n - 1) * (n - 2) * (n - 3))) * sum4 -
+      (3 * (n - 1) ** 2) / ((n - 2) * (n - 3))
+    );
   },
 };
 
@@ -738,25 +750,37 @@ function standardNormalPdf(z: number): number {
 
 /** Peter Acklam's rational approximation for the standard normal inverse CDF, refined with one Halley step. */
 function standardNormalInv(p: number): number {
-  const a = [-3.969683028665376e01, 2.209460984245205e02, -2.759285104469687e02, 1.38357751867269e02, -3.066479806614716e01, 2.506628277459239e00];
-  const b = [-5.447609879822406e01, 1.615858368580409e02, -1.556989798598866e02, 6.680131188771972e01, -1.328068155288572e01];
-  const c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e00, -2.549732539343734e00, 4.374664141464968e00, 2.938163982698783e00];
-  const d = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e00, 3.754408661907416e00];
+  const a = [
+    -3.969683028665376e1, 2.209460984245205e2, -2.759285104469687e2, 1.38357751867269e2,
+    -3.066479806614716e1, 2.506628277459239,
+  ];
+  const b = [
+    -5.447609879822406e1, 1.615858368580409e2, -1.556989798598866e2, 6.680131188771972e1,
+    -1.328068155288572e1,
+  ];
+  const c = [
+    -7.784894002430293e-3, -3.223964580411365e-1, -2.400758277161838, -2.549732539343734,
+    4.374664141464968, 2.938163982698783,
+  ];
+  const d = [7.784695709041462e-3, 3.224671290700398e-1, 2.445134137142996, 3.754408661907416];
   const pLow = 0.02425;
   const pHigh = 1 - pLow;
   let x: number;
   if (p < pLow) {
     const q = Math.sqrt(-2 * Math.log(p));
-    x = (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+    x =
+      (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
       ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
   } else if (p <= pHigh) {
     const q = p - 0.5;
     const r = q * q;
-    x = (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q /
+    x =
+      ((((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q) /
       (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
   } else {
     const q = Math.sqrt(-2 * Math.log(1 - p));
-    x = -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
+    x =
+      -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) /
       ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
   }
   // One Halley refinement step (per Acklam's reference implementation), pushing accuracy near double precision.
@@ -896,11 +920,15 @@ const COUNTUNIQUE: FunctionMeta = {
     if (args.length === 0) return makeError('#VALUE!');
     const seen = new Set<string>();
     for (const arg of args) {
-      const flat = arg.kind === 'range' || arg.kind === 'array' ? argToFlat(arg, ctx) : [resolveScalar(arg, ctx)];
+      const flat =
+        arg.kind === 'range' || arg.kind === 'array'
+          ? argToFlat(arg, ctx)
+          : [resolveScalar(arg, ctx)];
       for (const val of flat) {
         if (isFormulaError(val)) return val;
         if (val === '') continue;
-        const key = typeof val === 'number' ? `n:${val}` : typeof val === 'boolean' ? `b:${val}` : `s:${val}`;
+        const key =
+          typeof val === 'number' ? `n:${val}` : typeof val === 'boolean' ? `b:${val}` : `s:${val}`;
         seen.add(key);
       }
     }
@@ -982,15 +1010,61 @@ const MAXIFS: FunctionMeta = {
 // Registry
 // ============================================================
 export const statsFunctions: FunctionMeta[] = [
-  MEDIAN, MODE, MODE_SNGL, MODE_MULT,
-  STDEV_S, STDEV_P, STDEVP, VAR_S, VAR_P, VARP, STDEVA, VARA,
-  AVERAGEA, MAXA, MINA, COUNTBLANK,
-  PERCENTILE, PERCENTILE_INC, PERCENTILE_EXC, QUARTILE, QUARTILE_INC, QUARTILE_EXC,
-  PERCENTRANK, PERCENTRANK_INC, RANK_EQ, RANK_AVG,
-  CORREL, PEARSON, COVARIANCE_S, COVARIANCE_P, COVAR,
-  SLOPE, INTERCEPT, RSQ, STEYX, FORECAST, FORECAST_LINEAR,
-  GEOMEAN, HARMEAN, AVEDEV, DEVSQ, KURT, SKEW,
-  NORMDIST, NORM_DIST, NORMINV, NORM_INV, NORM_S_DIST, NORM_S_INV, NORMSDIST, NORMSINV,
-  STANDARDIZE, CONFIDENCE, CONFIDENCE_NORM,
-  COUNTUNIQUE, MINIFS, MAXIFS,
+  MEDIAN,
+  MODE,
+  MODE_SNGL,
+  MODE_MULT,
+  STDEV_S,
+  STDEV_P,
+  STDEVP,
+  VAR_S,
+  VAR_P,
+  VARP,
+  STDEVA,
+  VARA,
+  AVERAGEA,
+  MAXA,
+  MINA,
+  COUNTBLANK,
+  PERCENTILE,
+  PERCENTILE_INC,
+  PERCENTILE_EXC,
+  QUARTILE,
+  QUARTILE_INC,
+  QUARTILE_EXC,
+  PERCENTRANK,
+  PERCENTRANK_INC,
+  RANK_EQ,
+  RANK_AVG,
+  CORREL,
+  PEARSON,
+  COVARIANCE_S,
+  COVARIANCE_P,
+  COVAR,
+  SLOPE,
+  INTERCEPT,
+  RSQ,
+  STEYX,
+  FORECAST,
+  FORECAST_LINEAR,
+  GEOMEAN,
+  HARMEAN,
+  AVEDEV,
+  DEVSQ,
+  KURT,
+  SKEW,
+  NORMDIST,
+  NORM_DIST,
+  NORMINV,
+  NORM_INV,
+  NORM_S_DIST,
+  NORM_S_INV,
+  NORMSDIST,
+  NORMSINV,
+  STANDARDIZE,
+  CONFIDENCE,
+  CONFIDENCE_NORM,
+  COUNTUNIQUE,
+  MINIFS,
+  MAXIFS,
 ];

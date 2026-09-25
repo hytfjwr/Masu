@@ -8,7 +8,10 @@ import type { DevToolsHost } from '../types';
 type Flag = 'volatile' | 'special' | 'lift' | 'memo' | 'used';
 
 const FLAG_INFO: Record<Exclude<Flag, 'used'>, { label: string; hint: string }> = {
-  volatile: { label: 'volatile', hint: '値の変化がなくても毎回再計算される（TODAY, RAND, OFFSET など）' },
+  volatile: {
+    label: 'volatile',
+    hint: '値の変化がなくても毎回再計算される（TODAY, RAND, OFFSET など）',
+  },
   special: { label: 'special', hint: '引数を遅延評価する特別な形（IF, LET, LAMBDA など）' },
   lift: { label: 'lift', hint: 'スカラー引数に配列を渡すと要素ごとに自動展開される' },
   memo: { label: 'memo', hint: '同じ引数の呼び出しを再計算パス内でキャッシュする' },
@@ -77,7 +80,9 @@ export const FunctionsTool = memo(function FunctionsTool({ host }: { host: DevTo
   );
   const all = useMemo(() => {
     const seen = new Map<string, { fn: FunctionMeta; category: string }>();
-    for (const c of categories) for (const fn of c.functions) if (!seen.has(fn.name)) seen.set(fn.name, { fn, category: c.label });
+    for (const c of categories)
+      for (const fn of c.functions)
+        if (!seen.has(fn.name)) seen.set(fn.name, { fn, category: c.label });
     return Array.from(seen.values()).sort((a, b) => a.fn.name.localeCompare(b.fn.name));
   }, [categories]);
 
@@ -101,12 +106,27 @@ export const FunctionsTool = memo(function FunctionsTool({ host }: { host: DevTo
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <span className="devtools-muted">{rows.length} / {all.length}</span>
+        <span className="devtools-muted">
+          {rows.length} / {all.length}
+        </span>
       </div>
       <div className="devtools-chips">
-        <button type="button" className="devtools-chip" aria-pressed={category === null} onClick={() => setCategory(null)}>すべて</button>
+        <button
+          type="button"
+          className="devtools-chip"
+          aria-pressed={category === null}
+          onClick={() => setCategory(null)}
+        >
+          すべて
+        </button>
         {categories.map((c) => (
-          <button key={c.id} type="button" className="devtools-chip" aria-pressed={category === c.label} onClick={() => setCategory(category === c.label ? null : c.label)}>
+          <button
+            key={c.id}
+            type="button"
+            className="devtools-chip"
+            aria-pressed={category === c.label}
+            onClick={() => setCategory(category === c.label ? null : c.label)}
+          >
             {c.label}
           </button>
         ))}
@@ -131,22 +151,43 @@ export const FunctionsTool = memo(function FunctionsTool({ host }: { host: DevTo
           const expanded = open === fn.name;
           return (
             <li key={fn.name}>
-              <button type="button" className="fn-row" aria-expanded={expanded} onClick={() => setOpen(expanded ? null : fn.name)}>
+              <button
+                type="button"
+                className="fn-row"
+                aria-expanded={expanded}
+                onClick={() => setOpen(expanded ? null : fn.name)}
+              >
                 <code className="fn-name">{fn.name}</code>
                 <span className="fn-cat">{cat}</span>
                 <span className="fn-flags">
-                  {flagsOf(fn).map((f) => <i key={f} className={`fn-flag fn-flag-${f}`}>{FLAG_INFO[f].label}</i>)}
+                  {flagsOf(fn).map((f) => (
+                    <i key={f} className={`fn-flag fn-flag-${f}`}>
+                      {FLAG_INFO[f].label}
+                    </i>
+                  ))}
                 </span>
-                {n > 0 && <span className="fn-usage" title="このブックでの呼び出し回数">×{n}</span>}
+                {n > 0 && (
+                  <span className="fn-usage" title="このブックでの呼び出し回数">
+                    ×{n}
+                  </span>
+                )}
               </button>
               {expanded && (
                 <div className="fn-detail">
                   <code>{fn.signature}</code>
                   <p>{fn.description}</p>
                   <ul>
-                    {flagsOf(fn).map((f) => <li key={f}><i className={`fn-flag fn-flag-${f}`}>{FLAG_INFO[f].label}</i>{FLAG_INFO[f].hint}</li>)}
+                    {flagsOf(fn).map((f) => (
+                      <li key={f}>
+                        <i className={`fn-flag fn-flag-${f}`}>{FLAG_INFO[f].label}</i>
+                        {FLAG_INFO[f].hint}
+                      </li>
+                    ))}
                     {fn.liftExclude && fn.liftExclude.length > 0 && (
-                      <li><i className="fn-flag">liftExclude</i>引数 {fn.liftExclude.map((i) => i + 1).join(', ')} は範囲のまま渡される</li>
+                      <li>
+                        <i className="fn-flag">liftExclude</i>引数{' '}
+                        {fn.liftExclude.map((i) => i + 1).join(', ')} は範囲のまま渡される
+                      </li>
                     )}
                   </ul>
                 </div>

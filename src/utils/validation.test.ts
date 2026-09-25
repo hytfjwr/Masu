@@ -16,7 +16,10 @@ import { cellKey, parseCellKey } from './coordinates';
 import { ymdToSerial } from './dateSerial';
 
 /** Build a ValidationContext backed by a [row][col] grid, with a real parse/evaluate-based formula evaluator. */
-function makeContext(grid: FormulaResult[][] = [], rangeMap: Record<string, FormulaResult[]> = {}): ValidationContext {
+function makeContext(
+  grid: FormulaResult[][] = [],
+  rangeMap: Record<string, FormulaResult[]> = {},
+): ValidationContext {
   const resolve = (key: string): FormulaResult => {
     const { col, row } = parseCellKey(key);
     return grid[row]?.[col] ?? '';
@@ -32,7 +35,9 @@ function makeContext(grid: FormulaResult[][] = [], rangeMap: Record<string, Form
   };
   const evaluateFormulaAt = (formula: string, col: number, row: number): FormulaResult => {
     const ast = parse(formula);
-    const result = evaluate(ast, resolve, expandRange, undefined, undefined, undefined, { currentCell: { col, row } });
+    const result = evaluate(ast, resolve, expandRange, undefined, undefined, undefined, {
+      currentCell: { col, row },
+    });
     return isSpillResult(result) ? makeError('#VALUE!') : result;
   };
   const resolveRangeValues = (range: string): FormulaResult[] | null => rangeMap[range] ?? null;
@@ -51,7 +56,11 @@ describe('validateInput', () => {
       makeRule({ type: 'list', listValues: ['a', 'b'] }),
       makeRule({ type: 'number', min: 10, max: 20 }),
       makeRule({ type: 'textLength', min: 1, max: 3 }),
-      makeRule({ type: 'date', dateMin: ymdToSerial(2026, 1, 1), dateMax: ymdToSerial(2026, 12, 31) }),
+      makeRule({
+        type: 'date',
+        dateMin: ymdToSerial(2026, 1, 1),
+        dateMax: ymdToSerial(2026, 12, 31),
+      }),
       makeRule({ type: 'checkbox' }),
       makeRule({ type: 'customFormula', formula: '=A1>10' }),
     ];
@@ -77,7 +86,9 @@ describe('validateInput', () => {
       const sourceCtx = makeContext([], { 'A1:A3': ['x', 'y', 'x'] });
       const sourceRule = makeRule({ type: 'list', listSource: 'A1:A3', listValues: ['unused'] });
       expect(getListOptions(sourceRule, sourceCtx)).toEqual(['x', 'y']);
-      expect(validateInput(sourceRule, 'y', { col: 0, row: 0 }, sourceCtx)).toEqual({ valid: true });
+      expect(validateInput(sourceRule, 'y', { col: 0, row: 0 }, sourceCtx)).toEqual({
+        valid: true,
+      });
       expect(validateInput(sourceRule, 'unused', { col: 0, row: 0 }, sourceCtx).valid).toBe(false);
     });
   });
@@ -179,7 +190,9 @@ describe('validateInput', () => {
     it('does not affect the valid/invalid judgment (the caller decides whether to reject or warn)', () => {
       const strict = makeRule({ type: 'number', min: 10, max: 20, rejectInvalid: true });
       const lenient = makeRule({ type: 'number', min: 10, max: 20, rejectInvalid: false });
-      expect(validateInput(strict, '5', { col: 0, row: 0 }, ctx)).toEqual(validateInput(lenient, '5', { col: 0, row: 0 }, ctx));
+      expect(validateInput(strict, '5', { col: 0, row: 0 }, ctx)).toEqual(
+        validateInput(lenient, '5', { col: 0, row: 0 }, ctx),
+      );
     });
   });
 });

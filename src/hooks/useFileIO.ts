@@ -4,8 +4,21 @@
  */
 
 import { useCallback } from 'react';
-import type { CellDataMap, NamedRange, PivotTableConfig, SheetData, WorkbookData } from '../types/grid';
-import { importFile, downloadFile, downloadBlob, getDataRange, detectFormat, NATIVE_EXTENSION } from '../io/fileHandler';
+import type {
+  CellDataMap,
+  NamedRange,
+  PivotTableConfig,
+  SheetData,
+  WorkbookData,
+} from '../types/grid';
+import {
+  importFile,
+  downloadFile,
+  downloadBlob,
+  getDataRange,
+  detectFormat,
+  NATIVE_EXTENSION,
+} from '../io/fileHandler';
 import { generateCSV } from '../io/csvGenerator';
 import { generateJSON } from '../io/jsonGenerator';
 import { serialize, deserialize } from '../io/tabulaSerializer';
@@ -108,7 +121,15 @@ export function useFileIO({
         alert(err instanceof Error ? err.message : 'Import failed');
       }
     },
-    [replaceAllData, replaceWorkbook, restoreAllSizes, getColCount, getRowCount, setColCount, setRowCount],
+    [
+      replaceAllData,
+      replaceWorkbook,
+      restoreAllSizes,
+      getColCount,
+      getRowCount,
+      setColCount,
+      setRowCount,
+    ],
   );
 
   const handleExportCSV = useCallback(() => {
@@ -188,7 +209,11 @@ export function useFileIO({
           namedRanges,
           title,
         });
-        downloadBlob(buffer, `${resolveFilename(title)}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        downloadBlob(
+          buffer,
+          `${resolveFilename(title)}.xlsx`,
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        );
       } catch (err) {
         alert(err instanceof Error ? err.message : 'Export failed');
       }

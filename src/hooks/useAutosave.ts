@@ -4,9 +4,9 @@ import { clearAutosave, isAutosaveAvailable, loadAutosave, saveAutosave } from '
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 interface UseAutosaveParams {
-  version: number;                 // useGridData の version（変更検知）
-  sizeVersion: number;             // useColumnRowSizes の sizeVersion（列幅変更も保存対象）
-  serialize: () => string;         // 現在のワークブックをネイティブ形式（.tabula.json）の JSON 文字列に
+  version: number; // useGridData の version（変更検知）
+  sizeVersion: number; // useColumnRowSizes の sizeVersion（列幅変更も保存対象）
+  serialize: () => string; // 現在のワークブックをネイティブ形式（.tabula.json）の JSON 文字列に
   restore: (json: string) => void; // JSON 文字列からワークブックを復元
 }
 
@@ -19,7 +19,12 @@ interface UseAutosaveReturn {
 const DEBOUNCE_MS = 1000;
 const IDLE_TIMEOUT_MS = 2000;
 
-export function useAutosave({ version, sizeVersion, serialize, restore }: UseAutosaveParams): UseAutosaveReturn {
+export function useAutosave({
+  version,
+  sizeVersion,
+  serialize,
+  restore,
+}: UseAutosaveParams): UseAutosaveReturn {
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   // Without IndexedDB there is nothing to restore, so start out restored
@@ -86,7 +91,11 @@ export function useAutosave({ version, sizeVersion, serialize, restore }: UseAut
     if (!restored) return;
     const timer = setTimeout(() => {
       debounceTimerRef.current = null;
-      const ric = (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback;
+      const ric = (
+        window as Window & {
+          requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+        }
+      ).requestIdleCallback;
       idlePendingRef.current = true;
       const run = () => {
         if (!idlePendingRef.current) return; // already flushed (tab hidden/closed)

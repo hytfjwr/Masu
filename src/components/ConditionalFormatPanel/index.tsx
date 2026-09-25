@@ -1,5 +1,10 @@
 import { memo, useCallback, useMemo, useState } from 'react';
-import type { CellStyle, ColorScalePoint, ConditionalFormatRule, ConditionalOperator } from '../../types/grid';
+import type {
+  CellStyle,
+  ColorScalePoint,
+  ConditionalFormatRule,
+  ConditionalOperator,
+} from '../../types/grid';
 import { cellKey, parseCellKey } from '../../utils/coordinates';
 import { ColorPicker } from '../Toolbar/ColorPicker';
 
@@ -14,7 +19,15 @@ interface ConditionalFormatPanelProps {
 }
 
 /** The panel's condition-select keys: value-operator based conditions plus the special rule kinds. */
-type ConditionKey = ConditionalOperator | 'formula' | 'duplicate' | 'unique' | 'top' | 'bottom' | 'aboveAverage' | 'belowAverage';
+type ConditionKey =
+  | ConditionalOperator
+  | 'formula'
+  | 'duplicate'
+  | 'unique'
+  | 'top'
+  | 'bottom'
+  | 'aboveAverage'
+  | 'belowAverage';
 
 const CONDITION_OPTIONS: { key: ConditionKey; label: string }[] = [
   { key: 'isEmpty', label: '空白' },
@@ -42,8 +55,21 @@ const CONDITION_OPTIONS: { key: ConditionKey; label: string }[] = [
 ];
 
 const VALUE_OPERATOR_KEYS = new Set<ConditionKey>([
-  'isEmpty', 'isNotEmpty', 'textContains', 'textNotContains', 'textStartsWith', 'textEndsWith', 'textEquals',
-  'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual', 'equal', 'notEqual', 'between', 'notBetween',
+  'isEmpty',
+  'isNotEmpty',
+  'textContains',
+  'textNotContains',
+  'textStartsWith',
+  'textEndsWith',
+  'textEquals',
+  'greaterThan',
+  'greaterThanOrEqual',
+  'lessThan',
+  'lessThanOrEqual',
+  'equal',
+  'notEqual',
+  'between',
+  'notBetween',
 ]);
 
 function needsValue1(key: ConditionKey): boolean {
@@ -68,13 +94,44 @@ const STYLE_PRESETS: { label: string; style: Partial<CellStyle> }[] = [
   { label: '青背景', style: { backgroundColor: '#c6dafc' } },
 ];
 
-const COLOR_SCALE_PRESETS: { label: string; min: ColorScalePoint; mid?: ColorScalePoint; max: ColorScalePoint }[] = [
-  { label: '緑 → 白', min: { type: 'min', color: '#57bb8a' }, max: { type: 'max', color: '#ffffff' } },
-  { label: '白 → 緑', min: { type: 'min', color: '#ffffff' }, max: { type: 'max', color: '#57bb8a' } },
-  { label: '赤 → 白 → 緑', min: { type: 'min', color: '#e67c73' }, mid: { type: 'percentile', value: 50, color: '#ffffff' }, max: { type: 'max', color: '#57bb8a' } },
-  { label: '緑 → 白 → 赤', min: { type: 'min', color: '#57bb8a' }, mid: { type: 'percentile', value: 50, color: '#ffffff' }, max: { type: 'max', color: '#e67c73' } },
-  { label: '白 → 赤', min: { type: 'min', color: '#ffffff' }, max: { type: 'max', color: '#e67c73' } },
-  { label: '黄 → 緑', min: { type: 'min', color: '#ffd666' }, max: { type: 'max', color: '#57bb8a' } },
+const COLOR_SCALE_PRESETS: {
+  label: string;
+  min: ColorScalePoint;
+  mid?: ColorScalePoint;
+  max: ColorScalePoint;
+}[] = [
+  {
+    label: '緑 → 白',
+    min: { type: 'min', color: '#57bb8a' },
+    max: { type: 'max', color: '#ffffff' },
+  },
+  {
+    label: '白 → 緑',
+    min: { type: 'min', color: '#ffffff' },
+    max: { type: 'max', color: '#57bb8a' },
+  },
+  {
+    label: '赤 → 白 → 緑',
+    min: { type: 'min', color: '#e67c73' },
+    mid: { type: 'percentile', value: 50, color: '#ffffff' },
+    max: { type: 'max', color: '#57bb8a' },
+  },
+  {
+    label: '緑 → 白 → 赤',
+    min: { type: 'min', color: '#57bb8a' },
+    mid: { type: 'percentile', value: 50, color: '#ffffff' },
+    max: { type: 'max', color: '#e67c73' },
+  },
+  {
+    label: '白 → 赤',
+    min: { type: 'min', color: '#ffffff' },
+    max: { type: 'max', color: '#e67c73' },
+  },
+  {
+    label: '黄 → 緑',
+    min: { type: 'min', color: '#ffd666' },
+    max: { type: 'max', color: '#57bb8a' },
+  },
 ];
 
 const POINT_TYPE_OPTIONS: { value: ColorScalePoint['type']; label: string }[] = [
@@ -123,22 +180,38 @@ function describeCfRule(rule: ConditionalFormatRule): string {
   const kind = rule.kind ?? 'value';
   if (kind === 'value') {
     switch (rule.operator) {
-      case 'greaterThan': return `セルの値 > ${rule.value1}`;
-      case 'greaterThanOrEqual': return `セルの値 >= ${rule.value1}`;
-      case 'lessThan': return `セルの値 < ${rule.value1}`;
-      case 'lessThanOrEqual': return `セルの値 <= ${rule.value1}`;
-      case 'equal': return `セルの値 = ${rule.value1}`;
-      case 'notEqual': return `セルの値 ≠ ${rule.value1}`;
-      case 'between': return `セルの値が ${rule.value1} 〜 ${rule.value2} の間`;
-      case 'notBetween': return `セルの値が ${rule.value1} 〜 ${rule.value2} の間ではない`;
-      case 'textContains': return `テキストに「${rule.value1}」を含む`;
-      case 'textNotContains': return `テキストに「${rule.value1}」を含まない`;
-      case 'textStartsWith': return `テキストが「${rule.value1}」で始まる`;
-      case 'textEndsWith': return `テキストが「${rule.value1}」で終わる`;
-      case 'textEquals': return `テキストが「${rule.value1}」と完全一致`;
-      case 'isEmpty': return '空白';
-      case 'isNotEmpty': return '空白ではない';
-      default: return rule.operator;
+      case 'greaterThan':
+        return `セルの値 > ${rule.value1}`;
+      case 'greaterThanOrEqual':
+        return `セルの値 >= ${rule.value1}`;
+      case 'lessThan':
+        return `セルの値 < ${rule.value1}`;
+      case 'lessThanOrEqual':
+        return `セルの値 <= ${rule.value1}`;
+      case 'equal':
+        return `セルの値 = ${rule.value1}`;
+      case 'notEqual':
+        return `セルの値 ≠ ${rule.value1}`;
+      case 'between':
+        return `セルの値が ${rule.value1} 〜 ${rule.value2} の間`;
+      case 'notBetween':
+        return `セルの値が ${rule.value1} 〜 ${rule.value2} の間ではない`;
+      case 'textContains':
+        return `テキストに「${rule.value1}」を含む`;
+      case 'textNotContains':
+        return `テキストに「${rule.value1}」を含まない`;
+      case 'textStartsWith':
+        return `テキストが「${rule.value1}」で始まる`;
+      case 'textEndsWith':
+        return `テキストが「${rule.value1}」で終わる`;
+      case 'textEquals':
+        return `テキストが「${rule.value1}」と完全一致`;
+      case 'isEmpty':
+        return '空白';
+      case 'isNotEmpty':
+        return '空白ではない';
+      default:
+        return rule.operator;
     }
   }
   if (kind === 'formula') return `カスタム数式: =${rule.formula ?? ''}`;
@@ -159,9 +232,11 @@ function colorScaleGradient(rule: ConditionalFormatRule): string {
   return `linear-gradient(to right, ${stops.join(', ')})`;
 }
 
-const inputClass = 'h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none';
+const inputClass =
+  'h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none';
 const labelClass = 'flex flex-col gap-1 text-xs text-text-primary';
-const btnClass = 'h-7 px-3 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40';
+const btnClass =
+  'h-7 px-3 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40';
 const primaryBtnClass = 'h-7 px-3 text-xs text-white bg-accent-selection rounded hover:opacity-90';
 
 export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
@@ -196,7 +271,11 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
   // Color scale form state
   const [csMin, setCsMin] = useState<ColorScalePoint>({ type: 'min', color: '#57bb8a' });
   const [csMidEnabled, setCsMidEnabled] = useState(false);
-  const [csMid, setCsMid] = useState<ColorScalePoint>({ type: 'percentile', value: 50, color: '#ffffff' });
+  const [csMid, setCsMid] = useState<ColorScalePoint>({
+    type: 'percentile',
+    value: 50,
+    color: '#ffffff',
+  });
   const [csMax, setCsMax] = useState<ColorScalePoint>({ type: 'max', color: '#e67c73' });
 
   const sortedRules = useMemo(() => [...rules].sort((a, b) => a.priority - b.priority), [rules]);
@@ -278,7 +357,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
     setBackgroundColor(style.backgroundColor);
   }, []);
 
-  const applyColorScalePreset = useCallback((preset: typeof COLOR_SCALE_PRESETS[number]) => {
+  const applyColorScalePreset = useCallback((preset: (typeof COLOR_SCALE_PRESETS)[number]) => {
     setCsMin(preset.min);
     setCsMax(preset.max);
     if (preset.mid) {
@@ -306,7 +385,10 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
       backgroundColor,
     };
 
-    let fields: Pick<ConditionalFormatRule, 'kind' | 'operator' | 'value1' | 'value2' | 'formula' | 'rank' | 'percent' | 'colorScale'>;
+    let fields: Pick<
+      ConditionalFormatRule,
+      'kind' | 'operator' | 'value1' | 'value2' | 'formula' | 'rank' | 'percent' | 'colorScale'
+    >;
     if (tab === 'colorScale') {
       fields = {
         kind: 'colorScale',
@@ -324,10 +406,20 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
     } else if (needsFormula(conditionKey)) {
       fields = { kind: 'formula', operator: 'greaterThan', value1: '', formula };
     } else if (needsRank(conditionKey)) {
-      fields = { kind: conditionKey as 'top' | 'bottom', operator: 'greaterThan', value1: '', rank: Number(rank) || 0, percent };
+      fields = {
+        kind: conditionKey as 'top' | 'bottom',
+        operator: 'greaterThan',
+        value1: '',
+        rank: Number(rank) || 0,
+        percent,
+      };
     } else {
       // duplicate / unique / aboveAverage / belowAverage
-      fields = { kind: conditionKey as 'duplicate' | 'unique' | 'aboveAverage' | 'belowAverage', operator: 'greaterThan', value1: '' };
+      fields = {
+        kind: conditionKey as 'duplicate' | 'unique' | 'aboveAverage' | 'belowAverage',
+        operator: 'greaterThan',
+        value1: '',
+      };
     }
 
     if (isNew) {
@@ -338,17 +430,43 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
     }
     setEditingId(null);
     setIsNew(false);
-  }, [rangeInput, tab, conditionKey, value1, value2, formula, rank, percent, bold, italic, underline, strikethrough,
-    textColor, backgroundColor, csMin, csMid, csMidEnabled, csMax, isNew, editingId, rules, onAddRule, onUpdateRule]);
+  }, [
+    rangeInput,
+    tab,
+    conditionKey,
+    value1,
+    value2,
+    formula,
+    rank,
+    percent,
+    bold,
+    italic,
+    underline,
+    strikethrough,
+    textColor,
+    backgroundColor,
+    csMin,
+    csMid,
+    csMidEnabled,
+    csMax,
+    isNew,
+    editingId,
+    rules,
+    onAddRule,
+    onUpdateRule,
+  ]);
 
-  const handleMovePriority = useCallback((rule: ConditionalFormatRule, direction: -1 | 1) => {
-    const idx = sortedRules.findIndex(r => r.id === rule.id);
-    const targetIdx = idx + direction;
-    if (targetIdx < 0 || targetIdx >= sortedRules.length) return;
-    const target = sortedRules[targetIdx];
-    onUpdateRule(rule.id, { priority: target.priority });
-    onUpdateRule(target.id, { priority: rule.priority });
-  }, [sortedRules, onUpdateRule]);
+  const handleMovePriority = useCallback(
+    (rule: ConditionalFormatRule, direction: -1 | 1) => {
+      const idx = sortedRules.findIndex((r) => r.id === rule.id);
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= sortedRules.length) return;
+      const target = sortedRules[targetIdx];
+      onUpdateRule(rule.id, { priority: target.priority });
+      onUpdateRule(target.id, { priority: rule.priority });
+    },
+    [sortedRules, onUpdateRule],
+  );
 
   const showForm = isNew || editingId !== null;
 
@@ -393,8 +511,10 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
                 onChange={(e) => setConditionKey(e.target.value as ConditionKey)}
                 className={inputClass}
               >
-                {CONDITION_OPTIONS.map(o => (
-                  <option key={o.key} value={o.key}>{o.label}</option>
+                {CONDITION_OPTIONS.map((o) => (
+                  <option key={o.key} value={o.key}>
+                    {o.label}
+                  </option>
                 ))}
               </select>
             </label>
@@ -402,29 +522,55 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
             {needsValue1(conditionKey) && (
               <label className={labelClass}>
                 <span>値{needsValue2(conditionKey) ? '1' : ''}</span>
-                <input type="text" value={value1} onChange={(e) => setValue1(e.target.value)} className={inputClass} />
+                <input
+                  type="text"
+                  value={value1}
+                  onChange={(e) => setValue1(e.target.value)}
+                  className={inputClass}
+                />
               </label>
             )}
             {needsValue2(conditionKey) && (
               <label className={labelClass}>
                 <span>値2</span>
-                <input type="text" value={value2} onChange={(e) => setValue2(e.target.value)} className={inputClass} />
+                <input
+                  type="text"
+                  value={value2}
+                  onChange={(e) => setValue2(e.target.value)}
+                  className={inputClass}
+                />
               </label>
             )}
             {needsFormula(conditionKey) && (
               <label className={labelClass}>
                 <span>カスタム数式</span>
-                <input type="text" value={formula} onChange={(e) => setFormula(e.target.value)} className={inputClass} placeholder="=A1>10" />
+                <input
+                  type="text"
+                  value={formula}
+                  onChange={(e) => setFormula(e.target.value)}
+                  className={inputClass}
+                  placeholder="=A1>10"
+                />
               </label>
             )}
             {needsRank(conditionKey) && (
               <div className="flex items-end gap-2">
                 <label className={`${labelClass} flex-1`}>
                   <span>件数</span>
-                  <input type="number" min="1" value={rank} onChange={(e) => setRank(e.target.value)} className={inputClass} />
+                  <input
+                    type="number"
+                    min="1"
+                    value={rank}
+                    onChange={(e) => setRank(e.target.value)}
+                    className={inputClass}
+                  />
                 </label>
                 <label className="flex items-center gap-1 text-xs text-text-primary h-7">
-                  <input type="checkbox" checked={percent} onChange={(e) => setPercent(e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    checked={percent}
+                    onChange={(e) => setPercent(e.target.checked)}
+                  />
                   <span>%</span>
                 </label>
               </div>
@@ -433,17 +579,41 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
             <div className="space-y-1">
               <div className="text-xs text-text-primary">書式</div>
               <div className="flex items-center gap-1">
-                <button type="button" onClick={() => setBold(b => !b)} className={`w-7 h-7 text-xs font-bold rounded border ${bold ? 'bg-accent-selection/20 border-accent-selection' : 'border-grid-line'}`}>B</button>
-                <button type="button" onClick={() => setItalic(b => !b)} className={`w-7 h-7 text-xs italic rounded border ${italic ? 'bg-accent-selection/20 border-accent-selection' : 'border-grid-line'}`}>I</button>
-                <button type="button" onClick={() => setUnderline(b => !b)} className={`w-7 h-7 text-xs underline rounded border ${underline ? 'bg-accent-selection/20 border-accent-selection' : 'border-grid-line'}`}>U</button>
-                <button type="button" onClick={() => setStrikethrough(b => !b)} className={`w-7 h-7 text-xs line-through rounded border ${strikethrough ? 'bg-accent-selection/20 border-accent-selection' : 'border-grid-line'}`}>S</button>
+                <button
+                  type="button"
+                  onClick={() => setBold((b) => !b)}
+                  className={`w-7 h-7 text-xs font-bold rounded border ${bold ? 'bg-accent-selection/20 border-accent-selection' : 'border-grid-line'}`}
+                >
+                  B
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setItalic((b) => !b)}
+                  className={`w-7 h-7 text-xs italic rounded border ${italic ? 'bg-accent-selection/20 border-accent-selection' : 'border-grid-line'}`}
+                >
+                  I
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnderline((b) => !b)}
+                  className={`w-7 h-7 text-xs underline rounded border ${underline ? 'bg-accent-selection/20 border-accent-selection' : 'border-grid-line'}`}
+                >
+                  U
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStrikethrough((b) => !b)}
+                  className={`w-7 h-7 text-xs line-through rounded border ${strikethrough ? 'bg-accent-selection/20 border-accent-selection' : 'border-grid-line'}`}
+                >
+                  S
+                </button>
                 <ColorPicker
                   currentColor={textColor}
                   onColorChange={setTextColor}
                   label="文字色"
                   icon={
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M11 2L5.5 16h2.25l1.12-3h6.25l1.12 3h2.25L13 2h-2zm-1.38 9L12 4.67 14.38 11H9.62z"/>
+                      <path d="M11 2L5.5 16h2.25l1.12-3h6.25l1.12 3h2.25L13 2h-2zm-1.38 9L12 4.67 14.38 11H9.62z" />
                     </svg>
                   }
                 />
@@ -453,7 +623,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
                   label="背景色"
                   icon={
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15a1.49 1.49 0 000 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z"/>
+                      <path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15a1.49 1.49 0 000 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z" />
                     </svg>
                   }
                 />
@@ -465,7 +635,10 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
                   color: textColor ?? 'var(--color-text-primary)',
                   fontWeight: bold ? 'bold' : undefined,
                   fontStyle: italic ? 'italic' : undefined,
-                  textDecoration: [underline && 'underline', strikethrough && 'line-through'].filter(Boolean).join(' ') || undefined,
+                  textDecoration:
+                    [underline && 'underline', strikethrough && 'line-through']
+                      .filter(Boolean)
+                      .join(' ') || undefined,
                 }}
               >
                 プレビュー 123
@@ -503,7 +676,9 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
                     key={p.label}
                     type="button"
                     className="h-6 rounded border border-grid-line hover:border-accent-selection text-[10px] text-white"
-                    style={{ background: `linear-gradient(to right, ${p.min.color}, ${p.mid ? `${p.mid.color}, ` : ''}${p.max.color})` }}
+                    style={{
+                      background: `linear-gradient(to right, ${p.min.color}, ${p.mid ? `${p.mid.color}, ` : ''}${p.max.color})`,
+                    }}
                     onClick={() => applyColorScalePreset(p)}
                     title={p.label}
                   />
@@ -513,7 +688,9 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
 
             <div
               className="h-4 rounded border border-grid-line"
-              style={{ background: `linear-gradient(to right, ${csMin.color}, ${csMidEnabled ? `${csMid.color}, ` : ''}${csMax.color})` }}
+              style={{
+                background: `linear-gradient(to right, ${csMin.color}, ${csMidEnabled ? `${csMid.color}, ` : ''}${csMax.color})`,
+              }}
             />
 
             {(['min', ...(csMidEnabled ? ['mid'] : []), 'max'] as const).map((slot) => {
@@ -526,13 +703,21 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
                     <span>{label}: 種類</span>
                     <select
                       value={point.type}
-                      onChange={(e) => setPoint({ ...point, type: e.target.value as ColorScalePoint['type'] })}
+                      onChange={(e) =>
+                        setPoint({ ...point, type: e.target.value as ColorScalePoint['type'] })
+                      }
                       className={inputClass}
                     >
-                      {POINT_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      {POINT_TYPE_OPTIONS.map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
                     </select>
                   </label>
-                  {(point.type === 'number' || point.type === 'percent' || point.type === 'percentile') && (
+                  {(point.type === 'number' ||
+                    point.type === 'percent' ||
+                    point.type === 'percentile') && (
                     <label className={labelClass}>
                       <span>値</span>
                       <input
@@ -554,15 +739,27 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
             })}
 
             <label className="flex items-center gap-2 text-xs text-text-primary">
-              <input type="checkbox" checked={csMidEnabled} onChange={(e) => setCsMidEnabled(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={csMidEnabled}
+                onChange={(e) => setCsMidEnabled(e.target.checked)}
+              />
               <span>中間点を使用する</span>
             </label>
           </div>
         )}
 
         <div className="flex justify-end gap-2 pt-2">
-          <button type="button" className={btnClass} onClick={handleCancel}>キャンセル</button>
-          <button type="button" data-btn-primary className={primaryBtnClass} onClick={handleSave} data-testid="cf-panel-save">
+          <button type="button" className={btnClass} onClick={handleCancel}>
+            キャンセル
+          </button>
+          <button
+            type="button"
+            data-btn-primary
+            className={primaryBtnClass}
+            onClick={handleSave}
+            data-testid="cf-panel-save"
+          >
             完了
           </button>
         </div>
@@ -576,7 +773,10 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
         <p className="text-xs text-text-primary/40">ルールがありません</p>
       ) : (
         sortedRules.map((rule, idx) => (
-          <div key={rule.id} className="flex items-center gap-2 px-2 py-1.5 rounded border border-grid-line text-xs">
+          <div
+            key={rule.id}
+            className="flex items-center gap-2 px-2 py-1.5 rounded border border-grid-line text-xs"
+          >
             <div
               className="w-5 h-5 rounded shrink-0 border border-grid-line"
               style={
@@ -590,10 +790,30 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
               <div className="text-text-primary truncate">{describeCfRule(rule)}</div>
             </div>
             <div className="flex flex-col shrink-0">
-              <button type="button" disabled={idx === 0} className="text-text-primary/60 disabled:opacity-20 hover:text-text-primary" onClick={() => handleMovePriority(rule, -1)}>▲</button>
-              <button type="button" disabled={idx === sortedRules.length - 1} className="text-text-primary/60 disabled:opacity-20 hover:text-text-primary" onClick={() => handleMovePriority(rule, 1)}>▼</button>
+              <button
+                type="button"
+                disabled={idx === 0}
+                className="text-text-primary/60 disabled:opacity-20 hover:text-text-primary"
+                onClick={() => handleMovePriority(rule, -1)}
+              >
+                ▲
+              </button>
+              <button
+                type="button"
+                disabled={idx === sortedRules.length - 1}
+                className="text-text-primary/60 disabled:opacity-20 hover:text-text-primary"
+                onClick={() => handleMovePriority(rule, 1)}
+              >
+                ▼
+              </button>
             </div>
-            <button type="button" className="text-error text-[10px] hover:underline shrink-0" onClick={() => onDeleteRule(rule.id)}>削除</button>
+            <button
+              type="button"
+              className="text-error text-[10px] hover:underline shrink-0"
+              onClick={() => onDeleteRule(rule.id)}
+            >
+              削除
+            </button>
           </div>
         ))
       )}

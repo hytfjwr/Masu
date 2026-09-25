@@ -114,7 +114,9 @@ describe('formatWithPattern', () => {
   it('formats time, with and without AM/PM', () => {
     expect(formatWithPattern(0.5625, 'h:mm')).toEqual({ text: '13:30' });
     expect(formatWithPattern(0.5625, 'h:mm AM/PM')).toEqual({ text: '1:30 PM' });
-    expect(formatWithPattern(46122.75, 'yyyy/mm/dd hh:mm:ss')).toEqual({ text: '2026/04/10 18:00:00' });
+    expect(formatWithPattern(46122.75, 'yyyy/mm/dd hh:mm:ss')).toEqual({
+      text: '2026/04/10 18:00:00',
+    });
   });
 
   it('formats elapsed duration hours', () => {

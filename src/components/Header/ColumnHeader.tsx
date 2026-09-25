@@ -105,12 +105,15 @@ export const ColumnHeader = memo(function ColumnHeader({
     [colIndex, onSelect],
   );
 
-  const positionStyle: React.CSSProperties = useMemo(() => ({
-    left,
-    width,
-    top: 0,
-    height: GRID_CONSTANTS.COL_HEADER_HEIGHT,
-  }), [left, width]);
+  const positionStyle: React.CSSProperties = useMemo(
+    () => ({
+      left,
+      width,
+      top: 0,
+      height: GRID_CONSTANTS.COL_HEADER_HEIGHT,
+    }),
+    [left, width],
+  );
 
   return (
     <div

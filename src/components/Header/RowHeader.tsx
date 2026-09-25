@@ -104,12 +104,15 @@ export const RowHeader = memo(function RowHeader({
     [rowIndex, onSelect],
   );
 
-  const positionStyle: React.CSSProperties = useMemo(() => ({
-    top,
-    height,
-    left: 0,
-    width: GRID_CONSTANTS.ROW_HEADER_WIDTH,
-  }), [top, height]);
+  const positionStyle: React.CSSProperties = useMemo(
+    () => ({
+      top,
+      height,
+      left: 0,
+      width: GRID_CONSTANTS.ROW_HEADER_WIDTH,
+    }),
+    [top, height],
+  );
 
   return (
     <div

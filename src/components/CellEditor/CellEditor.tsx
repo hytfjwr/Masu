@@ -30,7 +30,18 @@ export interface CellEditorProps {
 }
 
 export const CellEditor = forwardRef<HTMLTextAreaElement, CellEditorProps>(function CellEditor(
-  { isEditing, value, onChange, onDirectInput, onCompositionStart, onKeyDown, style, rect, wrapText, readOnly },
+  {
+    isEditing,
+    value,
+    onChange,
+    onDirectInput,
+    onCompositionStart,
+    onKeyDown,
+    style,
+    rect,
+    wrapText,
+    readOnly,
+  },
   forwardedRef,
 ) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -96,7 +107,9 @@ export const CellEditor = forwardRef<HTMLTextAreaElement, CellEditorProps>(funct
       onCompositionStart={handleCompositionStart}
       onKeyDown={readOnly ? undefined : onKeyDown}
       spellCheck={false}
-      className={isEditing ? 'resize-none outline-none cell-editor-editing' : 'resize-none outline-none'}
+      className={
+        isEditing ? 'resize-none outline-none cell-editor-editing' : 'resize-none outline-none'
+      }
       style={{
         position: 'absolute',
         left: rect.left,

@@ -148,31 +148,52 @@ function serializeSheet(
     rowCount: sheet.rowCount,
     colWidths: colWidthsObj,
     rowHeights: rowHeightsObj,
-    ...(defaults?.defaultColWidth !== undefined ? { defaultColWidth: defaults.defaultColWidth } : {}),
-    ...(defaults?.defaultRowHeight !== undefined ? { defaultRowHeight: defaults.defaultRowHeight } : {}),
+    ...(defaults?.defaultColWidth !== undefined
+      ? { defaultColWidth: defaults.defaultColWidth }
+      : {}),
+    ...(defaults?.defaultRowHeight !== undefined
+      ? { defaultRowHeight: defaults.defaultRowHeight }
+      : {}),
     frozenRows: sheet.frozenRows ?? 0,
     frozenCols: sheet.frozenCols ?? 0,
-    conditionalFormatRules: (sheet.conditionalFormatRules ?? []).map(r => ({
+    conditionalFormatRules: (sheet.conditionalFormatRules ?? []).map((r) => ({
       ...r,
       range: { ...r.range },
       style: { ...r.style },
     })),
     merges: Object.keys(mergesObj).length > 0 ? mergesObj : undefined,
-    charts: (sheet.charts ?? []).length > 0 ? sheet.charts.map(c => ({ ...c, sourceRange: { ...c.sourceRange } })) : undefined,
-    sparklines: (sheet.sparklines ?? []).length > 0 ? sheet.sparklines.map(s => ({ ...s, colors: { ...s.colors } })) : undefined,
-    rowGroups: (sheet.rowGroups ?? []).length > 0 ? sheet.rowGroups.map(g => ({ ...g })) : undefined,
-    colGroups: (sheet.colGroups ?? []).length > 0 ? sheet.colGroups.map(g => ({ ...g })) : undefined,
+    charts:
+      (sheet.charts ?? []).length > 0
+        ? sheet.charts.map((c) => ({ ...c, sourceRange: { ...c.sourceRange } }))
+        : undefined,
+    sparklines:
+      (sheet.sparklines ?? []).length > 0
+        ? sheet.sparklines.map((s) => ({ ...s, colors: { ...s.colors } }))
+        : undefined,
+    rowGroups:
+      (sheet.rowGroups ?? []).length > 0 ? sheet.rowGroups.map((g) => ({ ...g })) : undefined,
+    colGroups:
+      (sheet.colGroups ?? []).length > 0 ? sheet.colGroups.map((g) => ({ ...g })) : undefined,
     tabColor: sheet.tabColor,
     hidden: sheet.hidden,
     hiddenRows: sheet.hiddenRows ? [...sheet.hiddenRows] : undefined,
     hiddenCols: sheet.hiddenCols ? [...sheet.hiddenCols] : undefined,
     filterRange: sheet.filterRange ? { ...sheet.filterRange } : undefined,
-    filterState: sheet.filterState && sheet.filterState.size > 0
-      ? Object.fromEntries(Array.from(sheet.filterState.entries(), ([col, values]) => [String(col), Array.from(values)]))
-      : undefined,
-    filterConditions: sheet.filterConditions && Object.keys(sheet.filterConditions).length > 0
-      ? Object.fromEntries(Object.entries(sheet.filterConditions).map(([col, cond]) => [col, { ...cond }]))
-      : undefined,
+    filterState:
+      sheet.filterState && sheet.filterState.size > 0
+        ? Object.fromEntries(
+            Array.from(sheet.filterState.entries(), ([col, values]) => [
+              String(col),
+              Array.from(values),
+            ]),
+          )
+        : undefined,
+    filterConditions:
+      sheet.filterConditions && Object.keys(sheet.filterConditions).length > 0
+        ? Object.fromEntries(
+            Object.entries(sheet.filterConditions).map(([col, cond]) => [col, { ...cond }]),
+          )
+        : undefined,
   };
 }
 
@@ -202,20 +223,27 @@ export function serialize(options: SerializeOptions): string {
     createdAt: now,
     updatedAt: now,
     workbook: {
-      sheets: options.sheets.map(sheet => {
+      sheets: options.sheets.map((sheet) => {
         const sizes = options.sizesBySheet?.get(sheet.id);
-        return serializeSheet(sheet, sizes?.colWidths ?? options.colWidths, sizes?.rowHeights ?? options.rowHeights, sizes);
+        return serializeSheet(
+          sheet,
+          sizes?.colWidths ?? options.colWidths,
+          sizes?.rowHeights ?? options.rowHeights,
+          sizes,
+        );
       }),
       activeSheetId: options.activeSheetId,
-      namedRanges: options.namedRanges && options.namedRanges.length > 0
-        ? options.namedRanges.map(r => ({ ...r }))
-        : undefined,
-      pivotTables: options.pivotTables && options.pivotTables.length > 0
-        ? options.pivotTables.map(pt => ({
-            ...pt,
-            valueFields: pt.valueFields.map(vf => ({ ...vf })),
-          }))
-        : undefined,
+      namedRanges:
+        options.namedRanges && options.namedRanges.length > 0
+          ? options.namedRanges.map((r) => ({ ...r }))
+          : undefined,
+      pivotTables:
+        options.pivotTables && options.pivotTables.length > 0
+          ? options.pivotTables.map((pt) => ({
+              ...pt,
+              valueFields: pt.valueFields.map((vf) => ({ ...vf })),
+            }))
+          : undefined,
       title: options.title || undefined,
     },
   };
@@ -289,24 +317,36 @@ function deserializeSheet(serialized: SerializedSheet): {
     frozenRows: serialized.frozenRows ?? 0,
     frozenCols: serialized.frozenCols ?? 0,
     sortState: { col: -1, direction: 'none' },
-    filterState: new Map(Object.entries(serialized.filterState ?? {}).map(([col, values]) => [Number(col), new Set(values)])),
-    conditionalFormatRules: (serialized.conditionalFormatRules ?? []).map(r => ({
+    filterState: new Map(
+      Object.entries(serialized.filterState ?? {}).map(([col, values]) => [
+        Number(col),
+        new Set(values),
+      ]),
+    ),
+    conditionalFormatRules: (serialized.conditionalFormatRules ?? []).map((r) => ({
       ...r,
       range: { ...r.range },
       style: { ...r.style },
     })),
     merges,
-    charts: (serialized.charts ?? []).map(c => ({ ...c, sourceRange: { ...c.sourceRange } })),
-    sparklines: (serialized.sparklines ?? []).map(s => ({ ...s, colors: { ...s.colors } })),
-    rowGroups: (serialized.rowGroups ?? []).map(g => ({ ...g })),
-    colGroups: (serialized.colGroups ?? []).map(g => ({ ...g })),
+    charts: (serialized.charts ?? []).map((c) => ({ ...c, sourceRange: { ...c.sourceRange } })),
+    sparklines: (serialized.sparklines ?? []).map((s) => ({ ...s, colors: { ...s.colors } })),
+    rowGroups: (serialized.rowGroups ?? []).map((g) => ({ ...g })),
+    colGroups: (serialized.colGroups ?? []).map((g) => ({ ...g })),
     ...(serialized.tabColor !== undefined ? { tabColor: serialized.tabColor } : {}),
     ...(serialized.hidden !== undefined ? { hidden: serialized.hidden } : {}),
     ...(serialized.hiddenRows !== undefined ? { hiddenRows: [...serialized.hiddenRows] } : {}),
     ...(serialized.hiddenCols !== undefined ? { hiddenCols: [...serialized.hiddenCols] } : {}),
     ...(serialized.filterRange !== undefined ? { filterRange: { ...serialized.filterRange } } : {}),
     ...(serialized.filterConditions !== undefined
-      ? { filterConditions: Object.fromEntries(Object.entries(serialized.filterConditions).map(([col, cond]) => [Number(col), { ...cond }])) }
+      ? {
+          filterConditions: Object.fromEntries(
+            Object.entries(serialized.filterConditions).map(([col, cond]) => [
+              Number(col),
+              { ...cond },
+            ]),
+          ),
+        }
       : {}),
   };
 
@@ -369,7 +409,9 @@ export function deserialize(jsonString: string): DeserializeResult {
   const sizesBySheet = new Map<string, SheetSizes>();
 
   const sheets: SheetData[] = sheetsData.map((s: unknown) => {
-    const { sheet, colWidths, rowHeights, defaultColWidth, defaultRowHeight } = deserializeSheet(s as SerializedSheet);
+    const { sheet, colWidths, rowHeights, defaultColWidth, defaultRowHeight } = deserializeSheet(
+      s as SerializedSheet,
+    );
     for (const [k, v] of colWidths) allColWidths.set(k, v);
     for (const [k, v] of rowHeights) allRowHeights.set(k, v);
     sizesBySheet.set(sheet.id, {
@@ -381,20 +423,18 @@ export function deserialize(jsonString: string): DeserializeResult {
     return sheet;
   });
 
-  const activeSheetId = typeof wb.activeSheetId === 'string'
-    ? wb.activeSheetId
-    : sheets[0].id;
+  const activeSheetId = typeof wb.activeSheetId === 'string' ? wb.activeSheetId : sheets[0].id;
 
   // Restore named ranges (backward compatible - may not exist in older files)
   const namedRanges: NamedRange[] = Array.isArray(wb.namedRanges)
-    ? (wb.namedRanges as NamedRange[]).map(r => ({ ...r }))
+    ? (wb.namedRanges as NamedRange[]).map((r) => ({ ...r }))
     : [];
 
   // Restore pivot tables (backward compatible)
   const pivotTables: PivotTableConfig[] = Array.isArray(wb.pivotTables)
-    ? (wb.pivotTables as PivotTableConfig[]).map(pt => ({
+    ? (wb.pivotTables as PivotTableConfig[]).map((pt) => ({
         ...pt,
-        valueFields: pt.valueFields.map(vf => ({ ...vf })),
+        valueFields: pt.valueFields.map((vf) => ({ ...vf })),
       }))
     : [];
 

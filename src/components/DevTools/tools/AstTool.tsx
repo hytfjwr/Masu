@@ -47,7 +47,15 @@ function analyze(formula: string, live: boolean): Analysis {
 }
 
 /** The formula with one range highlighted (hovered node/token, or the syntax error). */
-function SourceLine({ formula, highlight, error }: { formula: string; highlight: TokenSpan | null; error?: FormulaSyntaxError }) {
+function SourceLine({
+  formula,
+  highlight,
+  error,
+}: {
+  formula: string;
+  highlight: TokenSpan | null;
+  error?: FormulaSyntaxError;
+}) {
   const span = error ? { start: error.start, end: error.end } : highlight;
   if (!span) return <code className="ast-viz-code">={formula}</code>;
   const before = formula.slice(0, span.start);
@@ -85,7 +93,10 @@ export const AstTool = memo(function AstTool({
   const [query, setQuery] = useState('');
 
   const formula = pinned ?? cellFormula;
-  const analysis = useMemo(() => (formula ? analyze(formula, live && pinned === null) : null), [formula, live, pinned]);
+  const analysis = useMemo(
+    () => (formula ? analyze(formula, live && pinned === null) : null),
+    [formula, live, pinned],
+  );
   const layout = useMemo(
     () => (analysis?.ok && formula ? layoutTree(buildVizTree(analysis.ast, formula)) : null),
     [analysis, formula],
@@ -98,7 +109,9 @@ export const AstTool = memo(function AstTool({
   );
   const filteredCache = useMemo(() => {
     const q = query.trim().toUpperCase();
-    return (q ? cacheEntries.filter((e) => e.formula.toUpperCase().includes(q)) : cacheEntries).slice(0, 300);
+    return (
+      q ? cacheEntries.filter((e) => e.formula.toUpperCase().includes(q)) : cacheEntries
+    ).slice(0, 300);
   }, [cacheEntries, query]);
 
   // Hovered node + its ancestors (highlighted path to the root)
@@ -106,11 +119,15 @@ export const AstTool = memo(function AstTool({
     const path = new Set<string>();
     if (!layout || !hoverId) return path;
     const byId = new Map(layout.nodes.map((n) => [n.id, n]));
-    for (let n = byId.get(hoverId); n; n = n.parentId ? byId.get(n.parentId) : undefined) path.add(n.id);
+    for (let n = byId.get(hoverId); n; n = n.parentId ? byId.get(n.parentId) : undefined)
+      path.add(n.id);
     return path;
   }, [layout, hoverId]);
 
-  const syntaxError = analysis && !analysis.ok && analysis.error instanceof FormulaSyntaxError ? analysis.error : undefined;
+  const syntaxError =
+    analysis && !analysis.ok && analysis.error instanceof FormulaSyntaxError
+      ? analysis.error
+      : undefined;
   const tokenCount = analysis?.ok ? analysis.tokens.length - 1 : 0;
 
   const clearHover = () => {
@@ -121,17 +138,23 @@ export const AstTool = memo(function AstTool({
   return (
     <div className="devtools-tool ast-tool">
       <div className="ast-viz-source">
-        <span className={`ast-viz-origin${pinned ? ' ast-viz-origin-cache' : ''}`}>{pinned ? 'キャッシュ' : formulaLabel}</span>
+        <span className={`ast-viz-origin${pinned ? ' ast-viz-origin-cache' : ''}`}>
+          {pinned ? 'キャッシュ' : formulaLabel}
+        </span>
         {formula ? (
           <SourceLine formula={formula} highlight={hoverSpan} error={syntaxError} />
         ) : (
           <span className="ast-viz-hint">数式のセルを選ぶか、キャッシュから選んでください</span>
         )}
         {analysis?.ok && !live && (
-          <span className={`ast-viz-pill${analysis.cached ? ' ast-viz-pill-hit' : ''}`}>{analysis.cached ? 'キャッシュ済み' : '新規'}</span>
+          <span className={`ast-viz-pill${analysis.cached ? ' ast-viz-pill-hit' : ''}`}>
+            {analysis.cached ? 'キャッシュ済み' : '新規'}
+          </span>
         )}
         {pinned && (
-          <button type="button" className="ast-viz-link" onClick={() => setPinned(null)}>選択中のセルに戻る</button>
+          <button type="button" className="ast-viz-link" onClick={() => setPinned(null)}>
+            選択中のセルに戻る
+          </button>
         )}
         <span className="ast-viz-meta" title="エンジンの AST キャッシュ">
           {cacheEntries.length.toLocaleString()} / {MAX_CACHE_SIZE.toLocaleString()}
@@ -143,87 +166,116 @@ export const AstTool = memo(function AstTool({
           <span>⚠ {analysis.error.message}</span>
           {syntaxError && formula && (
             <span className="ast-viz-error-where">
-              {syntaxError.start === syntaxError.end && syntaxError.end === formula.length ? '末尾' : `${syntaxError.start + 2}文字目`}
+              {syntaxError.start === syntaxError.end && syntaxError.end === formula.length
+                ? '末尾'
+                : `${syntaxError.start + 2}文字目`}
             </span>
           )}
         </div>
       )}
 
       <nav className="ast-viz-tabs" role="tablist">
-        {([['tree', '木構造'], ['tokens', `トークン ${tokenCount || ''}`], ['cache', 'キャッシュ']] as Array<[Tab, string]>).map(([id, label]) => (
-          <button key={id} type="button" role="tab" aria-selected={tab === id} className="ast-viz-tab" onClick={() => setTab(id)}>
+        {(
+          [
+            ['tree', '木構造'],
+            ['tokens', `トークン ${tokenCount || ''}`],
+            ['cache', 'キャッシュ'],
+          ] as Array<[Tab, string]>
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            className="ast-viz-tab"
+            onClick={() => setTab(id)}
+          >
             {label}
           </button>
         ))}
       </nav>
 
       <div className="ast-viz-body">
-        {tab === 'tree' && (layout ? (
-          <div className="ast-viz-canvas" onMouseLeave={clearHover}>
-            <svg key={formula} className="ast-tree" width={layout.width} height={layout.height}>
-              {layout.edges.map(({ from, to }) => {
-                const y1 = from.y + NODE_HEIGHT;
-                const y2 = to.y;
-                const my = (y1 + y2) / 2;
-                return (
-                  <path
-                    key={to.id}
-                    className="ast-edge"
-                    data-active={activePath.has(to.id) || undefined}
-                    d={`M ${from.x} ${y1} C ${from.x} ${my}, ${to.x} ${my}, ${to.x} ${y2}`}
-                    pathLength={1}
-                    style={{ ['--d' as string]: to.depth }}
-                  />
-                );
-              })}
-              {layout.nodes.map((n) => (
-                <g
-                  key={n.id}
-                  transform={`translate(${n.x - n.width / 2} ${n.y})`}
-                  className={`ast-node ast-node-${n.category}`}
-                  data-active={activePath.has(n.id) || undefined}
-                  data-hovered={hoverId === n.id || undefined}
-                  data-clickable={n.ref ? true : undefined}
-                  onMouseEnter={() => {
-                    setHoverId(n.id);
-                    setHoverSpan(n.span ?? null);
-                  }}
-                  onClick={() => n.ref && onSelectRange(n.ref)}
-                >
-                  <g className="ast-node-pop" style={{ ['--d' as string]: n.depth }}>
-                    <rect width={n.width} height={NODE_HEIGHT} rx={10} />
-                    <text x={n.width / 2} y={15} className="ast-node-label">{n.label}</text>
-                    <text x={n.width / 2} y={28} className="ast-node-kind">{n.kind}</text>
+        {tab === 'tree' &&
+          (layout ? (
+            <div className="ast-viz-canvas" onMouseLeave={clearHover}>
+              <svg key={formula} className="ast-tree" width={layout.width} height={layout.height}>
+                {layout.edges.map(({ from, to }) => {
+                  const y1 = from.y + NODE_HEIGHT;
+                  const y2 = to.y;
+                  const my = (y1 + y2) / 2;
+                  return (
+                    <path
+                      key={to.id}
+                      className="ast-edge"
+                      data-active={activePath.has(to.id) || undefined}
+                      d={`M ${from.x} ${y1} C ${from.x} ${my}, ${to.x} ${my}, ${to.x} ${y2}`}
+                      pathLength={1}
+                      style={{ ['--d' as string]: to.depth }}
+                    />
+                  );
+                })}
+                {layout.nodes.map((n) => (
+                  <g
+                    key={n.id}
+                    transform={`translate(${n.x - n.width / 2} ${n.y})`}
+                    className={`ast-node ast-node-${n.category}`}
+                    data-active={activePath.has(n.id) || undefined}
+                    data-hovered={hoverId === n.id || undefined}
+                    data-clickable={n.ref ? true : undefined}
+                    onMouseEnter={() => {
+                      setHoverId(n.id);
+                      setHoverSpan(n.span ?? null);
+                    }}
+                    onClick={() => n.ref && onSelectRange(n.ref)}
+                  >
+                    <g className="ast-node-pop" style={{ ['--d' as string]: n.depth }}>
+                      <rect width={n.width} height={NODE_HEIGHT} rx={10} />
+                      <text x={n.width / 2} y={15} className="ast-node-label">
+                        {n.label}
+                      </text>
+                      <text x={n.width / 2} y={28} className="ast-node-kind">
+                        {n.kind}
+                      </text>
+                    </g>
+                    <title>{n.ref ? `${n.kind} — クリックでセルを選択` : n.kind}</title>
                   </g>
-                  <title>{n.ref ? `${n.kind} — クリックでセルを選択` : n.kind}</title>
-                </g>
-              ))}
-            </svg>
-          </div>
-        ) : (
-          <div className="ast-viz-empty">{formula ? '構文エラーのため木を作れません' : 'ここに AST が表示されます'}</div>
-        ))}
+                ))}
+              </svg>
+            </div>
+          ) : (
+            <div className="ast-viz-empty">
+              {formula ? '構文エラーのため木を作れません' : 'ここに AST が表示されます'}
+            </div>
+          ))}
 
-        {tab === 'tokens' && (analysis?.ok ? (
-          <div className="ast-viz-tokens" onMouseLeave={clearHover}>
-            {analysis.tokens.map((t, i) => (
-              <button
-                key={i}
-                type="button"
-                className="ast-token"
-                data-eof={t.type === 'EOF' || undefined}
-                style={{ ['--i' as string]: i }}
-                onMouseEnter={() => setHoverSpan({ start: t.start, end: t.end })}
-              >
-                <span className="ast-token-type">{t.type}</span>
-                <code className="ast-token-text">{t.type === 'EOF' ? '⏎' : formula!.slice(t.start, t.end)}</code>
-                <span className="ast-token-pos">{t.start}–{t.end}</span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="ast-viz-empty">{formula ? '字句解析の段階で止まりました' : 'ここにトークン列が表示されます'}</div>
-        ))}
+        {tab === 'tokens' &&
+          (analysis?.ok ? (
+            <div className="ast-viz-tokens" onMouseLeave={clearHover}>
+              {analysis.tokens.map((t, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className="ast-token"
+                  data-eof={t.type === 'EOF' || undefined}
+                  style={{ ['--i' as string]: i }}
+                  onMouseEnter={() => setHoverSpan({ start: t.start, end: t.end })}
+                >
+                  <span className="ast-token-type">{t.type}</span>
+                  <code className="ast-token-text">
+                    {t.type === 'EOF' ? '⏎' : formula!.slice(t.start, t.end)}
+                  </code>
+                  <span className="ast-token-pos">
+                    {t.start}–{t.end}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="ast-viz-empty">
+              {formula ? '字句解析の段階で止まりました' : 'ここにトークン列が表示されます'}
+            </div>
+          ))}
 
         {tab === 'cache' && (
           <div className="ast-viz-cache">
@@ -263,7 +315,10 @@ export const AstTool = memo(function AstTool({
 
       <footer className="ast-viz-legend">
         {CATEGORY_LABELS.map(([cat, label]) => (
-          <span key={cat} className={`ast-legend ast-node-${cat}`}><i />{label}</span>
+          <span key={cat} className={`ast-legend ast-node-${cat}`}>
+            <i />
+            {label}
+          </span>
         ))}
       </footer>
     </div>

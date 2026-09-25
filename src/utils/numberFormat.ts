@@ -7,7 +7,10 @@ export interface FormattedValue {
 }
 
 /** Preset number format -> pattern string. */
-export const PRESET_PATTERNS: Record<Exclude<NumberFormat, 'auto' | 'plainText' | 'custom'>, string> = {
+export const PRESET_PATTERNS: Record<
+  Exclude<NumberFormat, 'auto' | 'plainText' | 'custom'>,
+  string
+> = {
   number: '#,##0.00',
   currency: '"¥"#,##0.00',
   percent: '0.00%',
@@ -19,7 +22,7 @@ export const PRESET_PATTERNS: Record<Exclude<NumberFormat, 'auto' | 'plainText' 
 
 /** Resolve the effective pattern for a cell style. `numberFormatPattern` takes precedence. */
 export function patternForStyle(
-  style: { numberFormat?: NumberFormat; numberFormatPattern?: string } | undefined
+  style: { numberFormat?: NumberFormat; numberFormatPattern?: string } | undefined,
 ): string | undefined {
   if (!style) return undefined;
   if (style.numberFormatPattern) return style.numberFormatPattern;
@@ -99,8 +102,19 @@ type Token =
   | { t: 'durS'; len: number };
 
 const DATE_TOKEN_TYPES = new Set([
-  'year', 'monthOrMinute', 'month', 'minute', 'day', 'hour', 'second', 'secFrac',
-  'ampm', 'weekdayJp', 'durH', 'durM', 'durS',
+  'year',
+  'monthOrMinute',
+  'month',
+  'minute',
+  'day',
+  'hour',
+  'second',
+  'secFrac',
+  'ampm',
+  'weekdayJp',
+  'durH',
+  'durM',
+  'durS',
 ]);
 
 /** Split a full pattern into up to 4 `;`-separated sections, respecting quoted literals. */
@@ -113,7 +127,11 @@ function splitSections(pattern: string): string[] {
     const c = pattern[i];
     if (c === '"') {
       const end = pattern.indexOf('"', i + 1);
-      if (end === -1) { cur += pattern.slice(i); i = n; break; }
+      if (end === -1) {
+        cur += pattern.slice(i);
+        i = n;
+        break;
+      }
       cur += pattern.slice(i, end + 1);
       i = end + 1;
       continue;
@@ -314,10 +332,33 @@ function isDateMode(tokens: Token[]): boolean {
 // Date/time section rendering
 // ============================================================
 
-const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_SHORT = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 const MONTH_LONG = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const WEEKDAY_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -334,7 +375,10 @@ function renderDateSection(tokens: Token[], value: number): string {
         out += tok.v;
         break;
       case 'year':
-        out += tok.len >= 3 ? String(parts.year).padStart(4, '0') : String(parts.year % 100).padStart(2, '0');
+        out +=
+          tok.len >= 3
+            ? String(parts.year).padStart(4, '0')
+            : String(parts.year % 100).padStart(2, '0');
         break;
       case 'month':
         if (tok.len === 1) out += String(parts.month);
@@ -442,13 +486,17 @@ function renderNumericSection(tokens: Token[], absValue: number, forceNegative: 
   const expTok = findExpToken(tokens);
 
   const allDigits: DigitInfo[] = [];
-  tokens.forEach((t, idx) => { if (t.t === 'digit') allDigits.push({ idx, c: t.c }); });
+  tokens.forEach((t, idx) => {
+    if (t.t === 'digit') allDigits.push({ idx, c: t.c });
+  });
   const intDigitTokens = allDigits.filter((d) => isIntRegion(d.idx));
   const decDigitTokens = allDigits.filter((d) => !isIntRegion(d.idx));
 
   const lastDigitIdx = allDigits.length > 0 ? allDigits[allDigits.length - 1].idx : -1;
   const commaIdxs: number[] = [];
-  tokens.forEach((t, idx) => { if (t.t === 'comma') commaIdxs.push(idx); });
+  tokens.forEach((t, idx) => {
+    if (t.t === 'comma') commaIdxs.push(idx);
+  });
   const scaleCommaCount = commaIdxs.filter((idx) => idx > lastDigitIdx).length;
   const groupingEnabled = commaIdxs.some((idx) => idx <= lastDigitIdx);
 
@@ -480,7 +528,10 @@ function renderNumericSection(tokens: Token[], absValue: number, forceNegative: 
     }
     const mantissaStr = mantissa.toFixed(decDigits);
     const dotPos = mantissaStr.indexOf('.');
-    intPart = (dotPos === -1 ? mantissaStr : mantissaStr.slice(0, dotPos)).padStart(mantissaIntDigits, '0');
+    intPart = (dotPos === -1 ? mantissaStr : mantissaStr.slice(0, dotPos)).padStart(
+      mantissaIntDigits,
+      '0',
+    );
     decPart = dotPos === -1 ? '' : mantissaStr.slice(dotPos + 1);
     const expSignChar = expValue < 0 ? '-' : expTok.sign === '+' ? '+' : '';
     expSignStr = expSignChar;
@@ -515,7 +566,10 @@ function renderNumericSection(tokens: Token[], absValue: number, forceNegative: 
         break;
       case 'digit':
         if (isIntRegion(idx)) {
-          if (!intEmitted) { out += intPart; intEmitted = true; }
+          if (!intEmitted) {
+            out += intPart;
+            intEmitted = true;
+          }
         } else if (!decEmitted) {
           if (decPart.length > 0) out += '.' + decPart;
           decEmitted = true;
@@ -579,7 +633,10 @@ function renderTextSection(section: string, value: string): FormattedValue {
 // formatWithPattern
 // ============================================================
 
-export function formatWithPattern(value: number | string | boolean, pattern: string): FormattedValue {
+export function formatWithPattern(
+  value: number | string | boolean,
+  pattern: string,
+): FormattedValue {
   if (typeof value === 'boolean') return { text: value ? 'TRUE' : 'FALSE' };
 
   const trimmedPattern = pattern.trim();
@@ -629,7 +686,11 @@ export function formatWithPattern(value: number | string | boolean, pattern: str
 // formatDisplayValue (compat API)
 // ============================================================
 
-export function formatDisplayValue(displayValue: string, format: NumberFormat, pattern?: string): string {
+export function formatDisplayValue(
+  displayValue: string,
+  format: NumberFormat,
+  pattern?: string,
+): string {
   if (displayValue === '') return '';
 
   let pat = pattern;

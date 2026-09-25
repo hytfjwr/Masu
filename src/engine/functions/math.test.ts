@@ -22,7 +22,12 @@ function evalFormula(formula: string, cellValues: Record<string, FormulaResult>)
   const ast = parse(formula);
   const result = evaluate(ast, resolve, expandRange);
   // For scalar results, just return them
-  if (typeof result === 'object' && result !== null && 'type' in result && result.type === 'spill') {
+  if (
+    typeof result === 'object' &&
+    result !== null &&
+    'type' in result &&
+    result.type === 'spill'
+  ) {
     return { type: 'error', code: '#VALUE!' };
   }
   return result as FormulaResult;
@@ -31,42 +36,64 @@ function evalFormula(formula: string, cellValues: Record<string, FormulaResult>)
 describe('SUMPRODUCT', () => {
   it('calculates the sum of products of two ranges', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 1, A2: 2, A3: 3,
-      B1: 4, B2: 5, B3: 6,
+      A1: 1,
+      A2: 2,
+      A3: 3,
+      B1: 4,
+      B2: 5,
+      B3: 6,
     };
-    expect(evalFormula('SUMPRODUCT(A1:A3,B1:B3)', vals)).toBe(1*4 + 2*5 + 3*6); // 32
+    expect(evalFormula('SUMPRODUCT(A1:A3,B1:B3)', vals)).toBe(1 * 4 + 2 * 5 + 3 * 6); // 32
   });
 
   it('calculates with three ranges', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 1, A2: 2,
-      B1: 3, B2: 4,
-      C1: 5, C2: 6,
+      A1: 1,
+      A2: 2,
+      B1: 3,
+      B2: 4,
+      C1: 5,
+      C2: 6,
     };
-    expect(evalFormula('SUMPRODUCT(A1:A2,B1:B2,C1:C2)', vals)).toBe(1*3*5 + 2*4*6); // 63
+    expect(evalFormula('SUMPRODUCT(A1:A2,B1:B2,C1:C2)', vals)).toBe(1 * 3 * 5 + 2 * 4 * 6); // 63
   });
 
   it('returns #VALUE! when ranges have different sizes', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 1, A2: 2, A3: 3,
-      B1: 4, B2: 5,
+      A1: 1,
+      A2: 2,
+      A3: 3,
+      B1: 4,
+      B2: 5,
     };
-    expect(evalFormula('SUMPRODUCT(A1:A3,B1:B2)', vals)).toEqual({ type: 'error', code: '#VALUE!' });
+    expect(evalFormula('SUMPRODUCT(A1:A3,B1:B2)', vals)).toEqual({
+      type: 'error',
+      code: '#VALUE!',
+    });
   });
 
   it('treats empty cells as 0', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 1, A2: 2, A3: 3,
+      A1: 1,
+      A2: 2,
+      A3: 3,
       B1: 4,
     };
-    expect(evalFormula('SUMPRODUCT(A1:A3,B1:B3)', vals)).toBe(1*4 + 2*0 + 3*0); // 4
+    expect(evalFormula('SUMPRODUCT(A1:A3,B1:B3)', vals)).toBe(1 * 4 + 2 * 0 + 3 * 0); // 4
   });
 });
 
 describe('STDEV', () => {
   it('calculates sample standard deviation', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 2, A2: 4, A3: 4, A4: 4, A5: 5, A6: 5, A7: 7, A8: 9,
+      A1: 2,
+      A2: 4,
+      A3: 4,
+      A4: 4,
+      A5: 5,
+      A6: 5,
+      A7: 7,
+      A8: 9,
     };
     const result = evalFormula('STDEV(A1:A8)', vals);
     expect(typeof result).toBe('number');
@@ -82,7 +109,14 @@ describe('STDEV', () => {
 describe('VAR', () => {
   it('calculates sample variance', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 2, A2: 4, A3: 4, A4: 4, A5: 5, A6: 5, A7: 7, A8: 9,
+      A1: 2,
+      A2: 4,
+      A3: 4,
+      A4: 4,
+      A5: 5,
+      A6: 5,
+      A7: 7,
+      A8: 9,
     };
     const result = evalFormula('VAR(A1:A8)', vals);
     expect(typeof result).toBe('number');

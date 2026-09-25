@@ -8,7 +8,10 @@ function cell(overrides: Partial<CellData>): CellData {
 
 describe('getCellDisplay', () => {
   it('right-aligns numbers by default', () => {
-    const result = getCellDisplay(cell({ rawValue: '42', displayValue: '42', computed: 42 }), undefined);
+    const result = getCellDisplay(
+      cell({ rawValue: '42', displayValue: '42', computed: 42 }),
+      undefined,
+    );
     expect(result.align).toBe('right');
     expect(result.kind).toBe('number');
     expect(result.text).toBe('42');
@@ -24,41 +27,45 @@ describe('getCellDisplay', () => {
   });
 
   it('reflects [Red] color from the pattern for negative numbers', () => {
-    const result = getCellDisplay(
-      cell({ rawValue: '-5', displayValue: '-5', computed: -5 }),
-      { numberFormat: 'custom', numberFormatPattern: '#,##0;[Red]-#,##0' },
-    );
+    const result = getCellDisplay(cell({ rawValue: '-5', displayValue: '-5', computed: -5 }), {
+      numberFormat: 'custom',
+      numberFormatPattern: '#,##0;[Red]-#,##0',
+    });
     expect(result.color).toBe('#d93025');
   });
 
   it('centers boolean TRUE', () => {
-    const result = getCellDisplay(cell({ rawValue: 'TRUE', displayValue: 'TRUE', computed: true }), undefined);
+    const result = getCellDisplay(
+      cell({ rawValue: 'TRUE', displayValue: 'TRUE', computed: true }),
+      undefined,
+    );
     expect(result.align).toBe('center');
     expect(result.kind).toBe('boolean');
     expect(result.text).toBe('TRUE');
   });
 
   it('centers error text', () => {
-    const result = getCellDisplay(cell({ rawValue: '=1/0', displayValue: '#DIV/0!', error: '#DIV/0!' }), undefined);
+    const result = getCellDisplay(
+      cell({ rawValue: '=1/0', displayValue: '#DIV/0!', error: '#DIV/0!' }),
+      undefined,
+    );
     expect(result.align).toBe('center');
     expect(result.kind).toBe('error');
     expect(result.text).toBe('#DIV/0!');
   });
 
   it('shows the raw value unformatted for plainText even when numeric', () => {
-    const result = getCellDisplay(
-      cell({ rawValue: '007', displayValue: '007', computed: 7 }),
-      { numberFormat: 'plainText' },
-    );
+    const result = getCellDisplay(cell({ rawValue: '007', displayValue: '007', computed: 7 }), {
+      numberFormat: 'plainText',
+    });
     expect(result.kind).toBe('text');
     expect(result.text).toBe('007');
   });
 
   it('lets an explicit textAlign override the kind default', () => {
-    const result = getCellDisplay(
-      cell({ rawValue: '42', displayValue: '42', computed: 42 }),
-      { textAlign: 'left' },
-    );
+    const result = getCellDisplay(cell({ rawValue: '42', displayValue: '42', computed: 42 }), {
+      textAlign: 'left',
+    });
     expect(result.align).toBe('left');
   });
 

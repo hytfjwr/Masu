@@ -17,7 +17,7 @@ const expandRange: RangeExpander = (start: string, end: string): string[] => {
   return keys;
 };
 
-const emptyResolve = (key: string): FormulaResult => key ? '' : '';
+const emptyResolve = (key: string): FormulaResult => (key ? '' : '');
 
 describe('HYPERLINK', () => {
   it('returns the label as display value with 2 args', () => {

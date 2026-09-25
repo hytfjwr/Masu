@@ -29,11 +29,14 @@ export const SparklineDialog = memo(function SparklineDialog({
   const [negativeColor, setNegativeColor] = useState('#EF4444');
   const [groupId, setGroupId] = useState('');
 
-  const handleBackdropMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  }, [onClose]);
+  const handleBackdropMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    },
+    [onClose],
+  );
 
   const handleConfirm = useCallback(() => {
     if (!dataRange.trim() || !locationCell.trim()) return;
@@ -56,7 +59,18 @@ export const SparklineDialog = memo(function SparklineDialog({
 
     onConfirm(config);
     onClose();
-  }, [sparkType, dataRange, locationCell, primaryColor, highPointColor, lowPointColor, negativeColor, groupId, onConfirm, onClose]);
+  }, [
+    sparkType,
+    dataRange,
+    locationCell,
+    primaryColor,
+    highPointColor,
+    lowPointColor,
+    negativeColor,
+    groupId,
+    onConfirm,
+    onClose,
+  ]);
 
   if (!visible) return null;
 

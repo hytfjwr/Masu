@@ -42,8 +42,11 @@ function traceRealGrid(floor: Element): void {
 
   // Each cell draws its own right + bottom border, like Cell.tsx; its width follows the zoom
   const sample = cells[0] as HTMLElement;
-  const zoom = sample.offsetWidth > 0 ? sample.getBoundingClientRect().width / sample.offsetWidth : 1;
-  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-grid-line').trim() || '#E2E8F0';
+  const zoom =
+    sample.offsetWidth > 0 ? sample.getBoundingClientRect().width / sample.offsetWidth : 1;
+  ctx.strokeStyle =
+    getComputedStyle(document.documentElement).getPropertyValue('--color-grid-line').trim() ||
+    '#E2E8F0';
   ctx.lineWidth = zoom;
   ctx.beginPath();
   for (const el of cells) {
