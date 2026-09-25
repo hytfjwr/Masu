@@ -931,21 +931,25 @@ export function useGridData(): UseGridDataReturn {
         callCache: new Map(),
         passStats: rec?.stats,
       };
+      // Spilled cells aren't graph nodes, so a formula reading another formula's spill can come
+      // earlier in the order; re-run whatever depends on the cells the pass spilled into.
+      const touched: string[] = [];
       if (rec) {
         rec.iterations = 1;
         for (const gKey of order) {
           const t0 = performance.now();
-          evaluateCell(gKey, passCache);
+          touched.push(...evaluateCell(gKey, passCache));
           recalcProfiler.cell(rec, gKey, performance.now() - t0);
         }
         recalcProfiler.end(rec);
       } else {
         for (const gKey of order) {
-          evaluateCell(gKey, passCache);
+          touched.push(...evaluateCell(gKey, passCache));
         }
       }
+      if (touched.length > 0) recalculateDependents(touched);
     }
-  }, [evaluateCell, globalKey]);
+  }, [evaluateCell, recalculateDependents, globalKey]);
 
   const getCellData = useCallback(
     (col: number, row: number): CellData | undefined => {
