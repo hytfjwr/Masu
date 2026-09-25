@@ -115,3 +115,25 @@ describe('logical values in references and arrays', () => {
     expect(evalFormula('SUM(--(A1:A1>1))', vals)).toBe(1);
   });
 });
+
+describe('arithmetic edge cases', () => {
+  it('returns #NUM! on overflow instead of Infinity', () => {
+    expect(evalFormula('1E308*10')).toEqual(err('#NUM!'));
+    expect(evalFormula('1E308+1E308')).toEqual(err('#NUM!'));
+    expect(evalFormula('-1E308-1E308')).toEqual(err('#NUM!'));
+    expect(evalFormula('1E308/1E-10')).toEqual(err('#NUM!'));
+  });
+
+  it('returns #DIV/0! for zero raised to a negative power', () => {
+    expect(evalFormula('0^-1')).toEqual(err('#DIV/0!'));
+    expect(evalFormula('0^0')).toEqual(err('#NUM!'));
+    expect(evalFormula('0^2')).toBe(0);
+  });
+
+  it('treats unary plus as a no-op', () => {
+    expect(evalFormula('+"abc"')).toBe('abc');
+    expect(evalFormula('+A1', { A1: 'abc' })).toBe('abc');
+    expect(evalFormula('+"5"+1')).toBe(6);
+    expect(evalFormula('-"5"')).toBe(-5);
+  });
+});
