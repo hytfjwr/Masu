@@ -164,6 +164,9 @@ export function useColumnRowSizes(activeSheetId: string): UseColumnRowSizesRetur
   // Prefix-sum offset indices for the active sheet only, rebuilt whenever it changes or any
   // size mutation bumps sizeVersion (mutations on other sheets cause a harmless extra rebuild).
   // The active sheet's defaults (only restoreAllSizes changes them, which bumps sizeVersion)
+  // The size maps live in a ref and are mutated in place; sizeVersion is what drives recomputation,
+  // so reading the ref here during render is intentional.
+  /* eslint-disable react-hooks/refs */
   const defaultColWidth = useMemo(
     () => colDefault(getSheetSizes(activeSheetId)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -185,6 +188,7 @@ export function useColumnRowSizes(activeSheetId: string): UseColumnRowSizesRetur
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [activeSheetId, sizeVersion, defaultRowHeight],
   );
+  /* eslint-enable react-hooks/refs */
 
   const getColWidth = useCallback((colIndex: number): number => {
     const sizes = getSheetSizes(activeSheetId);
