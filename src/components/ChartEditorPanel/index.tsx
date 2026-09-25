@@ -4,6 +4,8 @@ import type { CellData } from '../../types/grid';
 import { buildChartModel, DEFAULT_PALETTE } from '../../utils/chartData';
 import type { ChartCell } from '../../utils/chartData';
 import { cellKey, parseCellKey } from '../../utils/coordinates';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 import { ColorPicker } from '../Toolbar/ColorPicker';
 
 interface ChartEditorPanelProps {
@@ -15,15 +17,15 @@ interface ChartEditorPanelProps {
 
 type Tab = 'settings' | 'customize';
 
-const CHART_TYPE_OPTIONS: { value: ChartType; label: string }[] = [
-  { value: 'bar', label: '縦棒' },
-  { value: 'horizontalBar', label: '横棒' },
-  { value: 'stackedBar', label: '積み上げ棒' },
-  { value: 'line', label: '折れ線' },
-  { value: 'area', label: 'エリア' },
-  { value: 'pie', label: '円' },
-  { value: 'donut', label: 'ドーナツ' },
-  { value: 'scatter', label: '散布図' },
+const CHART_TYPE_OPTIONS: { value: ChartType; labelKey: MessageKey }[] = [
+  { value: 'bar', labelKey: 'panels.chartEditor.type.bar' },
+  { value: 'horizontalBar', labelKey: 'panels.chartEditor.type.horizontalBar' },
+  { value: 'stackedBar', labelKey: 'panels.chartEditor.type.stackedBar' },
+  { value: 'line', labelKey: 'panels.chartEditor.type.line' },
+  { value: 'area', labelKey: 'panels.chartEditor.type.area' },
+  { value: 'pie', labelKey: 'panels.chartEditor.type.pie' },
+  { value: 'donut', labelKey: 'panels.chartEditor.type.donut' },
+  { value: 'scatter', labelKey: 'panels.chartEditor.type.scatter' },
 ];
 
 function ChartTypeIcon({ type }: { type: ChartType }) {
@@ -147,6 +149,7 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
   getCellData,
   version,
 }: ChartEditorPanelProps) {
+  const { t } = useI18n();
   const [tab, setTab] = useState<Tab>('settings');
   const [rangeInput, setRangeInput] = useState(() => rangeToString(chart.sourceRange));
   const [rangeError, setRangeError] = useState('');
@@ -169,12 +172,12 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
   const commitRange = useCallback(() => {
     const parsed = parseRangeString(rangeInput);
     if (!parsed) {
-      setRangeError('範囲は "A1" または "A1:B10" の形式で入力してください');
+      setRangeError(t('panels.chartEditor.error.rangeFormat'));
       return;
     }
     setRangeError('');
     onUpdate({ sourceRange: parsed });
-  }, [rangeInput, onUpdate]);
+  }, [rangeInput, onUpdate, t]);
 
   const handleSeriesColorChange = useCallback(
     (index: number, color: string | undefined) => {
@@ -200,27 +203,29 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
           className={tabBtnClass(tab === 'settings')}
           onClick={() => setTab('settings')}
         >
-          設定
+          {t('panels.chartEditor.tab.setup')}
         </button>
         <button
           type="button"
           className={tabBtnClass(tab === 'customize')}
           onClick={() => setTab('customize')}
         >
-          カスタマイズ
+          {t('panels.chartEditor.tab.customize')}
         </button>
       </div>
 
       {tab === 'settings' && (
         <div className="space-y-3">
           <div>
-            <span className="text-xs text-text-primary mb-1 block">グラフの種類</span>
+            <span className="text-xs text-text-primary mb-1 block">
+              {t('panels.chartEditor.label.chartType')}
+            </span>
             <div className="grid grid-cols-4 gap-1.5">
               {CHART_TYPE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
-                  title={opt.label}
+                  title={t(opt.labelKey)}
                   onClick={() => onUpdate({ type: opt.value })}
                   className={`flex flex-col items-center justify-center gap-1 h-14 rounded border text-[10px] transition-colors ${
                     chart.type === opt.value
@@ -229,14 +234,14 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
                   }`}
                 >
                   <ChartTypeIcon type={opt.value} />
-                  <span>{opt.label}</span>
+                  <span>{t(opt.labelKey)}</span>
                 </button>
               ))}
             </div>
           </div>
 
           <label className={labelClass}>
-            <span>データ範囲</span>
+            <span>{t('panels.chartEditor.label.dataRange')}</span>
             <input
               type="text"
               value={rangeInput}
@@ -255,7 +260,7 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
           {rangeError && <div className="text-xs text-error">{rangeError}</div>}
 
           <label className={labelClass}>
-            <span>系列の向き</span>
+            <span>{t('panels.chartEditor.label.seriesIn')}</span>
             <div className="flex gap-3">
               <label className="flex items-center gap-1.5 text-xs text-text-primary">
                 <input
@@ -264,7 +269,7 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
                   checked={seriesIn === 'columns'}
                   onChange={() => onUpdate({ seriesIn: 'columns' })}
                 />
-                <span>列</span>
+                <span>{t('panels.chartEditor.seriesIn.columns')}</span>
               </label>
               <label className="flex items-center gap-1.5 text-xs text-text-primary">
                 <input
@@ -273,7 +278,7 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
                   checked={seriesIn === 'rows'}
                   onChange={() => onUpdate({ seriesIn: 'rows' })}
                 />
-                <span>行</span>
+                <span>{t('panels.chartEditor.seriesIn.rows')}</span>
               </label>
             </div>
           </label>
@@ -284,7 +289,7 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
               checked={useFirstRowAsHeaders}
               onChange={(e) => onUpdate({ useFirstRowAsHeaders: e.target.checked })}
             />
-            <span>1 行目を見出しとして使用</span>
+            <span>{t('panels.chartEditor.label.useFirstRowAsHeaders')}</span>
           </label>
           <label className="flex items-center gap-2 text-xs text-text-primary">
             <input
@@ -292,7 +297,7 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
               checked={useFirstColumnAsLabels}
               onChange={(e) => onUpdate({ useFirstColumnAsLabels: e.target.checked })}
             />
-            <span>1 列目をラベルとして使用</span>
+            <span>{t('panels.chartEditor.label.useFirstColumnAsLabels')}</span>
           </label>
         </div>
       )}
@@ -300,7 +305,7 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
       {tab === 'customize' && (
         <div className="space-y-3">
           <label className={labelClass}>
-            <span>タイトル</span>
+            <span>{t('panels.chartEditor.label.chartTitle')}</span>
             <input
               type="text"
               value={chart.title}
@@ -309,7 +314,7 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
             />
           </label>
           <label className={labelClass}>
-            <span>X 軸タイトル</span>
+            <span>{t('panels.chartEditor.label.xAxisTitle')}</span>
             <input
               type="text"
               value={chart.xAxisTitle ?? ''}
@@ -318,7 +323,7 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
             />
           </label>
           <label className={labelClass}>
-            <span>Y 軸タイトル</span>
+            <span>{t('panels.chartEditor.label.yAxisTitle')}</span>
             <input
               type="text"
               value={chart.yAxisTitle ?? ''}
@@ -333,11 +338,11 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
               checked={showLegend}
               onChange={(e) => onUpdate({ showLegend: e.target.checked })}
             />
-            <span>凡例を表示</span>
+            <span>{t('panels.chartEditor.label.showLegend')}</span>
           </label>
           {showLegend && (
             <label className={labelClass}>
-              <span>凡例の位置</span>
+              <span>{t('panels.chartEditor.label.legendPosition')}</span>
               <select
                 value={legendPosition}
                 onChange={(e) =>
@@ -345,9 +350,9 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
                 }
                 className={inputClass}
               >
-                <option value="top">上</option>
-                <option value="bottom">下</option>
-                <option value="right">右</option>
+                <option value="top">{t('panels.chartEditor.legendPosition.top')}</option>
+                <option value="bottom">{t('panels.chartEditor.legendPosition.bottom')}</option>
+                <option value="right">{t('panels.chartEditor.legendPosition.right')}</option>
               </select>
             </label>
           )}
@@ -358,21 +363,23 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
               checked={showGridlines}
               onChange={(e) => onUpdate({ showGridlines: e.target.checked })}
             />
-            <span>グリッド線を表示</span>
+            <span>{t('panels.chartEditor.label.showGridlines')}</span>
           </label>
 
           <div className="flex items-center justify-between text-xs text-text-primary">
-            <span>背景色</span>
+            <span>{t('panels.shared.backgroundColor')}</span>
             <ColorPicker
               currentColor={chart.backgroundColor}
               onColorChange={(color) => onUpdate({ backgroundColor: color })}
-              label="背景色"
-              icon={<span className="text-[10px]">背景</span>}
+              label={t('panels.shared.backgroundColor')}
+              icon={<span className="text-[10px]">{t('panels.chartEditor.icon.background')}</span>}
             />
           </div>
 
           <div className="border-t border-grid-line pt-2 space-y-2">
-            <span className="text-xs text-text-primary/60">系列の色</span>
+            <span className="text-xs text-text-primary/60">
+              {t('panels.chartEditor.label.seriesColors')}
+            </span>
             {model.series.map((s, i) => (
               <div
                 key={`${s.name}-${i}`}
@@ -383,7 +390,7 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
                   currentColor={chart.seriesColors?.[i] ?? s.color}
                   onColorChange={(color) => handleSeriesColorChange(i, color)}
                   label={s.name}
-                  icon={<span className="text-[10px]">色</span>}
+                  icon={<span className="text-[10px]">{t('panels.chartEditor.icon.color')}</span>}
                 />
               </div>
             ))}
