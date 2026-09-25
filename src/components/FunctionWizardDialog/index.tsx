@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import type { FunctionMeta } from '../../engine/types';
+import { useI18n } from '../../i18n/useI18n';
 import { getCategorizedFunctions } from '../../pivot/functionCategories';
 import type { FunctionCategory } from '../../pivot/functionCategories';
 import { parseSignature } from '../../pivot/signatureParser';
@@ -17,7 +18,8 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
   onInsertFormula,
   evaluateFormula,
 }: FunctionWizardDialogProps) {
-  const categories = useMemo(() => getCategorizedFunctions(), []);
+  const { t } = useI18n();
+  const categories = useMemo(() => getCategorizedFunctions(t), [t]);
   const [selectedCategory, setSelectedCategory] = useState<FunctionCategory | null>(null);
   const [selectedFunction, setSelectedFunction] = useState<FunctionMeta | null>(null);
   const [argValues, setArgValues] = useState<string[]>([]);
@@ -124,7 +126,9 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
         className="glass-panel rounded-2xl p-4 min-w-[600px] max-w-[750px] max-h-[85vh] flex flex-col animate-dialog-spring"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <h3 className="text-sm font-medium text-text-primary mb-3">関数の挿入</h3>
+        <h3 className="text-sm font-medium text-text-primary mb-3">
+          {t('dialogs.functionWizard.title')}
+        </h3>
 
         <div className="flex gap-3 flex-1 min-h-0">
           {/* Left panel: categories + function list */}
@@ -137,7 +141,7 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
                 setSearchQuery(e.target.value);
                 setSelectedCategory(null);
               }}
-              placeholder="関数を検索..."
+              placeholder={t('dialogs.functionWizard.searchPlaceholder')}
               className="h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none"
             />
 
@@ -152,7 +156,7 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
                 }`}
                 onClick={() => handleCategorySelect(null)}
               >
-                すべて
+                {t('dialogs.functionWizard.allCategories')}
               </button>
               {categories.map((cat) => (
                 <button
@@ -188,7 +192,9 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
                 </button>
               ))}
               {displayedFunctions.length === 0 && (
-                <div className="text-xs text-text-primary/40 p-2">関数が見つかりません</div>
+                <div className="text-xs text-text-primary/40 p-2">
+                  {t('dialogs.functionWizard.noFunctionsFound')}
+                </div>
               )}
             </div>
           </div>
@@ -210,7 +216,9 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
                 {/* Arguments */}
                 <div className="flex-1 overflow-auto space-y-2">
                   {parsedSig.args.length === 0 ? (
-                    <div className="text-xs text-text-primary/60 p-2">引数なし</div>
+                    <div className="text-xs text-text-primary/60 p-2">
+                      {t('dialogs.functionWizard.noArguments')}
+                    </div>
                   ) : (
                     parsedSig.args.map((arg, idx) => (
                       <label key={idx} className="flex flex-col gap-0.5">
@@ -219,17 +227,23 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
                           {arg.required ? (
                             <span className="text-red-400 ml-0.5">*</span>
                           ) : (
-                            <span className="text-text-primary/40 ml-1 text-[10px]">(省略可)</span>
+                            <span className="text-text-primary/40 ml-1 text-[10px]">
+                              {t('dialogs.functionWizard.optionalArg')}
+                            </span>
                           )}
                           {arg.variadic && (
-                            <span className="text-text-primary/40 ml-1 text-[10px]">(複数可)</span>
+                            <span className="text-text-primary/40 ml-1 text-[10px]">
+                              {t('dialogs.functionWizard.variadicArg')}
+                            </span>
                           )}
                         </span>
                         <input
                           type="text"
                           value={argValues[idx] ?? ''}
                           onChange={(e) => handleArgChange(idx, e.target.value)}
-                          placeholder={`${arg.name}を入力`}
+                          placeholder={t('dialogs.functionWizard.argPlaceholder', {
+                            name: arg.name,
+                          })}
                           className="h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none focus:border-accent-selection"
                         />
                       </label>
@@ -239,13 +253,17 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
 
                 {/* Preview */}
                 <div className="bg-ui-bg border border-grid-line rounded p-2">
-                  <div className="text-[10px] text-text-primary/60 mb-0.5">数式プレビュー</div>
+                  <div className="text-[10px] text-text-primary/60 mb-0.5">
+                    {t('dialogs.functionWizard.formulaPreview')}
+                  </div>
                   <div className="text-xs font-mono text-text-primary truncate">
                     {currentFormula}
                   </div>
                   {preview && (
                     <div className="mt-1">
-                      <div className="text-[10px] text-text-primary/60">計算結果</div>
+                      <div className="text-[10px] text-text-primary/60">
+                        {t('dialogs.functionWizard.result')}
+                      </div>
                       <div className="text-xs font-mono text-accent-selection">{preview}</div>
                     </div>
                   )}
@@ -253,7 +271,7 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
               </>
             ) : (
               <div className="flex-1 flex items-center justify-center text-xs text-text-primary/40">
-                左のリストから関数を選択してください
+                {t('dialogs.functionWizard.selectFunctionPrompt')}
               </div>
             )}
           </div>
@@ -266,7 +284,7 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
             className="h-7 px-3 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40"
             onClick={onClose}
           >
-            キャンセル
+            {t('common.cancel')}
           </button>
           <button
             type="button"
@@ -275,7 +293,7 @@ export const FunctionWizardDialog = memo(function FunctionWizardDialog({
             onClick={handleConfirm}
             disabled={!selectedFunction}
           >
-            OK
+            {t('common.ok')}
           </button>
         </div>
       </div>

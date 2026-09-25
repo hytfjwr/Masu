@@ -1,6 +1,8 @@
 import { memo, useCallback, useState } from 'react';
 import type { AggregationType, PivotTableConfig, PivotValueField } from '../../types/pivot';
 import type { CellData, NumberFormat, SheetData } from '../../types/grid';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 import { parseCellKey, cellKey } from '../../utils/coordinates';
 import { buildPivotTable } from '../../pivot/pivotEngine';
 import type { PivotComputeConfig } from '../../pivot/pivotEngine';
@@ -19,19 +21,19 @@ interface PivotTableDialogProps {
   ) => void;
 }
 
-const AGG_OPTIONS: { value: AggregationType; label: string }[] = [
-  { value: 'sum', label: '合計' },
-  { value: 'count', label: '個数' },
-  { value: 'average', label: '平均' },
-  { value: 'max', label: '最大' },
-  { value: 'min', label: '最小' },
+const AGG_OPTIONS: { value: AggregationType; labelKey: MessageKey }[] = [
+  { value: 'sum', labelKey: 'dialogs.pivotTable.aggSum' },
+  { value: 'count', labelKey: 'dialogs.pivotTable.aggCount' },
+  { value: 'average', labelKey: 'dialogs.pivotTable.aggAverage' },
+  { value: 'max', labelKey: 'dialogs.pivotTable.aggMax' },
+  { value: 'min', labelKey: 'dialogs.pivotTable.aggMin' },
 ];
 
-const FORMAT_OPTIONS: { value: NumberFormat; label: string }[] = [
-  { value: 'auto', label: '自動' },
-  { value: 'number', label: '数値' },
-  { value: 'currency', label: '通貨' },
-  { value: 'percent', label: 'パーセント' },
+const FORMAT_OPTIONS: { value: NumberFormat; labelKey: MessageKey }[] = [
+  { value: 'auto', labelKey: 'dialogs.pivotTable.formatAuto' },
+  { value: 'number', labelKey: 'dialogs.pivotTable.formatNumber' },
+  { value: 'currency', labelKey: 'dialogs.pivotTable.formatCurrency' },
+  { value: 'percent', labelKey: 'dialogs.pivotTable.formatPercent' },
 ];
 
 type FieldArea = 'available' | 'row' | 'col' | 'value' | 'filter';
@@ -52,6 +54,7 @@ export const PivotTableDialog = memo(function PivotTableDialog({
   getCellData,
   onCreatePivot,
 }: PivotTableDialogProps) {
+  const { t } = useI18n();
   const [sourceRange, setSourceRange] = useState('');
   const [fields, setFields] = useState<FieldItem[]>([]);
   const [dragItem, setDragItem] = useState<number | null>(null);
@@ -61,13 +64,13 @@ export const PivotTableDialog = memo(function PivotTableDialog({
 
   const handleDetectFields = useCallback(() => {
     if (!sourceRange.trim() || !activeSheet) {
-      setError('ソースデータ範囲を入力してください');
+      setError(t('dialogs.pivotTable.enterSourceRange'));
       return;
     }
 
     const rangeParts = sourceRange.trim().toUpperCase().split(':');
     if (rangeParts.length !== 2) {
-      setError('範囲の形式が不正です（例: A1:D100）');
+      setError(t('dialogs.pivotTable.invalidRangeFormat'));
       return;
     }
 
@@ -95,9 +98,9 @@ export const PivotTableDialog = memo(function PivotTableDialog({
       );
       setError('');
     } catch {
-      setError('範囲の解析に失敗しました');
+      setError(t('dialogs.pivotTable.rangeParseFailed'));
     }
-  }, [sourceRange, activeSheet, getCellData]);
+  }, [sourceRange, activeSheet, getCellData, t]);
 
   const handleDragStart = useCallback((_e: React.DragEvent, index: number) => {
     setDragItem(index);
@@ -145,7 +148,7 @@ export const PivotTableDialog = memo(function PivotTableDialog({
     const filterFields = fields.filter((f) => f.area === 'filter').map((f) => f.index);
 
     if (valueFields.length === 0) {
-      setError('少なくとも1つの値フィールドを指定してください');
+      setError(t('dialogs.pivotTable.requireValueField'));
       return;
     }
 
@@ -180,10 +183,10 @@ export const PivotTableDialog = memo(function PivotTableDialog({
     // Create output sheet
     const existingNames = sheets.map((s) => s.name);
     let pivotNum = 1;
-    while (existingNames.includes(`ピボット_${pivotNum}`)) {
+    while (existingNames.includes(t('dialogs.pivotTable.sheetName', { index: pivotNum }))) {
       pivotNum++;
     }
-    const outputSheet = createEmptySheet(`ピボット_${pivotNum}`);
+    const outputSheet = createEmptySheet(t('dialogs.pivotTable.sheetName', { index: pivotNum }));
     // Set size large enough for pivot data
     outputSheet.rowCount = Math.max(100, pivotResult.length + 10);
     outputSheet.colCount = Math.max(26, (pivotResult[0]?.length ?? 0) + 5);
@@ -222,6 +225,7 @@ export const PivotTableDialog = memo(function PivotTableDialog({
     activeSheetId,
     onCreatePivot,
     onClose,
+    t,
   ]);
 
   const handleBackdropMouseDown = useCallback(
@@ -248,13 +252,15 @@ export const PivotTableDialog = memo(function PivotTableDialog({
         className="glass-panel rounded-2xl p-4 min-w-[560px] max-w-[700px] max-h-[90vh] overflow-auto animate-dialog-spring"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <h3 className="text-sm font-medium text-text-primary mb-3">ピボットテーブルの挿入</h3>
+        <h3 className="text-sm font-medium text-text-primary mb-3">
+          {t('dialogs.pivotTable.title')}
+        </h3>
 
         {/* Source range */}
         <div className="space-y-3">
           <div className="flex items-end gap-2">
             <label className="flex flex-col gap-1 text-xs text-text-primary flex-1">
-              <span>ソースデータ範囲（例: A1:D100）</span>
+              <span>{t('dialogs.pivotTable.sourceRangeLabel')}</span>
               <input
                 type="text"
                 value={sourceRange}
@@ -269,7 +275,7 @@ export const PivotTableDialog = memo(function PivotTableDialog({
               className="h-7 px-3 text-xs text-white bg-accent-selection rounded hover:opacity-90"
               onClick={handleDetectFields}
             >
-              フィールド検出
+              {t('dialogs.pivotTable.detectFields')}
             </button>
           </div>
 
@@ -282,7 +288,7 @@ export const PivotTableDialog = memo(function PivotTableDialog({
                 {/* Available fields */}
                 <div>
                   <div className="text-xs text-text-primary/70 mb-1 font-medium">
-                    フィールド一覧
+                    {t('dialogs.pivotTable.fieldsList')}
                   </div>
                   <div
                     className="min-h-[80px] bg-ui-bg border border-grid-line rounded p-1 space-y-0.5"
@@ -301,7 +307,7 @@ export const PivotTableDialog = memo(function PivotTableDialog({
                     ))}
                     {availableFields.length === 0 && (
                       <div className="text-[10px] text-text-primary/40 p-1">
-                        全フィールド配置済み
+                        {t('dialogs.pivotTable.allFieldsPlaced')}
                       </div>
                     )}
                   </div>
@@ -309,7 +315,9 @@ export const PivotTableDialog = memo(function PivotTableDialog({
 
                 {/* Filter area */}
                 <div>
-                  <div className="text-xs text-text-primary/70 mb-1 font-medium">フィルター</div>
+                  <div className="text-xs text-text-primary/70 mb-1 font-medium">
+                    {t('dialogs.pivotTable.filters')}
+                  </div>
                   <DropArea
                     fields={filterFieldsList}
                     area="filter"
@@ -324,7 +332,9 @@ export const PivotTableDialog = memo(function PivotTableDialog({
               <div className="grid grid-cols-2 gap-3">
                 {/* Row area */}
                 <div>
-                  <div className="text-xs text-text-primary/70 mb-1 font-medium">行</div>
+                  <div className="text-xs text-text-primary/70 mb-1 font-medium">
+                    {t('dialogs.pivotTable.rows')}
+                  </div>
                   <DropArea
                     fields={rowFieldsList}
                     area="row"
@@ -337,7 +347,9 @@ export const PivotTableDialog = memo(function PivotTableDialog({
 
                 {/* Column area */}
                 <div>
-                  <div className="text-xs text-text-primary/70 mb-1 font-medium">列</div>
+                  <div className="text-xs text-text-primary/70 mb-1 font-medium">
+                    {t('dialogs.pivotTable.columns')}
+                  </div>
                   <DropArea
                     fields={colFieldsList}
                     area="col"
@@ -351,7 +363,9 @@ export const PivotTableDialog = memo(function PivotTableDialog({
 
               {/* Value area */}
               <div>
-                <div className="text-xs text-text-primary/70 mb-1 font-medium">値</div>
+                <div className="text-xs text-text-primary/70 mb-1 font-medium">
+                  {t('dialogs.pivotTable.values')}
+                </div>
                 <div
                   className="min-h-[60px] bg-ui-bg border border-grid-line rounded p-1 space-y-0.5"
                   onDragOver={handleDragOver}
@@ -375,7 +389,7 @@ export const PivotTableDialog = memo(function PivotTableDialog({
                       >
                         {AGG_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>
-                            {opt.label}
+                            {t(opt.labelKey)}
                           </option>
                         ))}
                       </select>
@@ -389,7 +403,7 @@ export const PivotTableDialog = memo(function PivotTableDialog({
                       >
                         {FORMAT_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>
-                            {opt.label}
+                            {t(opt.labelKey)}
                           </option>
                         ))}
                       </select>
@@ -404,7 +418,7 @@ export const PivotTableDialog = memo(function PivotTableDialog({
                   ))}
                   {valueFieldsList.length === 0 && (
                     <div className="text-[10px] text-text-primary/40 p-1">
-                      フィールドをここにドラッグ
+                      {t('dialogs.pivotTable.dragFieldsHere')}
                     </div>
                   )}
                 </div>
@@ -419,7 +433,7 @@ export const PivotTableDialog = memo(function PivotTableDialog({
               className="h-7 px-3 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40"
               onClick={onClose}
             >
-              キャンセル
+              {t('common.cancel')}
             </button>
             <button
               type="button"
@@ -428,7 +442,7 @@ export const PivotTableDialog = memo(function PivotTableDialog({
               onClick={handleConfirm}
               disabled={fields.length === 0}
             >
-              OK
+              {t('common.ok')}
             </button>
           </div>
         </div>
@@ -449,6 +463,7 @@ interface DropAreaProps {
 }
 
 function DropArea({ fields, area, onDragOver, onDrop, onDragStart, onRemove }: DropAreaProps) {
+  const { t } = useI18n();
   return (
     <div
       className="min-h-[60px] bg-ui-bg border border-grid-line rounded p-1 space-y-0.5"
@@ -473,7 +488,9 @@ function DropArea({ fields, area, onDragOver, onDrop, onDragStart, onRemove }: D
         </div>
       ))}
       {fields.length === 0 && (
-        <div className="text-[10px] text-text-primary/40 p-1">フィールドをここにドラッグ</div>
+        <div className="text-[10px] text-text-primary/40 p-1">
+          {t('dialogs.pivotTable.dragFieldsHere')}
+        </div>
       )}
     </div>
   );

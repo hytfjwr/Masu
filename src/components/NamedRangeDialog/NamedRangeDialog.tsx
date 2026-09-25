@@ -1,5 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 import type { NamedRange } from '../../types/grid';
+import { useI18n } from '../../i18n/useI18n';
 
 interface NamedRangeDialogProps {
   visible: boolean;
@@ -22,6 +23,7 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
   currentSheetId,
   sheets,
 }: NamedRangeDialogProps) {
+  const { t } = useI18n();
   const [editingName, setEditingName] = useState<string | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [formName, setFormName] = useState('');
@@ -66,18 +68,18 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
 
   const handleSave = useCallback(() => {
     if (!formName.trim()) {
-      setError('名前を入力してください');
+      setError(t('dialogs.namedRange.enterName'));
       return;
     }
     if (!formRange.trim()) {
-      setError('範囲を入力してください');
+      setError(t('dialogs.namedRange.enterRange'));
       return;
     }
 
     if (isNew) {
       const success = onAdd(formName.trim(), formRange.trim().toUpperCase(), formSheetId);
       if (!success) {
-        setError('名前が無効か、既に存在します');
+        setError(t('dialogs.namedRange.invalidOrExists'));
         return;
       }
     } else if (editingName) {
@@ -88,12 +90,12 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
         formSheetId,
       );
       if (!success) {
-        setError('名前が無効か、既に存在します');
+        setError(t('dialogs.namedRange.invalidOrExists'));
         return;
       }
     }
     resetForm();
-  }, [formName, formRange, formSheetId, isNew, editingName, onAdd, onUpdate, resetForm]);
+  }, [formName, formRange, formSheetId, isNew, editingName, onAdd, onUpdate, resetForm, t]);
 
   const handleDelete = useCallback(
     (name: string) => {
@@ -115,7 +117,9 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
       <div className="glass-panel rounded-2xl w-[500px] max-h-[80vh] flex flex-col animate-dialog-spring">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-grid-line">
-          <h2 className="text-sm font-semibold text-text-primary">名前付き範囲の管理</h2>
+          <h2 className="text-sm font-semibold text-text-primary">
+            {t('dialogs.namedRange.title')}
+          </h2>
           <button
             onClick={onClose}
             className="text-text-primary hover:text-error text-lg leading-none"
@@ -129,7 +133,9 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
           {/* Existing named ranges list */}
           {namedRanges.length > 0 && (
             <div className="space-y-1">
-              <div className="text-xs font-medium text-text-primary mb-1">定義済みの名前</div>
+              <div className="text-xs font-medium text-text-primary mb-1">
+                {t('dialogs.namedRange.definedNames')}
+              </div>
               {namedRanges.map((nr) => {
                 const sheetName = sheets.find((s) => s.id === nr.refSheetId)?.name ?? '';
                 return (
@@ -153,13 +159,13 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
                         onClick={() => handleEditRange(nr)}
                         className="px-2 py-0.5 text-xs bg-ui-bg border border-grid-line rounded hover:bg-header-bg"
                       >
-                        編集
+                        {t('dialogs.namedRange.edit')}
                       </button>
                       <button
                         onClick={() => handleDelete(nr.name)}
                         className="px-2 py-0.5 text-xs bg-ui-bg border border-grid-line rounded hover:bg-error/20 hover:text-error"
                       >
-                        削除
+                        {t('common.delete')}
                       </button>
                     </div>
                   </div>
@@ -170,7 +176,7 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
 
           {namedRanges.length === 0 && !isNew && (
             <div className="text-xs text-text-primary/60 text-center py-4">
-              名前付き範囲がありません
+              {t('dialogs.namedRange.empty')}
             </div>
           )}
 
@@ -178,32 +184,38 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
           {(isNew || editingName) && (
             <div className="border border-grid-line rounded p-3 space-y-2">
               <div className="text-xs font-medium text-text-primary">
-                {isNew ? '新規作成' : '編集'}
+                {isNew ? t('dialogs.namedRange.new') : t('dialogs.namedRange.edit')}
               </div>
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <label className="text-xs text-text-primary/80 block mb-0.5">名前</label>
+                  <label className="text-xs text-text-primary/80 block mb-0.5">
+                    {t('dialogs.namedRange.nameLabel')}
+                  </label>
                   <input
                     type="text"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
                     className="w-full h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded"
-                    placeholder="例: 月次売上"
+                    placeholder={t('dialogs.namedRange.namePlaceholder')}
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-xs text-text-primary/80 block mb-0.5">範囲</label>
+                  <label className="text-xs text-text-primary/80 block mb-0.5">
+                    {t('dialogs.namedRange.rangeLabel')}
+                  </label>
                   <input
                     type="text"
                     value={formRange}
                     onChange={(e) => setFormRange(e.target.value)}
                     className="w-full h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded"
-                    placeholder="例: A1:B10"
+                    placeholder={t('dialogs.namedRange.rangePlaceholder')}
                   />
                 </div>
               </div>
               <div>
-                <label className="text-xs text-text-primary/80 block mb-0.5">参照シート</label>
+                <label className="text-xs text-text-primary/80 block mb-0.5">
+                  {t('dialogs.namedRange.sheetLabel')}
+                </label>
                 <select
                   value={formSheetId}
                   onChange={(e) => setFormSheetId(e.target.value)}
@@ -222,13 +234,13 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
                   onClick={resetForm}
                   className="px-3 py-1 text-xs bg-ui-bg border border-grid-line rounded hover:bg-header-bg"
                 >
-                  キャンセル
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleSave}
                   className="px-3 py-1 text-xs bg-accent-selection text-white border border-accent-selection rounded hover:opacity-90"
                 >
-                  保存
+                  {t('dialogs.namedRange.save')}
                 </button>
               </div>
             </div>
@@ -241,13 +253,13 @@ export const NamedRangeDialog = memo(function NamedRangeDialog({
             onClick={handleNewRange}
             className="px-3 py-1 text-xs bg-accent-selection text-white rounded hover:opacity-90"
           >
-            新規追加
+            {t('dialogs.namedRange.addNew')}
           </button>
           <button
             onClick={onClose}
             className="px-3 py-1 text-xs bg-ui-bg border border-grid-line rounded hover:bg-header-bg"
           >
-            閉じる
+            {t('common.close')}
           </button>
         </div>
       </div>

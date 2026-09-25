@@ -1,6 +1,8 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import type { PrintSettings, PaperSize, Orientation, MarginPreset } from '../../types/print';
 import type { CellData } from '../../types/grid';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 import {
   computePageLayout,
   resolveMargins,
@@ -30,15 +32,15 @@ const PAPER_OPTIONS: { value: PaperSize; label: string }[] = [
   { value: 'Legal', label: 'Legal' },
 ];
 
-const ORIENTATION_OPTIONS: { value: Orientation; label: string }[] = [
-  { value: 'portrait', label: '縦' },
-  { value: 'landscape', label: '横' },
+const ORIENTATION_OPTIONS: { value: Orientation; labelKey: MessageKey }[] = [
+  { value: 'portrait', labelKey: 'dialogs.printPreview.orientationPortrait' },
+  { value: 'landscape', labelKey: 'dialogs.printPreview.orientationLandscape' },
 ];
 
-const MARGIN_OPTIONS: { value: MarginPreset; label: string }[] = [
-  { value: 'normal', label: '標準' },
-  { value: 'narrow', label: '狭い' },
-  { value: 'wide', label: '広い' },
+const MARGIN_OPTIONS: { value: MarginPreset; labelKey: MessageKey }[] = [
+  { value: 'normal', labelKey: 'dialogs.printPreview.marginNormal' },
+  { value: 'narrow', labelKey: 'dialogs.printPreview.marginNarrow' },
+  { value: 'wide', labelKey: 'dialogs.printPreview.marginWide' },
 ];
 
 export const PrintPreviewDialog = memo(function PrintPreviewDialog({
@@ -51,6 +53,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
   sheetName,
   documentTitle,
 }: PrintPreviewDialogProps) {
+  const { t } = useI18n();
   const [settings, setSettings] = useState<PrintSettings>({
     paperSize: 'A4',
     orientation: 'portrait',
@@ -132,12 +135,14 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
       >
         {/* Left: Settings panel */}
         <div className="w-[240px] p-4 border-r border-grid-line overflow-y-auto">
-          <h3 className="text-sm font-medium text-text-primary mb-3">印刷プレビュー</h3>
+          <h3 className="text-sm font-medium text-text-primary mb-3">
+            {t('dialogs.printPreview.title')}
+          </h3>
 
           <div className="space-y-3">
             {/* Paper size */}
             <label className="flex flex-col gap-1 text-xs text-text-primary">
-              <span>用紙サイズ</span>
+              <span>{t('dialogs.printPreview.paperSizeLabel')}</span>
               <select
                 value={settings.paperSize}
                 onChange={(e) => {
@@ -156,7 +161,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
 
             {/* Orientation */}
             <label className="flex flex-col gap-1 text-xs text-text-primary">
-              <span>向き</span>
+              <span>{t('dialogs.printPreview.orientationLabel')}</span>
               <div className="flex gap-2">
                 {ORIENTATION_OPTIONS.map((o) => (
                   <label key={o.value} className="flex items-center gap-1 text-xs">
@@ -169,7 +174,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
                         setCurrentPage(0);
                       }}
                     />
-                    <span>{o.label}</span>
+                    <span>{t(o.labelKey)}</span>
                   </label>
                 ))}
               </div>
@@ -177,7 +182,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
 
             {/* Margins */}
             <label className="flex flex-col gap-1 text-xs text-text-primary">
-              <span>余白</span>
+              <span>{t('dialogs.printPreview.marginsLabel')}</span>
               <select
                 value={settings.marginPreset}
                 onChange={(e) => {
@@ -188,7 +193,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
               >
                 {MARGIN_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
-                    {o.label}
+                    {t(o.labelKey)}
                   </option>
                 ))}
               </select>
@@ -201,12 +206,12 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
                 checked={settings.showGridLines}
                 onChange={(e) => setSettings((s) => ({ ...s, showGridLines: e.target.checked }))}
               />
-              <span>グリッド線を表示</span>
+              <span>{t('dialogs.printPreview.showGridLines')}</span>
             </label>
 
             {/* Header */}
             <div className="flex flex-col gap-1 text-xs text-text-primary">
-              <span>ヘッダー（中央）</span>
+              <span>{t('dialogs.printPreview.headerCenterLabel')}</span>
               <input
                 type="text"
                 value={settings.header.center}
@@ -220,7 +225,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
 
             {/* Footer */}
             <div className="flex flex-col gap-1 text-xs text-text-primary">
-              <span>フッター（中央）</span>
+              <span>{t('dialogs.printPreview.footerCenterLabel')}</span>
               <input
                 type="text"
                 value={settings.footer.center}
@@ -233,7 +238,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
             </div>
 
             <div className="text-[10px] text-text-primary/50">
-              変数: {'{sheetName}'}, {'{pageNumber}'}, {'{totalPages}'}, {'{date}'}
+              {t('dialogs.printPreview.variablesHint')}
             </div>
           </div>
         </div>
@@ -243,7 +248,10 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
           {/* Page navigation */}
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-text-primary">
-              ページ {currentPage + 1} / {layout.totalPages}
+              {t('dialogs.printPreview.pageIndicator', {
+                page: currentPage + 1,
+                total: layout.totalPages,
+              })}
             </span>
             <div className="flex gap-1">
               <button
@@ -252,7 +260,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
                 disabled={currentPage === 0}
                 onClick={() => setCurrentPage((p) => p - 1)}
               >
-                ← 前
+                {t('dialogs.printPreview.prevPage')}
               </button>
               <button
                 type="button"
@@ -260,7 +268,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
                 disabled={currentPage >= layout.totalPages - 1}
                 onClick={() => setCurrentPage((p) => p + 1)}
               >
-                次 →
+                {t('dialogs.printPreview.nextPage')}
               </button>
             </div>
           </div>
@@ -368,7 +376,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
               className="h-7 px-3 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40"
               onClick={onClose}
             >
-              キャンセル
+              {t('common.cancel')}
             </button>
             <button
               type="button"
@@ -377,7 +385,9 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
               onClick={handleExportPDF}
               disabled={isExporting}
             >
-              {isExporting ? 'エクスポート中...' : 'PDF としてエクスポート'}
+              {isExporting
+                ? t('dialogs.printPreview.exporting')
+                : t('dialogs.printPreview.exportPdf')}
             </button>
           </div>
         </div>

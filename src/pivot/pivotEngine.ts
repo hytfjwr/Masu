@@ -4,6 +4,7 @@
  */
 
 import type { AggregationType, PivotValueField } from '../types/pivot';
+import { t, type MessageKey } from '../i18n';
 
 /** Pivot computation config (subset of PivotTableConfig relevant to the engine) */
 export interface PivotComputeConfig {
@@ -60,7 +61,7 @@ export function aggregate(values: number[], type: AggregationType): number {
  */
 export function buildPivotTable(sourceData: string[][], config: PivotComputeConfig): PivotCell[][] {
   if (sourceData.length < 2) {
-    return [[{ value: '(データなし)', isHeader: true }]];
+    return [[{ value: t('dialogs.pivotEngine.noData'), isHeader: true }]];
   }
 
   const headers = sourceData[0];
@@ -83,7 +84,7 @@ export function buildPivotTable(sourceData: string[][], config: PivotComputeConf
 
   // If no value fields specified, return empty
   if (config.valueFields.length === 0) {
-    return [[{ value: '(値フィールドなし)', isHeader: true }]];
+    return [[{ value: t('dialogs.pivotEngine.noValueFields'), isHeader: true }]];
   }
 
   // Collect unique values for row/col fields
@@ -121,7 +122,12 @@ export function buildPivotTable(sourceData: string[][], config: PivotComputeConf
       }
       // Total column header
       for (const vf of config.valueFields) {
-        row.push({ value: ci === 0 ? `合計 ${vf.fieldName}` : '', isHeader: true, isTotal: true });
+        row.push({
+          value:
+            ci === 0 ? t('dialogs.pivotEngine.totalColumnHeader', { fieldName: vf.fieldName }) : '',
+          isHeader: true,
+          isTotal: true,
+        });
       }
       result.push(row);
     }
@@ -220,7 +226,7 @@ export function buildPivotTable(sourceData: string[][], config: PivotComputeConf
   // --- Grand total row ---
   if (config.rowFields.length > 0) {
     const totalRow: PivotCell[] = [];
-    totalRow.push({ value: '総計', isHeader: true, isTotal: true });
+    totalRow.push({ value: t('dialogs.pivotEngine.grandTotal'), isHeader: true, isTotal: true });
     for (let i = 1; i < config.rowFields.length; i++) {
       totalRow.push({ value: '', isTotal: true });
     }
@@ -267,12 +273,12 @@ function getUniqueLabels(dataRows: string[][], fieldIndices: number[]): string[]
  * Build an aggregation label for display.
  */
 function getAggLabel(vf: PivotValueField): string {
-  const aggNames: Record<AggregationType, string> = {
-    sum: '合計',
-    count: '個数',
-    average: '平均',
-    max: '最大',
-    min: '最小',
+  const aggNameKeys: Record<AggregationType, MessageKey> = {
+    sum: 'dialogs.pivotTable.aggSum',
+    count: 'dialogs.pivotTable.aggCount',
+    average: 'dialogs.pivotTable.aggAverage',
+    max: 'dialogs.pivotTable.aggMax',
+    min: 'dialogs.pivotTable.aggMin',
   };
-  return `${aggNames[vf.aggregation]} / ${vf.fieldName}`;
+  return `${t(aggNameKeys[vf.aggregation])} / ${vf.fieldName}`;
 }

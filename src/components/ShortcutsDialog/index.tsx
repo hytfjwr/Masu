@@ -1,80 +1,83 @@
 import { memo, useCallback, useEffect } from 'react';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
 const mod = isMac ? '⌘' : 'Ctrl';
 
 interface ShortcutItem {
-  label: string;
+  labelKey: MessageKey;
+  /** `{arrow}` is replaced with the localized arrow-key name */
   keys: string;
 }
 
 interface ShortcutCategory {
-  title: string;
+  titleKey: MessageKey;
   items: ShortcutItem[];
 }
 
 const CATEGORIES: ShortcutCategory[] = [
   {
-    title: '移動',
+    titleKey: 'dialogs.shortcuts.categoryNavigation',
     items: [
-      { label: 'セルを移動', keys: '矢印' },
-      { label: 'データの端まで移動', keys: `${mod}+矢印` },
-      { label: '行の先頭へ', keys: 'Home' },
-      { label: 'A1へ移動', keys: `${mod}+Home` },
-      { label: '使用範囲の末尾へ移動', keys: `${mod}+End` },
-      { label: '1画面分移動', keys: 'PageUp/Down' },
+      { labelKey: 'dialogs.shortcuts.moveCell', keys: '{arrow}' },
+      { labelKey: 'dialogs.shortcuts.moveToDataEdge', keys: `${mod}+{arrow}` },
+      { labelKey: 'dialogs.shortcuts.moveToRowStart', keys: 'Home' },
+      { labelKey: 'dialogs.shortcuts.moveToA1', keys: `${mod}+Home` },
+      { labelKey: 'dialogs.shortcuts.moveToDataEnd', keys: `${mod}+End` },
+      { labelKey: 'dialogs.shortcuts.moveOneScreen', keys: 'PageUp/Down' },
     ],
   },
   {
-    title: '選択',
+    titleKey: 'dialogs.shortcuts.categorySelection',
     items: [
-      { label: '選択範囲を拡張', keys: 'Shift+矢印' },
-      { label: 'データの端まで選択範囲を拡張', keys: `${mod}+Shift+矢印` },
-      { label: 'すべて選択', keys: `${mod}+A` },
-      { label: '行を選択', keys: 'Shift+Space' },
-      { label: '列を選択', keys: `${mod}+Space` },
+      { labelKey: 'dialogs.shortcuts.extendSelection', keys: 'Shift+{arrow}' },
+      { labelKey: 'dialogs.shortcuts.extendSelectionToDataEdge', keys: `${mod}+Shift+{arrow}` },
+      { labelKey: 'dialogs.shortcuts.selectAll', keys: `${mod}+A` },
+      { labelKey: 'dialogs.shortcuts.selectRow', keys: 'Shift+Space' },
+      { labelKey: 'dialogs.shortcuts.selectColumn', keys: `${mod}+Space` },
     ],
   },
   {
-    title: '編集',
+    titleKey: 'dialogs.shortcuts.categoryEditing',
     items: [
-      { label: 'セルを編集', keys: 'F2' },
-      { label: '確定して下へ移動', keys: 'Enter' },
-      { label: '確定して上へ移動', keys: 'Shift+Enter' },
-      { label: '確定して右/左へ移動', keys: 'Tab / Shift+Tab' },
-      { label: 'セル内で改行', keys: 'Alt+Enter' },
-      { label: '選択範囲全体に入力', keys: `${mod}+Enter` },
-      { label: '編集をキャンセル', keys: 'Esc' },
-      { label: '削除', keys: 'Delete' },
-      { label: '下にフィル', keys: `${mod}+D` },
-      { label: '右にフィル', keys: `${mod}+R` },
-      { label: '今日の日付を入力', keys: `${mod}+;` },
-      { label: '現在時刻を入力', keys: `${mod}+Shift+;` },
+      { labelKey: 'dialogs.shortcuts.editCell', keys: 'F2' },
+      { labelKey: 'dialogs.shortcuts.confirmMoveDown', keys: 'Enter' },
+      { labelKey: 'dialogs.shortcuts.confirmMoveUp', keys: 'Shift+Enter' },
+      { labelKey: 'dialogs.shortcuts.confirmMoveRightLeft', keys: 'Tab / Shift+Tab' },
+      { labelKey: 'dialogs.shortcuts.newLineInCell', keys: 'Alt+Enter' },
+      { labelKey: 'dialogs.shortcuts.fillSelection', keys: `${mod}+Enter` },
+      { labelKey: 'dialogs.shortcuts.cancelEdit', keys: 'Esc' },
+      { labelKey: 'common.delete', keys: 'Delete' },
+      { labelKey: 'dialogs.shortcuts.fillDown', keys: `${mod}+D` },
+      { labelKey: 'dialogs.shortcuts.fillRight', keys: `${mod}+R` },
+      { labelKey: 'dialogs.shortcuts.insertToday', keys: `${mod}+;` },
+      { labelKey: 'dialogs.shortcuts.insertNow', keys: `${mod}+Shift+;` },
     ],
   },
   {
-    title: '書式',
+    titleKey: 'dialogs.shortcuts.categoryFormatting',
     items: [
-      { label: '太字/斜体/下線', keys: `${mod}+B / I / U` },
-      { label: '取り消し線', keys: `${mod}+Shift+X` },
-      { label: '中央/左/右揃え', keys: `${mod}+Shift+E / L / R` },
-      { label: '書式をクリア', keys: `${mod}+\\` },
+      { labelKey: 'dialogs.shortcuts.boldItalicUnderline', keys: `${mod}+B / I / U` },
+      { labelKey: 'dialogs.shortcuts.strikethrough', keys: `${mod}+Shift+X` },
+      { labelKey: 'dialogs.shortcuts.alignCenterLeftRight', keys: `${mod}+Shift+E / L / R` },
+      { labelKey: 'dialogs.shortcuts.clearFormatting', keys: `${mod}+\\` },
     ],
   },
   {
-    title: 'クリップボード',
+    titleKey: 'dialogs.shortcuts.categoryClipboard',
     items: [
-      { label: 'コピー/切り取り/貼り付け', keys: `${mod}+C / X / V` },
-      { label: '値のみ貼り付け', keys: `${mod}+Shift+V` },
+      { labelKey: 'dialogs.shortcuts.copyCutPaste', keys: `${mod}+C / X / V` },
+      { labelKey: 'dialogs.shortcuts.pasteValuesOnly', keys: `${mod}+Shift+V` },
     ],
   },
   {
-    title: 'その他',
+    titleKey: 'dialogs.shortcuts.categoryOther',
     items: [
-      { label: '元に戻す/やり直し', keys: `${mod}+Z / Y` },
-      { label: '検索', keys: `${mod}+F` },
-      { label: '検索と置換', keys: `${mod}+H` },
-      { label: 'ショートカット一覧を表示', keys: `${mod}+/` },
+      { labelKey: 'dialogs.shortcuts.undoRedo', keys: `${mod}+Z / Y` },
+      { labelKey: 'dialogs.shortcuts.find', keys: `${mod}+F` },
+      { labelKey: 'dialogs.shortcuts.findReplace', keys: `${mod}+H` },
+      { labelKey: 'dialogs.shortcuts.showShortcuts', keys: `${mod}+/` },
     ],
   },
 ];
@@ -88,6 +91,7 @@ export const ShortcutsDialog = memo(function ShortcutsDialog({
   visible,
   onClose,
 }: ShortcutsDialogProps) {
+  const { t } = useI18n();
   const handleBackdropMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) {
@@ -117,7 +121,9 @@ export const ShortcutsDialog = memo(function ShortcutsDialog({
       <div className="glass-panel rounded-2xl w-[640px] max-h-[80vh] flex flex-col animate-dialog-spring">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-grid-line">
-          <h2 className="text-sm font-semibold text-text-primary">キーボード ショートカット</h2>
+          <h2 className="text-sm font-semibold text-text-primary">
+            {t('dialogs.shortcuts.title')}
+          </h2>
           <button
             onClick={onClose}
             className="text-text-primary hover:text-error text-lg leading-none"
@@ -130,17 +136,19 @@ export const ShortcutsDialog = memo(function ShortcutsDialog({
         <div className="flex-1 overflow-auto p-4">
           <div className="grid grid-cols-2 gap-4">
             {CATEGORIES.map((category) => (
-              <div key={category.title} className="space-y-1.5">
-                <div className="text-xs font-semibold text-text-primary">{category.title}</div>
+              <div key={category.titleKey} className="space-y-1.5">
+                <div className="text-xs font-semibold text-text-primary">
+                  {t(category.titleKey)}
+                </div>
                 <div className="space-y-1">
                   {category.items.map((item) => (
                     <div
-                      key={item.label}
+                      key={item.labelKey}
                       className="flex items-center justify-between gap-2 text-xs"
                     >
-                      <span className="text-text-primary/80">{item.label}</span>
+                      <span className="text-text-primary/80">{t(item.labelKey)}</span>
                       <kbd className="px-1.5 py-0.5 rounded border border-grid-line bg-header-bg text-[11px] font-mono whitespace-nowrap">
-                        {item.keys}
+                        {item.keys.replace('{arrow}', t('dialogs.shortcuts.arrowKey'))}
                       </kbd>
                     </div>
                   ))}
@@ -156,7 +164,7 @@ export const ShortcutsDialog = memo(function ShortcutsDialog({
             onClick={onClose}
             className="px-3 py-1 text-xs bg-ui-bg border border-grid-line rounded hover:bg-header-bg"
           >
-            閉じる
+            {t('common.close')}
           </button>
         </div>
       </div>
