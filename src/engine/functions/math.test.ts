@@ -215,6 +215,21 @@ describe('scalar numeric parameters given a bare cell reference', () => {
   });
 });
 
+describe('MOD', () => {
+  it('returns a result with the sign of the divisor (Excel-compatible)', () => {
+    expect(evalFormula('MOD(7,3)', {})).toBe(1);
+    expect(evalFormula('MOD(-3,7)', {})).toBe(4);
+    expect(evalFormula('MOD(3,-7)', {})).toBe(-4);
+    expect(evalFormula('MOD(-7,-3)', {})).toBe(-1);
+    expect(evalFormula('MOD(-3.5,2)', {})).toBeCloseTo(0.5, 12);
+    expect(evalFormula('MOD(-6,3)', {})).toBe(0);
+  });
+
+  it('returns #DIV/0! for a zero divisor', () => {
+    expect(evalFormula('MOD(5,0)', {})).toEqual({ type: 'error', code: '#DIV/0!' });
+  });
+});
+
 describe('ROUNDUP', () => {
   it('rounds up (away from zero) to the given digits', () => {
     expect(evalFormula('ROUNDUP(3.14159,3)', {})).toBeCloseTo(3.142, 9);
