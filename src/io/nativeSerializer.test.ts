@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { serialize, deserialize } from './tabulaSerializer';
+import { serialize, deserialize } from './nativeSerializer';
 import type { SheetData } from '../types/grid';
 
 function createTestSheet(overrides: Partial<SheetData> = {}): SheetData {
@@ -23,7 +23,7 @@ function createTestSheet(overrides: Partial<SheetData> = {}): SheetData {
   };
 }
 
-describe('tabulaSerializer', () => {
+describe('nativeSerializer', () => {
   describe('serialize', () => {
     it('produces valid JSON with version 1', () => {
       const json = serialize({
@@ -330,7 +330,7 @@ describe('tabulaSerializer', () => {
 
     it('throws on wrong version', () => {
       const json = JSON.stringify({ version: 99, workbook: { sheets: [{}], activeSheetId: 's1' } });
-      expect(() => deserialize(json)).toThrow('Unsupported Tabula file version');
+      expect(() => deserialize(json)).toThrow('Unsupported Masu file version');
     });
 
     it('throws on missing workbook', () => {

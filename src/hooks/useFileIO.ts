@@ -21,8 +21,8 @@ import {
 } from '../io/fileHandler';
 import { generateCSV } from '../io/csvGenerator';
 import { generateJSON } from '../io/jsonGenerator';
-import { serialize, deserialize } from '../io/tabulaSerializer';
-import type { SheetSizes } from '../io/tabulaSerializer';
+import { serialize, deserialize } from '../io/nativeSerializer';
+import type { SheetSizes } from '../io/nativeSerializer';
 import { cellKey } from '../utils/coordinates';
 import { GRID_CONSTANTS } from '../types/grid';
 import { resolveFilename } from '../utils/filename';
@@ -41,7 +41,7 @@ interface UseFileIOParams {
   getRowCount?: () => number;
   setColCount?: (count: number) => void;
   setRowCount?: (count: number) => void;
-  // Native (.tabula.json) format
+  // Native (.masu.json) format
   sheets?: SheetData[];
   activeSheetId?: string;
   replaceWorkbook?: (workbook: WorkbookData) => void;
@@ -58,8 +58,8 @@ export interface UseFileIOReturn {
   handleExportCSV: () => void;
   handleExportJSON: () => void;
   handleExportXLSX: () => void;
-  handleSaveTabula: () => void;
-  handleOpenTabula: () => void;
+  handleSaveNative: () => void;
+  handleOpenNative: () => void;
 }
 
 export function useFileIO({
@@ -84,7 +84,7 @@ export function useFileIO({
         const format = detectFormat(file.name);
 
         // Native format
-        if (format === 'tabula' && replaceWorkbook && restoreAllSizes) {
+        if (format === 'native' && replaceWorkbook && restoreAllSizes) {
           const text = await file.text();
           const result = deserialize(text);
           replaceWorkbook(result.workbook);
@@ -220,7 +220,7 @@ export function useFileIO({
     })();
   }, [sheets, activeSheetId, getAllSizesBySheet, namedRanges, title]);
 
-  const handleSaveTabula = useCallback(() => {
+  const handleSaveNative = useCallback(() => {
     if (!sheets || !activeSheetId || !getAllSizesBySheet) return;
 
     const json = serialize({
@@ -237,7 +237,7 @@ export function useFileIO({
     downloadFile(json, `${resolveFilename(title)}${NATIVE_EXTENSION}`, 'application/json');
   }, [sheets, activeSheetId, getAllSizesBySheet, namedRanges, pivotTables, title]);
 
-  const handleOpenTabula = useCallback(() => {
+  const handleOpenNative = useCallback(() => {
     // Create a hidden file input and trigger it
     const input = document.createElement('input');
     input.type = 'file';
@@ -247,13 +247,13 @@ export function useFileIO({
       if (!file) return;
       try {
         const format = detectFormat(file.name);
-        if (format === 'tabula' && replaceWorkbook && restoreAllSizes) {
+        if (format === 'native' && replaceWorkbook && restoreAllSizes) {
           const text = await file.text();
           const result = deserialize(text);
           replaceWorkbook(result.workbook);
           restoreAllSizes(result.sizesBySheet);
         } else {
-          alert(`Tabula 形式のファイルを選択してください (${NATIVE_EXTENSION})`);
+          alert(`Masu 形式のファイルを選択してください (${NATIVE_EXTENSION})`);
         }
       } catch (err) {
         alert(err instanceof Error ? err.message : 'ファイルの読み込みに失敗しました');
@@ -267,7 +267,7 @@ export function useFileIO({
     handleExportCSV,
     handleExportJSON,
     handleExportXLSX,
-    handleSaveTabula,
-    handleOpenTabula,
+    handleSaveNative,
+    handleOpenNative,
   };
 }

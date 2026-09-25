@@ -1,6 +1,6 @@
 /**
- * Serializer/Deserializer for the native .tabula.json format (also used by autosave; files saved
- * as .sheetcraft.json before the rename are the same format).
+ * Serializer/Deserializer for the native .masu.json format (also used by autosave; files saved
+ * as .tabula.json / .sheetcraft.json before the renames are the same format).
  */
 
 import type {
@@ -72,7 +72,7 @@ interface SerializedWorkbook {
   title?: string;
 }
 
-export interface TabulaFile {
+export interface NativeFile {
   version: 1;
   createdAt: string;
   updatedAt: string;
@@ -214,11 +214,11 @@ export interface SerializeOptions {
 }
 
 /**
- * Serialize the workbook to a TabulaFile JSON string.
+ * Serialize the workbook to a NativeFile JSON string.
  */
 export function serialize(options: SerializeOptions): string {
   const now = new Date().toISOString();
-  const file: TabulaFile = {
+  const file: NativeFile = {
     version: 1,
     createdAt: now,
     updatedAt: now,
@@ -371,7 +371,7 @@ export interface DeserializeResult {
 }
 
 /**
- * Deserialize a TabulaFile JSON string into workbook data.
+ * Deserialize a NativeFile JSON string into workbook data.
  * Throws on invalid input.
  */
 export function deserialize(jsonString: string): DeserializeResult {
@@ -383,24 +383,24 @@ export function deserialize(jsonString: string): DeserializeResult {
   }
 
   if (!parsed || typeof parsed !== 'object') {
-    throw new Error('Invalid Tabula file: not an object');
+    throw new Error('Invalid Masu file: not an object');
   }
 
   const file = parsed as Record<string, unknown>;
 
   if (file.version !== 1) {
-    throw new Error(`Unsupported Tabula file version: ${String(file.version ?? 'unknown')}`);
+    throw new Error(`Unsupported Masu file version: ${String(file.version ?? 'unknown')}`);
   }
 
   const workbookData = file.workbook;
   if (!workbookData || typeof workbookData !== 'object') {
-    throw new Error('Invalid Tabula file: missing workbook data');
+    throw new Error('Invalid Masu file: missing workbook data');
   }
 
   const wb = workbookData as Record<string, unknown>;
   const sheetsData = wb.sheets;
   if (!Array.isArray(sheetsData) || sheetsData.length === 0) {
-    throw new Error('Invalid Tabula file: no sheets found');
+    throw new Error('Invalid Masu file: no sheets found');
   }
 
   // Merge column/row widths from all sheets (using the first sheet's as base)

@@ -21,13 +21,27 @@ function memoryStorage(initial: Record<string, string> = {}): Storage {
 }
 
 describe('migrateLegacyStorageKeys', () => {
-  it('moves settings from the old sheetcraft- keys to tabula- keys and removes the old ones', () => {
+  it('moves settings from the old sheetcraft- keys to masu- keys and removes the old ones', () => {
     const storage = memoryStorage({ 'sheetcraft-theme': 'dark', 'sheetcraft-zoom': '125' });
     migrateLegacyStorageKeys(storage);
     expect(storage.getItem(STORAGE_KEYS.theme)).toBe('dark');
     expect(storage.getItem(STORAGE_KEYS.zoom)).toBe('125');
     expect(storage.getItem('sheetcraft-theme')).toBeNull();
     expect(storage.getItem('sheetcraft-zoom')).toBeNull();
+  });
+
+  it('moves settings from the old tabula- keys, preferring them over sheetcraft- ones', () => {
+    const storage = memoryStorage({
+      'tabula-theme': 'light',
+      'sheetcraft-theme': 'dark',
+      'tabula-zoom': '90',
+    });
+    migrateLegacyStorageKeys(storage);
+    expect(storage.getItem(STORAGE_KEYS.theme)).toBe('light');
+    expect(storage.getItem(STORAGE_KEYS.zoom)).toBe('90');
+    expect(storage.getItem('tabula-theme')).toBeNull();
+    expect(storage.getItem('sheetcraft-theme')).toBeNull();
+    expect(storage.getItem('tabula-zoom')).toBeNull();
   });
 
   it('keeps a value already saved under the new key', () => {

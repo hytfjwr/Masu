@@ -1,4 +1,4 @@
-# Tabula
+# Masu
 
 [![CI](https://github.com/hytfjwr/Tabula/actions/workflows/ci.yml/badge.svg)](https://github.com/hytfjwr/Tabula/actions/workflows/ci.yml)
 [![Deploy to GitHub Pages](https://github.com/hytfjwr/Tabula/actions/workflows/pages.yml/badge.svg)](https://github.com/hytfjwr/Tabula/actions/workflows/pages.yml)
@@ -10,7 +10,7 @@ A spreadsheet editor that runs entirely in your browser. There is no server and 
 ## Features
 
 - **Formula engine** — 250+ Excel-compatible functions, dynamic arrays with spilling, `LET` / `LAMBDA` / `MAP` / `REDUCE`, cross-sheet references and named ranges
-- **Files** — open and save XLSX, CSV (with Shift_JIS detection), JSON and the native `.tabula.json` format
+- **Files** — open and save XLSX, CSV (with Shift_JIS detection), JSON and the native `.masu.json` format (older `.tabula.json` files still open)
 - **Data tools** — sorting, filters, remove duplicates, data validation, conditional formatting, row/column grouping
 - **Visualization** — charts, sparklines and pivot tables
 - **Printing** — print preview and PDF export

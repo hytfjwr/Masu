@@ -15,7 +15,7 @@ import type {
   WorkbookData,
 } from '../types/grid';
 import { GRID_CONSTANTS } from '../types/grid';
-import type { DeserializeResult, SheetSizes } from './tabulaSerializer';
+import type { DeserializeResult, SheetSizes } from './nativeSerializer';
 import { cellKey, parseCellKey } from '../utils/coordinates';
 import { createEmptySheet } from '../utils/sheetUtils';
 
@@ -125,7 +125,7 @@ function resolveExportNumFmt(style: CellStyle): string | undefined {
   return undefined;
 }
 
-// --- Style conversion: Tabula -> exceljs ---
+// --- Style conversion: Masu -> exceljs ---
 
 function buildExcelStyle(style: CellStyle | undefined): Partial<ExcelJSNamespace.Style> {
   const result: Partial<ExcelJSNamespace.Style> = {};
@@ -212,7 +212,7 @@ function buildExcelStyle(style: CellStyle | undefined): Partial<ExcelJSNamespace
   return result;
 }
 
-// --- Style conversion: exceljs -> Tabula ---
+// --- Style conversion: exceljs -> Masu ---
 
 function cellStyleFromExcel(excelStyle: Partial<ExcelJSNamespace.Style>): CellStyle | undefined {
   const style: CellStyle = {};
@@ -330,7 +330,7 @@ const pxToPt = (px: number) => px * 0.75;
 export async function exportXlsx(options: XlsxExportOptions): Promise<ArrayBuffer> {
   const ExcelJS = await loadExcelJS();
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = 'Tabula';
+  workbook.creator = 'Masu';
   if (options.title) {
     workbook.title = options.title;
   }

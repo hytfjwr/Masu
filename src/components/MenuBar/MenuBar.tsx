@@ -24,8 +24,8 @@ const FILE_MENU: MenuItemDef[] = [
   { label: 'エクスポート > JSON', action: 'exportJSON' },
   { label: 'エクスポート > Excel (.xlsx)', action: 'exportXLSX' },
   { label: '', separator: true, action: '' },
-  { label: '名前を付けて保存 (.tabula.json)', action: 'saveTabula' },
-  { label: '開く (.tabula.json)...', action: 'openTabula' },
+  { label: '名前を付けて保存 (.masu.json)', action: 'saveNative' },
+  { label: '開く (.masu.json)...', action: 'openNative' },
   { label: '', separator: true, action: '' },
   { label: '印刷プレビュー', action: 'printPreview' },
 ];
@@ -174,11 +174,11 @@ export const MenuBar = memo(function MenuBar() {
         case 'namedRanges':
           actions.openNamedRangeDialog();
           break;
-        case 'saveTabula':
-          actions.saveTabula();
+        case 'saveNative':
+          actions.saveNative();
           break;
-        case 'openTabula':
-          actions.openTabula();
+        case 'openNative':
+          actions.openNative();
           break;
         case 'printPreview':
           actions.openPrintPreview();

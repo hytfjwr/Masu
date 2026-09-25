@@ -62,9 +62,9 @@ export interface SpreadsheetActions {
   updateConditionalFormatRule: (ruleId: string, updates: Partial<ConditionalFormatRule>) => void;
   deleteConditionalFormatRule: (ruleId: string) => void;
   openConditionalFormatDialog: () => void;
-  // Native (.tabula.json) save/open
-  saveTabula: () => void;
-  openTabula: () => void;
+  // Native (.masu.json) save/open
+  saveNative: () => void;
+  openNative: () => void;
   // Cell merge
   mergeCells: () => void;
   unmergeCells: () => void;
@@ -199,9 +199,9 @@ const defaultActions: SpreadsheetActions = {
   updateConditionalFormatRule: () => {},
   deleteConditionalFormatRule: () => {},
   openConditionalFormatDialog: () => {},
-  // Native (.tabula.json) save/open
-  saveTabula: () => {},
-  openTabula: () => {},
+  // Native (.masu.json) save/open
+  saveNative: () => {},
+  openNative: () => {},
   // Cell merge
   mergeCells: () => {},
   unmergeCells: () => {},
