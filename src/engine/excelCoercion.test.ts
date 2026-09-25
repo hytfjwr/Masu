@@ -136,4 +136,11 @@ describe('arithmetic edge cases', () => {
     expect(evalFormula('+"5"+1')).toBe(6);
     expect(evalFormula('-"5"')).toBe(-5);
   });
+
+  it('calls TRUE() and FALSE() as functions', () => {
+    expect(evalFormula('TRUE()')).toBe(true);
+    expect(evalFormula('FALSE()')).toBe(false);
+    expect(evalFormula('AND(TRUE(),NOT(FALSE()))')).toBe(true);
+    expect(evalFormula('TRUE')).toBe(true);
+  });
 });

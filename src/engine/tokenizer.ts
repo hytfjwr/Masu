@@ -335,19 +335,19 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
 
       const upper = ident.toUpperCase();
 
-      // Boolean literals
-      if (upper === 'TRUE' || upper === 'FALSE') {
-        emit(TokenType.Boolean, upper, start);
-        continue;
-      }
-
-      // Function call (followed by '(', possibly after spaces)
+      // Function call (followed by '(', possibly after spaces) — checked first so TRUE() / FALSE() are calls
       let peek = pos;
       while (peek < formula.length && (formula[peek] === ' ' || formula[peek] === '\t')) {
         peek++;
       }
       if (peek < formula.length && formula[peek] === '(') {
         emit(TokenType.FunctionName, upper, start);
+        continue;
+      }
+
+      // Boolean literals
+      if (upper === 'TRUE' || upper === 'FALSE') {
+        emit(TokenType.Boolean, upper, start);
         continue;
       }
 
