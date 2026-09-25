@@ -60,7 +60,10 @@ function computeNPER(
   return Math.log(ratio) / Math.log(1 + rate);
 }
 
-/** Interest component of payment number `per`, via the balance-at-start-of-period approach. */
+/**
+ * Interest component of payment number `per`: the rate times the balance outstanding before that
+ * payment, signed like FV (so a positive loan `pv` yields negative interest, as in Excel).
+ */
 function computeIPMT(
   rate: number,
   per: number,
@@ -69,15 +72,15 @@ function computeIPMT(
   fv: number,
   type: 0 | 1,
 ): number {
-  const pmt = computePMT(rate, nper, pv, fv, type);
   if (per === 1) {
     return type === 1 ? 0 : -pv * rate;
   }
-  const pv2 = type === 1 ? pv + pmt : pv;
-  const balance = computeFV(rate, per - 1, pmt, pv2, 0);
-  let ipmt = -balance * rate;
-  if (type === 1) ipmt /= 1 + rate;
-  return ipmt;
+  const pmt = computePMT(rate, nper, pv, fv, type);
+  // type 1 pays at the start of each period, so payment `per` covers interest on the balance
+  // left after payment `per - 1`
+  const balance =
+    type === 1 ? computeFV(rate, per - 2, pmt, pv, 1) - pmt : computeFV(rate, per - 1, pmt, pv, 0);
+  return balance * rate;
 }
 
 /** Newton's method (numerical derivative) for RATE, max 100 iterations. */

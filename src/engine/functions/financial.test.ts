@@ -69,6 +69,37 @@ describe('IPMT / PPMT', () => {
   it('returns #NUM! when per is out of range', () => {
     expect(evalFormula('IPMT(0.05/12,61,60,10000)')).toEqual({ type: 'error', code: '#NUM!' });
   });
+
+  it('matches the Excel documentation example for a later period', () => {
+    // Excel: IPMT(10%, 3, 3, 8000) = -292.45
+    expect(evalFormula('IPMT(0.1,3,3,8000)')).toBeCloseTo(-292.447, 3);
+  });
+
+  it.each([0, 1])(
+    'matches a simulated amortization schedule for every period (type=%i)',
+    (type) => {
+      const rate = 0.004;
+      const nper = 24;
+      const pv = 50000;
+      const pmt = evalFormula(`PMT(${rate},${nper},${pv},0,${type})`) as number;
+      let balance = pv;
+      for (let per = 1; per <= nper; per++) {
+        // type 1 pays at the start of the period, before that period's interest accrues
+        const interest = type === 1 && per === 1 ? 0 : -balance * rate;
+        const principal = pmt - interest;
+        expect(evalFormula(`IPMT(${rate},${per},${nper},${pv},0,${type})`)).toBeCloseTo(
+          interest,
+          6,
+        );
+        expect(evalFormula(`PPMT(${rate},${per},${nper},${pv},0,${type})`)).toBeCloseTo(
+          principal,
+          6,
+        );
+        balance += principal;
+      }
+      expect(balance).toBeCloseTo(0, 6);
+    },
+  );
 });
 
 describe('FV', () => {
