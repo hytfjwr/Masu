@@ -98,7 +98,7 @@ export const StorageTool = memo(function StorageTool({ host }: { host: DevToolsH
     const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tabula-autosave-${new Date().toISOString().slice(0, 19).replace(/:/g, '')}.json`;
+    a.download = `masu-autosave-${new Date().toISOString().slice(0, 19).replace(/:/g, '')}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -115,7 +115,7 @@ export const StorageTool = memo(function StorageTool({ host }: { host: DevToolsH
   return (
     <div className="devtools-tool storage-tool">
       <div className="devtools-toolbar">
-        <span className="devtools-muted">IndexedDB「tabula / autosave」</span>
+        <span className="devtools-muted">IndexedDB「masu / autosave」</span>
         <button
           type="button"
           className="devtools-button devtools-push"

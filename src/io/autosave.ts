@@ -4,9 +4,9 @@
  * promise so callers can swallow them.
  */
 
-const DB_NAME = 'tabula';
-/** Database the autosave lived in before the rename to Tabula (migrated on first load). */
-const LEGACY_DB_NAME = 'sheetcraft';
+const DB_NAME = 'masu';
+/** Databases the autosave lived in before the renames, newest first (migrated on first load). */
+const LEGACY_DB_NAMES = ['tabula', 'sheetcraft'];
 const STORE = 'autosave';
 const KEY = 'current';
 
@@ -54,12 +54,12 @@ function writeRecord(db: IDBDatabase, record: AutosaveRecord): Promise<void> {
 }
 
 /**
- * The autosave record of the pre-rename database, or null. Never creates that database: when it
+ * The autosave record of a pre-rename database, or null. Never creates that database: when it
  * doesn't exist the upgrade is aborted (which fails the open) and null is returned.
  */
-function readLegacyRecord(): Promise<AutosaveRecord | null> {
+function readLegacyRecord(name: string): Promise<AutosaveRecord | null> {
   return new Promise((resolve) => {
-    const request = indexedDB.open(LEGACY_DB_NAME);
+    const request = indexedDB.open(name);
     request.onupgradeneeded = () => request.transaction?.abort();
     request.onerror = () => resolve(null);
     request.onsuccess = () => {
@@ -81,11 +81,16 @@ export async function loadAutosave(): Promise<AutosaveRecord | null> {
   const record = await readRecord(db);
   if (record) return record;
 
-  // First start after the rename: carry the old autosave over (keeping its time), then drop the old DB
-  const legacy = await readLegacyRecord();
-  if (legacy) {
-    await writeRecord(db, legacy);
-    indexedDB.deleteDatabase(LEGACY_DB_NAME);
+  // First start after a rename: carry the newest old autosave over (keeping its time), then drop the old DBs
+  let legacy: AutosaveRecord | null = null;
+  for (const name of LEGACY_DB_NAMES) {
+    const found = await readLegacyRecord(name);
+    if (!found) continue;
+    if (!legacy) {
+      legacy = found;
+      await writeRecord(db, legacy);
+    }
+    indexedDB.deleteDatabase(name);
   }
   return legacy;
 }

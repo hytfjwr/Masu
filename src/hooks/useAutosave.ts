@@ -6,7 +6,7 @@ export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 interface UseAutosaveParams {
   version: number; // useGridData の version（変更検知）
   sizeVersion: number; // useColumnRowSizes の sizeVersion（列幅変更も保存対象）
-  serialize: () => string; // 現在のワークブックをネイティブ形式（.tabula.json）の JSON 文字列に
+  serialize: () => string; // 現在のワークブックをネイティブ形式（.masu.json）の JSON 文字列に
   restore: (json: string) => void; // JSON 文字列からワークブックを復元
 }
 

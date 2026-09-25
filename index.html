@@ -4,11 +4,12 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tabula</title>
+    <title>Masu</title>
     <script>
       (function () {
-        // (the pre-rename key is still read here: this runs before src/utils/storageKeys migrates it)
+        // (the pre-rename keys are still read here: this runs before src/utils/storageKeys migrates it)
         var theme =
+          localStorage.getItem('masu-theme') ||
           localStorage.getItem('tabula-theme') ||
           localStorage.getItem('sheetcraft-theme') ||
           'auto';

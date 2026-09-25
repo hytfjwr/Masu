@@ -8,11 +8,11 @@ import { parseJSON } from './jsonParser';
 import type { CellDataMap } from '../types/grid';
 import { cellKey, parseCellKey } from '../utils/coordinates';
 
-export type FileFormat = 'csv' | 'json' | 'tabula' | 'xlsx';
+export type FileFormat = 'csv' | 'json' | 'native' | 'xlsx';
 
-/** Native file extension (the same format was saved as .sheetcraft.json before the rename to Tabula). */
-export const NATIVE_EXTENSION = '.tabula.json';
-const LEGACY_NATIVE_EXTENSION = '.sheetcraft.json';
+/** Native file extension (the same format was saved as .tabula.json and, before that, .sheetcraft.json). */
+export const NATIVE_EXTENSION = '.masu.json';
+const LEGACY_NATIVE_EXTENSIONS = ['.tabula.json', '.sheetcraft.json'];
 
 /**
  * Detect file format from filename extension.
@@ -20,7 +20,8 @@ const LEGACY_NATIVE_EXTENSION = '.sheetcraft.json';
  */
 export function detectFormat(filename: string): FileFormat | null {
   const lower = filename.toLowerCase();
-  if (lower.endsWith(NATIVE_EXTENSION) || lower.endsWith(LEGACY_NATIVE_EXTENSION)) return 'tabula';
+  if ([NATIVE_EXTENSION, ...LEGACY_NATIVE_EXTENSIONS].some((e) => lower.endsWith(e)))
+    return 'native';
   const ext = lower.split('.').pop();
   if (ext === 'csv') return 'csv';
   if (ext === 'json') return 'json';

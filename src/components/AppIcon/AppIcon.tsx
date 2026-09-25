@@ -1,7 +1,7 @@
 import { memo, useId } from 'react';
 
 /**
- * Tabula app mark: a glassy accent-gradient tile holding a tiny sheet whose top row is one
+ * Masu app mark: a glassy accent-gradient tile holding a tiny sheet whose top row is one
  * merged cell (the same merge story the splash tells). Tilts in 3D on hover (index.css `.app-icon`).
  */
 export const AppIcon = memo(function AppIcon({ size = 32 }: { size?: number }) {
@@ -15,7 +15,7 @@ export const AppIcon = memo(function AppIcon({ size = 32 }: { size?: number }) {
       height={size}
       viewBox="0 0 32 32"
       role="img"
-      aria-label="Tabula"
+      aria-label="Masu"
     >
       <defs>
         <linearGradient id={gradient} x1="0" y1="0" x2="1" y2="1">

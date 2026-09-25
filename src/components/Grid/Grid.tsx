@@ -106,7 +106,7 @@ import { computeCollapsedIndices, getMaxGroupLevel } from '../../grouping/groupM
 import { extractFormulaRefs } from '../../utils/formulaRefExtractor';
 import { useAutosave } from '../../hooks/useAutosave';
 import { SaveStatus } from '../SaveStatus';
-import { serialize, deserialize } from '../../io/tabulaSerializer';
+import { serialize, deserialize } from '../../io/nativeSerializer';
 import { CellEditor } from '../CellEditor';
 import { SelectionCursor } from './SelectionCursor';
 import { PrecedentArrows } from './PrecedentArrows';
@@ -1380,8 +1380,8 @@ export function Grid() {
     handleExportCSV,
     handleExportJSON,
     handleExportXLSX,
-    handleSaveTabula,
-    handleOpenTabula,
+    handleSaveNative,
+    handleOpenNative,
   } = useFileIO({
     getDataMap,
     replaceAllData,
@@ -1441,7 +1441,7 @@ export function Grid() {
 
   // useEffect required: syncs the browser tab title with the document title (external system)
   useEffect(() => {
-    document.title = `${title || UNTITLED_SPREADSHEET_NAME} - Tabula`;
+    document.title = `${title || UNTITLED_SPREADSHEET_NAME} - Masu`;
   }, [title]);
 
   // --- Drag & Drop ---
@@ -2620,8 +2620,8 @@ export function Grid() {
       updateConditionalFormatRule,
       deleteConditionalFormatRule,
       openConditionalFormatDialog: () => setSidePanel('conditionalFormat'),
-      saveTabula: handleSaveTabula,
-      openTabula: handleOpenTabula,
+      saveNative: handleSaveNative,
+      openNative: handleOpenNative,
       // Cell merge
       mergeCells: handleMergeCells,
       unmergeCells: handleUnmergeCells,
@@ -2755,8 +2755,8 @@ export function Grid() {
       addConditionalFormatRule,
       updateConditionalFormatRule,
       deleteConditionalFormatRule,
-      handleSaveTabula,
-      handleOpenTabula,
+      handleSaveNative,
+      handleOpenNative,
       handleMergeCells,
       handleUnmergeCells,
       canMerge,
