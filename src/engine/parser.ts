@@ -3,6 +3,8 @@ import { FormulaSyntaxError } from './syntaxError';
 import type { ASTNode, BinaryOperator, ErrorCode, Token } from './types';
 import { TokenType } from './types';
 import { colLetterToIndex } from '../utils/coordinates';
+import type { MessageKey } from '../i18n';
+import { t } from '../i18n';
 
 /**
  * Recursive descent parser for spreadsheet formulas.
@@ -97,12 +99,12 @@ function stripAbsoluteMarkers(formula: string): { text: string; offsets: number[
 }
 
 /** How an expected token reads in an error message. */
-const EXPECTED_LABEL: Partial<Record<TokenType, string>> = {
-  [TokenType.RightParen]: "')' が必要です",
-  [TokenType.RightBrace]: "'}' が必要です",
-  [TokenType.LeftParen]: "'(' が必要です",
-  [TokenType.CellRef]: '範囲の終点にはセル参照が必要です',
-  [TokenType.Number]: '符号の後には数値が必要です',
+const EXPECTED_KEY: Partial<Record<TokenType, MessageKey>> = {
+  [TokenType.RightParen]: 'engine.parser.expectedRightParen',
+  [TokenType.RightBrace]: 'engine.parser.expectedRightBrace',
+  [TokenType.LeftParen]: 'engine.parser.expectedLeftParen',
+  [TokenType.CellRef]: 'engine.parser.expectedRangeEndCellRef',
+  [TokenType.Number]: 'engine.parser.expectedNumberAfterSign',
 };
 
 /** Coordinates parsed from a normalized open-range string like 'A:C', '1:3', or 'A2:C'. */
@@ -199,19 +201,24 @@ class Parser {
   expect(type: TokenType): Token {
     const token = this.peek();
     if (token.type !== type) {
-      const expected = EXPECTED_LABEL[type];
+      const expectedKey = EXPECTED_KEY[type];
       if (type === TokenType.EOF) {
-        throw this.errorAt(`余分な記述があります: ${this.currentText()}`);
+        throw this.errorAt(t('engine.parser.trailingText', { text: this.currentText() }));
       }
       if (token.type === TokenType.EOF) {
         throw this.errorAt(
-          expected ? `式が途中で終わっています（${expected}）` : '式が途中で終わっています',
+          expectedKey
+            ? t('engine.parser.unexpectedEndWithExpected', { expected: t(expectedKey) })
+            : t('engine.parser.unexpectedEnd'),
         );
       }
       throw this.errorAt(
-        expected
-          ? `${expected}（${this.currentText()} があります）`
-          : `ここに ${this.currentText()} は置けません`,
+        expectedKey
+          ? t('engine.parser.expectedButFound', {
+              expected: t(expectedKey),
+              text: this.currentText(),
+            })
+          : t('engine.parser.unexpectedToken', { text: this.currentText() }),
       );
     }
     return this.advance();
@@ -466,8 +473,8 @@ class Parser {
       return expr;
     }
 
-    if (token.type === TokenType.EOF) throw this.errorAt('式が途中で終わっています');
-    throw this.errorAt(`ここに ${this.currentText()} は置けません`);
+    if (token.type === TokenType.EOF) throw this.errorAt(t('engine.parser.unexpectedEnd'));
+    throw this.errorAt(t('engine.parser.unexpectedToken', { text: this.currentText() }));
   }
 
   private parseArrayLiteral(): ASTNode {
@@ -483,7 +490,11 @@ class Parser {
     for (const row of rows) {
       if (row.length !== cols) {
         const span = { start: this.spans[startIdx].start, end: this.spans[this.pos - 1].end };
-        throw new FormulaSyntaxError('配列の各行の要素数が揃っていません', span.start, span.end);
+        throw new FormulaSyntaxError(
+          t('engine.parser.arrayRowLengthMismatch'),
+          span.start,
+          span.end,
+        );
       }
     }
 
@@ -529,8 +540,12 @@ class Parser {
     }
 
     if (token.type === TokenType.EOF)
-      throw this.errorAt("式が途中で終わっています（'}' が必要です）");
-    throw this.errorAt('配列には定数（数値・文字列・TRUE/FALSE・エラー値）だけを書けます');
+      throw this.errorAt(
+        t('engine.parser.unexpectedEndWithExpected', {
+          expected: t('engine.parser.expectedRightBrace'),
+        }),
+      );
+    throw this.errorAt(t('engine.parser.arrayConstantOnly'));
   }
 
   private parseFunctionCall(): ASTNode {
@@ -548,7 +563,12 @@ class Parser {
     // Another value right after an argument usually means a forgotten ',' (e.g. IF(A1, "a" "b"))
     const next = this.peek().type;
     if (next !== TokenType.RightParen && next !== TokenType.EOF) {
-      throw this.errorAt(`',' か ')' が必要です（${this.currentText()} があります）`);
+      throw this.errorAt(
+        t('engine.parser.expectedButFound', {
+          expected: t('engine.parser.expectedCommaOrRightParen'),
+          text: this.currentText(),
+        }),
+      );
     }
     this.expect(TokenType.RightParen);
 

@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from 'react';
 import { renderStats } from '../../../devtools/renderStats';
+import { useI18n } from '../../../i18n/useI18n';
 
 const HISTORY = 60;
 
@@ -69,6 +70,7 @@ function Spark({ values, max, className }: { values: number[]; max: number; clas
  * every re-rendered cell.
  */
 export const RenderTool = memo(function RenderTool() {
+  const { t } = useI18n();
   const [samples, setSamples] = useState<Sample[]>([]);
   const [dom, setDom] = useState<DomInfo>({ cells: 0, rows: null, cols: null });
   const [longTasks, setLongTasks] = useState<{ count: number; last: number | null }>({
@@ -138,9 +140,11 @@ export const RenderTool = memo(function RenderTool() {
         <label className="devtools-switch">
           <input type="checkbox" checked={flash} onChange={(e) => setFlash(e.target.checked)} />
           <span />
-          再描画されたセルを光らせる
+          {t('devtools.renderTool.flashRerenders')}
         </label>
-        <span className="devtools-muted devtools-push">1 秒ごとに更新</span>
+        <span className="devtools-muted devtools-push">
+          {t('devtools.renderTool.updateInterval')}
+        </span>
       </div>
       <div className="render-body">
         <div className="render-panel">
@@ -154,32 +158,34 @@ export const RenderTool = memo(function RenderTool() {
         </div>
         <div className="render-panel">
           <div className="render-panel-head">
-            <span>セルの再描画 / 秒</span>
+            <span>{t('devtools.renderTool.cellRerendersPerSec')}</span>
             <strong>{latest?.commits ?? '—'}</strong>
           </div>
           <Spark values={commitValues} max={maxCommits} className="render-spark-commits" />
         </div>
         <div className="profiler-cards">
           <div className="devtools-card">
-            <span>マウント中のセル</span>
+            <span>{t('devtools.renderTool.mountedCells')}</span>
             <strong>{dom.cells.toLocaleString()}</strong>
           </div>
           <div className="devtools-card">
-            <span>描画中の行</span>
+            <span>{t('devtools.renderTool.renderedRows')}</span>
             <strong>{dom.rows ? `${dom.rows[0] + 1}–${dom.rows[1] + 1}` : '—'}</strong>
           </div>
           <div className="devtools-card">
-            <span>描画中の列</span>
+            <span>{t('devtools.renderTool.renderedCols')}</span>
             <strong>{dom.cols ? `${dom.cols[0] + 1}–${dom.cols[1] + 1}` : '—'}</strong>
           </div>
           <div className="devtools-card">
-            <span>累計の再描画</span>
+            <span>{t('devtools.renderTool.totalRerenders')}</span>
             <strong>{renderStats.cellCommits.toLocaleString()}</strong>
           </div>
           <div className="devtools-card">
-            <span>長いタスク（50ms+）</span>
+            <span>{t('devtools.renderTool.longTasks')}</span>
             <strong data-warn={longTasks.count > 0 || undefined}>{longTasks.count}</strong>
-            {longTasks.last !== null && <em>直近 {Math.round(longTasks.last)} ms</em>}
+            {longTasks.last !== null && (
+              <em>{t('devtools.renderTool.longTaskLast', { ms: Math.round(longTasks.last) })}</em>
+            )}
           </div>
         </div>
       </div>

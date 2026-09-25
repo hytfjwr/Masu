@@ -1,4 +1,5 @@
 import { memo, useCallback, useMemo, useState } from 'react';
+import { useI18n } from '../../i18n/useI18n';
 import { colIndexToLetter, parseCellKey } from '../../utils/coordinates';
 
 interface ParsedRange {
@@ -43,6 +44,7 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({
   getCellText,
   onConfirm,
 }: RemoveDuplicatesDialogProps) {
+  const { t } = useI18n();
   const [rangeText, setRangeText] = useState(defaultRangeText);
   const [hasHeader, setHasHeader] = useState(true);
   const [checkedCols, setCheckedCols] = useState<Set<number>>(() => {
@@ -61,10 +63,14 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({
     const options: Array<{ col: number; label: string }> = [];
     for (let c = parsedRange.startCol; c <= parsedRange.endCol; c++) {
       const headerText = hasHeader ? getCellText(c, headerRow).trim() : '';
-      options.push({ col: c, label: headerText || `列 ${colIndexToLetter(c)}` });
+      options.push({
+        col: c,
+        label:
+          headerText || t('dialogs.removeDuplicates.columnLabel', { letter: colIndexToLetter(c) }),
+      });
     }
     return options;
-  }, [parsedRange, hasHeader, getCellText]);
+  }, [parsedRange, hasHeader, getCellText, t]);
 
   const toggleCol = useCallback((col: number) => {
     setCheckedCols((prev) => {
@@ -86,11 +92,11 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({
   const handleConfirm = useCallback(() => {
     const parsed = parseRangeText(rangeText);
     if (!parsed) {
-      setError('範囲の形式が正しくありません（例: A1:D10）');
+      setError(t('dialogs.removeDuplicates.invalidRangeFormat'));
       return;
     }
     if (checkedCols.size === 0) {
-      setError('対象列を1つ以上選択してください');
+      setError(t('dialogs.removeDuplicates.selectAtLeastOneColumn'));
       return;
     }
     onConfirm(
@@ -99,7 +105,7 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({
       Array.from(checkedCols).sort((a, b) => a - b),
     );
     onClose();
-  }, [rangeText, hasHeader, checkedCols, onConfirm, onClose]);
+  }, [rangeText, hasHeader, checkedCols, onConfirm, onClose, t]);
 
   const handleBackdropMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -120,7 +126,9 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({
         data-testid="remove-duplicates-dialog"
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-grid-line">
-          <h2 className="text-sm font-semibold text-text-primary">重複を削除</h2>
+          <h2 className="text-sm font-semibold text-text-primary">
+            {t('dialogs.removeDuplicates.title')}
+          </h2>
           <button
             onClick={onClose}
             className="text-text-primary hover:text-error text-lg leading-none"
@@ -131,13 +139,15 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({
 
         <div className="p-4 space-y-3">
           <div>
-            <label className="text-xs text-text-primary/80 block mb-0.5">対象範囲</label>
+            <label className="text-xs text-text-primary/80 block mb-0.5">
+              {t('dialogs.removeDuplicates.rangeLabel')}
+            </label>
             <input
               type="text"
               value={rangeText}
               onChange={(e) => setRangeText(e.target.value)}
               className="w-full h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded"
-              placeholder="例: A1:D10"
+              placeholder={t('dialogs.removeDuplicates.rangePlaceholder')}
               data-testid="remove-duplicates-range-input"
             />
           </div>
@@ -149,19 +159,21 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({
               onChange={(e) => setHasHeader(e.target.checked)}
               className="w-3.5 h-3.5"
             />
-            データにヘッダー行が含まれている
+            {t('dialogs.removeDuplicates.hasHeaderLabel')}
           </label>
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-text-primary/80">対象列</span>
+              <span className="text-xs text-text-primary/80">
+                {t('dialogs.removeDuplicates.columnsLabel')}
+              </span>
               <div className="flex gap-1">
                 <button
                   type="button"
                   className="text-[10px] text-accent-selection hover:underline"
                   onClick={selectAllCols}
                 >
-                  すべて選択
+                  {t('dialogs.removeDuplicates.selectAll')}
                 </button>
                 <span className="text-[10px] text-text-primary/30">|</span>
                 <button
@@ -169,7 +181,7 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({
                   className="text-[10px] text-accent-selection hover:underline"
                   onClick={deselectAllCols}
                 >
-                  すべて解除
+                  {t('dialogs.removeDuplicates.deselectAll')}
                 </button>
               </div>
             </div>
@@ -199,14 +211,14 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({
             onClick={onClose}
             className="px-3 py-1 text-xs bg-ui-bg border border-grid-line rounded hover:bg-header-bg"
           >
-            キャンセル
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleConfirm}
             className="px-3 py-1 text-xs bg-accent-selection text-white border border-accent-selection rounded hover:opacity-90"
             data-testid="remove-duplicates-confirm"
           >
-            重複を削除
+            {t('dialogs.removeDuplicates.confirm')}
           </button>
         </div>
       </div>

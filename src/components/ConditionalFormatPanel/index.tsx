@@ -6,6 +6,8 @@ import type {
   ConditionalOperator,
 } from '../../types/grid';
 import { cellKey, parseCellKey } from '../../utils/coordinates';
+import type { MessageKey, TFunction } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 import { ColorPicker } from '../Toolbar/ColorPicker';
 
 type CfRange = ConditionalFormatRule['range'];
@@ -29,29 +31,29 @@ type ConditionKey =
   | 'aboveAverage'
   | 'belowAverage';
 
-const CONDITION_OPTIONS: { key: ConditionKey; label: string }[] = [
-  { key: 'isEmpty', label: '空白' },
-  { key: 'isNotEmpty', label: '空白ではない' },
-  { key: 'textContains', label: '次を含むテキスト' },
-  { key: 'textNotContains', label: '次を含まないテキスト' },
-  { key: 'textStartsWith', label: '次で始まるテキスト' },
-  { key: 'textEndsWith', label: '次で終わるテキスト' },
-  { key: 'textEquals', label: '次と完全一致するテキスト' },
-  { key: 'greaterThan', label: '次より大きい' },
-  { key: 'greaterThanOrEqual', label: '以上' },
-  { key: 'lessThan', label: '次より小さい' },
-  { key: 'lessThanOrEqual', label: '以下' },
-  { key: 'equal', label: '次と等しい' },
-  { key: 'notEqual', label: '次と等しくない' },
-  { key: 'between', label: '次の間にある' },
-  { key: 'notBetween', label: '次の間にない' },
-  { key: 'formula', label: 'カスタム数式' },
-  { key: 'duplicate', label: '重複' },
-  { key: 'unique', label: '一意' },
-  { key: 'top', label: '上位' },
-  { key: 'bottom', label: '下位' },
-  { key: 'aboveAverage', label: '平均より上' },
-  { key: 'belowAverage', label: '平均より下' },
+const CONDITION_OPTIONS: { key: ConditionKey; labelKey: MessageKey }[] = [
+  { key: 'isEmpty', labelKey: 'panels.conditionalFormat.condition.isEmpty' },
+  { key: 'isNotEmpty', labelKey: 'panels.conditionalFormat.condition.isNotEmpty' },
+  { key: 'textContains', labelKey: 'panels.conditionalFormat.condition.textContains' },
+  { key: 'textNotContains', labelKey: 'panels.conditionalFormat.condition.textNotContains' },
+  { key: 'textStartsWith', labelKey: 'panels.conditionalFormat.condition.textStartsWith' },
+  { key: 'textEndsWith', labelKey: 'panels.conditionalFormat.condition.textEndsWith' },
+  { key: 'textEquals', labelKey: 'panels.conditionalFormat.condition.textEquals' },
+  { key: 'greaterThan', labelKey: 'panels.shared.operator.greaterThan' },
+  { key: 'greaterThanOrEqual', labelKey: 'panels.shared.operator.greaterThanOrEqual' },
+  { key: 'lessThan', labelKey: 'panels.shared.operator.lessThan' },
+  { key: 'lessThanOrEqual', labelKey: 'panels.shared.operator.lessThanOrEqual' },
+  { key: 'equal', labelKey: 'panels.shared.operator.equal' },
+  { key: 'notEqual', labelKey: 'panels.shared.operator.notEqual' },
+  { key: 'between', labelKey: 'panels.shared.operator.between' },
+  { key: 'notBetween', labelKey: 'panels.shared.operator.notBetween' },
+  { key: 'formula', labelKey: 'panels.conditionalFormat.condition.formula' },
+  { key: 'duplicate', labelKey: 'panels.conditionalFormat.condition.duplicate' },
+  { key: 'unique', labelKey: 'panels.conditionalFormat.condition.unique' },
+  { key: 'top', labelKey: 'panels.conditionalFormat.condition.top' },
+  { key: 'bottom', labelKey: 'panels.conditionalFormat.condition.bottom' },
+  { key: 'aboveAverage', labelKey: 'panels.conditionalFormat.condition.aboveAverage' },
+  { key: 'belowAverage', labelKey: 'panels.conditionalFormat.condition.belowAverage' },
 ];
 
 const VALUE_OPERATOR_KEYS = new Set<ConditionKey>([
@@ -85,61 +87,73 @@ function needsFormula(key: ConditionKey): boolean {
   return key === 'formula';
 }
 
-const STYLE_PRESETS: { label: string; style: Partial<CellStyle> }[] = [
-  { label: '薄い緑', style: { backgroundColor: '#b7e1cd', textColor: '#137333' } },
-  { label: '薄い赤', style: { backgroundColor: '#f4c7c3', textColor: '#a50e0e' } },
-  { label: '薄い黄', style: { backgroundColor: '#fce8b2', textColor: '#7f6000' } },
-  { label: '太字', style: { bold: true } },
-  { label: '赤文字', style: { textColor: '#ff0000' } },
-  { label: '青背景', style: { backgroundColor: '#c6dafc' } },
+const STYLE_PRESETS: { labelKey: MessageKey; style: Partial<CellStyle> }[] = [
+  {
+    labelKey: 'panels.conditionalFormat.stylePreset.lightGreen',
+    style: { backgroundColor: '#b7e1cd', textColor: '#137333' },
+  },
+  {
+    labelKey: 'panels.conditionalFormat.stylePreset.lightRed',
+    style: { backgroundColor: '#f4c7c3', textColor: '#a50e0e' },
+  },
+  {
+    labelKey: 'panels.conditionalFormat.stylePreset.lightYellow',
+    style: { backgroundColor: '#fce8b2', textColor: '#7f6000' },
+  },
+  { labelKey: 'panels.conditionalFormat.stylePreset.boldText', style: { bold: true } },
+  { labelKey: 'panels.conditionalFormat.stylePreset.redText', style: { textColor: '#ff0000' } },
+  {
+    labelKey: 'panels.conditionalFormat.stylePreset.blueBackground',
+    style: { backgroundColor: '#c6dafc' },
+  },
 ];
 
 const COLOR_SCALE_PRESETS: {
-  label: string;
+  labelKey: MessageKey;
   min: ColorScalePoint;
   mid?: ColorScalePoint;
   max: ColorScalePoint;
 }[] = [
   {
-    label: '緑 → 白',
+    labelKey: 'panels.conditionalFormat.colorScalePreset.greenToWhite',
     min: { type: 'min', color: '#57bb8a' },
     max: { type: 'max', color: '#ffffff' },
   },
   {
-    label: '白 → 緑',
+    labelKey: 'panels.conditionalFormat.colorScalePreset.whiteToGreen',
     min: { type: 'min', color: '#ffffff' },
     max: { type: 'max', color: '#57bb8a' },
   },
   {
-    label: '赤 → 白 → 緑',
+    labelKey: 'panels.conditionalFormat.colorScalePreset.redWhiteGreen',
     min: { type: 'min', color: '#e67c73' },
     mid: { type: 'percentile', value: 50, color: '#ffffff' },
     max: { type: 'max', color: '#57bb8a' },
   },
   {
-    label: '緑 → 白 → 赤',
+    labelKey: 'panels.conditionalFormat.colorScalePreset.greenWhiteRed',
     min: { type: 'min', color: '#57bb8a' },
     mid: { type: 'percentile', value: 50, color: '#ffffff' },
     max: { type: 'max', color: '#e67c73' },
   },
   {
-    label: '白 → 赤',
+    labelKey: 'panels.conditionalFormat.colorScalePreset.whiteToRed',
     min: { type: 'min', color: '#ffffff' },
     max: { type: 'max', color: '#e67c73' },
   },
   {
-    label: '黄 → 緑',
+    labelKey: 'panels.conditionalFormat.colorScalePreset.yellowToGreen',
     min: { type: 'min', color: '#ffd666' },
     max: { type: 'max', color: '#57bb8a' },
   },
 ];
 
-const POINT_TYPE_OPTIONS: { value: ColorScalePoint['type']; label: string }[] = [
-  { value: 'min', label: '最小値' },
-  { value: 'max', label: '最大値' },
-  { value: 'number', label: '数値' },
-  { value: 'percent', label: 'パーセント' },
-  { value: 'percentile', label: 'パーセンタイル' },
+const POINT_TYPE_OPTIONS: { value: ColorScalePoint['type']; labelKey: MessageKey }[] = [
+  { value: 'min', labelKey: 'panels.conditionalFormat.pointType.min' },
+  { value: 'max', labelKey: 'panels.conditionalFormat.pointType.max' },
+  { value: 'number', labelKey: 'panels.conditionalFormat.pointType.number' },
+  { value: 'percent', labelKey: 'panels.conditionalFormat.pointType.percent' },
+  { value: 'percentile', labelKey: 'panels.conditionalFormat.pointType.percentile' },
 ];
 
 function formatRangeLabel(range: CfRange): string {
@@ -176,52 +190,68 @@ function conditionKeyOf(rule: ConditionalFormatRule): ConditionKey {
   return kind as ConditionKey;
 }
 
-function describeCfRule(rule: ConditionalFormatRule): string {
+function describeCfRule(rule: ConditionalFormatRule, t: TFunction): string {
   const kind = rule.kind ?? 'value';
   if (kind === 'value') {
     switch (rule.operator) {
       case 'greaterThan':
-        return `セルの値 > ${rule.value1}`;
+        return t('panels.conditionalFormat.describe.greaterThan', { value1: rule.value1 });
       case 'greaterThanOrEqual':
-        return `セルの値 >= ${rule.value1}`;
+        return t('panels.conditionalFormat.describe.greaterThanOrEqual', { value1: rule.value1 });
       case 'lessThan':
-        return `セルの値 < ${rule.value1}`;
+        return t('panels.conditionalFormat.describe.lessThan', { value1: rule.value1 });
       case 'lessThanOrEqual':
-        return `セルの値 <= ${rule.value1}`;
+        return t('panels.conditionalFormat.describe.lessThanOrEqual', { value1: rule.value1 });
       case 'equal':
-        return `セルの値 = ${rule.value1}`;
+        return t('panels.conditionalFormat.describe.equal', { value1: rule.value1 });
       case 'notEqual':
-        return `セルの値 ≠ ${rule.value1}`;
+        return t('panels.conditionalFormat.describe.notEqual', { value1: rule.value1 });
       case 'between':
-        return `セルの値が ${rule.value1} 〜 ${rule.value2} の間`;
+        return t('panels.conditionalFormat.describe.between', {
+          value1: rule.value1,
+          value2: rule.value2 ?? '',
+        });
       case 'notBetween':
-        return `セルの値が ${rule.value1} 〜 ${rule.value2} の間ではない`;
+        return t('panels.conditionalFormat.describe.notBetween', {
+          value1: rule.value1,
+          value2: rule.value2 ?? '',
+        });
       case 'textContains':
-        return `テキストに「${rule.value1}」を含む`;
+        return t('panels.conditionalFormat.describe.textContains', { value1: rule.value1 });
       case 'textNotContains':
-        return `テキストに「${rule.value1}」を含まない`;
+        return t('panels.conditionalFormat.describe.textNotContains', { value1: rule.value1 });
       case 'textStartsWith':
-        return `テキストが「${rule.value1}」で始まる`;
+        return t('panels.conditionalFormat.describe.textStartsWith', { value1: rule.value1 });
       case 'textEndsWith':
-        return `テキストが「${rule.value1}」で終わる`;
+        return t('panels.conditionalFormat.describe.textEndsWith', { value1: rule.value1 });
       case 'textEquals':
-        return `テキストが「${rule.value1}」と完全一致`;
+        return t('panels.conditionalFormat.describe.textEquals', { value1: rule.value1 });
       case 'isEmpty':
-        return '空白';
+        return t('panels.conditionalFormat.condition.isEmpty');
       case 'isNotEmpty':
-        return '空白ではない';
+        return t('panels.conditionalFormat.condition.isNotEmpty');
       default:
         return rule.operator;
     }
   }
-  if (kind === 'formula') return `カスタム数式: =${rule.formula ?? ''}`;
-  if (kind === 'colorScale') return 'カラースケール';
-  if (kind === 'duplicate') return '重複する値';
-  if (kind === 'unique') return '一意の値';
-  if (kind === 'top') return `上位 ${rule.rank ?? 0}${rule.percent ? '%' : ''}`;
-  if (kind === 'bottom') return `下位 ${rule.rank ?? 0}${rule.percent ? '%' : ''}`;
-  if (kind === 'aboveAverage') return '平均より上';
-  if (kind === 'belowAverage') return '平均より下';
+  if (kind === 'formula') {
+    return t('panels.conditionalFormat.describe.formula', { formula: rule.formula ?? '' });
+  }
+  if (kind === 'colorScale') return t('panels.conditionalFormat.colorScale');
+  if (kind === 'duplicate') return t('panels.conditionalFormat.describe.duplicate');
+  if (kind === 'unique') return t('panels.conditionalFormat.describe.unique');
+  if (kind === 'top') {
+    return t('panels.conditionalFormat.describe.top', {
+      rank: `${rule.rank ?? 0}${rule.percent ? '%' : ''}`,
+    });
+  }
+  if (kind === 'bottom') {
+    return t('panels.conditionalFormat.describe.bottom', {
+      rank: `${rule.rank ?? 0}${rule.percent ? '%' : ''}`,
+    });
+  }
+  if (kind === 'aboveAverage') return t('panels.conditionalFormat.condition.aboveAverage');
+  if (kind === 'belowAverage') return t('panels.conditionalFormat.condition.belowAverage');
   return '';
 }
 
@@ -246,6 +276,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
   onDeleteRule,
   defaultRange,
 }: ConditionalFormatPanelProps) {
+  const { t } = useI18n();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [tab, setTab] = useState<'value' | 'colorScale'>('value');
@@ -371,7 +402,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
   const handleSave = useCallback(() => {
     const range = parseRangeInput(rangeInput);
     if (!range) {
-      setRangeError('範囲は "A1" または "A1:B10" の形式で入力してください');
+      setRangeError(t('panels.conditionalFormat.error.rangeFormat'));
       return;
     }
     setRangeError('');
@@ -454,6 +485,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
     rules,
     onAddRule,
     onUpdateRule,
+    t,
   ]);
 
   const handleMovePriority = useCallback(
@@ -474,7 +506,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
     return (
       <div className="space-y-3" data-testid="cf-panel-edit">
         <label className={labelClass}>
-          <span>範囲</span>
+          <span>{t('panels.conditionalFormat.label.range')}</span>
           <input
             type="text"
             value={rangeInput}
@@ -491,21 +523,21 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
             className={`px-3 py-1.5 text-xs ${tab === 'value' ? 'text-accent-selection border-b-2 border-accent-selection' : 'text-text-primary/60'}`}
             onClick={() => setTab('value')}
           >
-            単色
+            {t('panels.conditionalFormat.tab.singleColor')}
           </button>
           <button
             type="button"
             className={`px-3 py-1.5 text-xs ${tab === 'colorScale' ? 'text-accent-selection border-b-2 border-accent-selection' : 'text-text-primary/60'}`}
             onClick={() => setTab('colorScale')}
           >
-            カラースケール
+            {t('panels.conditionalFormat.colorScale')}
           </button>
         </div>
 
         {tab === 'value' ? (
           <div className="space-y-3">
             <label className={labelClass}>
-              <span>セルの書式設定の条件</span>
+              <span>{t('panels.conditionalFormat.label.formatCondition')}</span>
               <select
                 value={conditionKey}
                 onChange={(e) => setConditionKey(e.target.value as ConditionKey)}
@@ -513,7 +545,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
               >
                 {CONDITION_OPTIONS.map((o) => (
                   <option key={o.key} value={o.key}>
-                    {o.label}
+                    {t(o.labelKey)}
                   </option>
                 ))}
               </select>
@@ -521,7 +553,9 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
 
             {needsValue1(conditionKey) && (
               <label className={labelClass}>
-                <span>値{needsValue2(conditionKey) ? '1' : ''}</span>
+                <span>
+                  {needsValue2(conditionKey) ? t('panels.shared.value1') : t('panels.shared.value')}
+                </span>
                 <input
                   type="text"
                   value={value1}
@@ -532,7 +566,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
             )}
             {needsValue2(conditionKey) && (
               <label className={labelClass}>
-                <span>値2</span>
+                <span>{t('panels.shared.value2')}</span>
                 <input
                   type="text"
                   value={value2}
@@ -543,7 +577,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
             )}
             {needsFormula(conditionKey) && (
               <label className={labelClass}>
-                <span>カスタム数式</span>
+                <span>{t('panels.conditionalFormat.condition.formula')}</span>
                 <input
                   type="text"
                   value={formula}
@@ -556,7 +590,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
             {needsRank(conditionKey) && (
               <div className="flex items-end gap-2">
                 <label className={`${labelClass} flex-1`}>
-                  <span>件数</span>
+                  <span>{t('panels.conditionalFormat.label.count')}</span>
                   <input
                     type="number"
                     min="1"
@@ -577,7 +611,9 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
             )}
 
             <div className="space-y-1">
-              <div className="text-xs text-text-primary">書式</div>
+              <div className="text-xs text-text-primary">
+                {t('panels.conditionalFormat.label.formattingStyle')}
+              </div>
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -610,7 +646,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
                 <ColorPicker
                   currentColor={textColor}
                   onColorChange={setTextColor}
-                  label="文字色"
+                  label={t('panels.conditionalFormat.label.textColor')}
                   icon={
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M11 2L5.5 16h2.25l1.12-3h6.25l1.12 3h2.25L13 2h-2zm-1.38 9L12 4.67 14.38 11H9.62z" />
@@ -620,7 +656,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
                 <ColorPicker
                   currentColor={backgroundColor}
                   onColorChange={setBackgroundColor}
-                  label="背景色"
+                  label={t('panels.shared.backgroundColor')}
                   icon={
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15a1.49 1.49 0 000 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z" />
@@ -641,16 +677,18 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
                       .join(' ') || undefined,
                 }}
               >
-                プレビュー 123
+                {t('panels.conditionalFormat.preview')}
               </div>
             </div>
 
             <div className="space-y-1">
-              <div className="text-xs text-text-primary/60">既定のスタイル</div>
+              <div className="text-xs text-text-primary/60">
+                {t('panels.conditionalFormat.label.defaultStyles')}
+              </div>
               <div className="grid grid-cols-3 gap-1">
                 {STYLE_PRESETS.map((p) => (
                   <button
-                    key={p.label}
+                    key={p.labelKey}
                     type="button"
                     className="px-1.5 py-1 text-[11px] rounded border border-grid-line hover:border-accent-selection truncate"
                     style={{
@@ -660,7 +698,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
                     }}
                     onClick={() => applyStylePreset(p.style)}
                   >
-                    {p.label}
+                    {t(p.labelKey)}
                   </button>
                 ))}
               </div>
@@ -669,18 +707,20 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
         ) : (
           <div className="space-y-3">
             <div className="space-y-1">
-              <div className="text-xs text-text-primary/60">プリセット</div>
+              <div className="text-xs text-text-primary/60">
+                {t('panels.conditionalFormat.label.presets')}
+              </div>
               <div className="grid grid-cols-2 gap-1">
                 {COLOR_SCALE_PRESETS.map((p) => (
                   <button
-                    key={p.label}
+                    key={p.labelKey}
                     type="button"
                     className="h-6 rounded border border-grid-line hover:border-accent-selection text-[10px] text-white"
                     style={{
                       background: `linear-gradient(to right, ${p.min.color}, ${p.mid ? `${p.mid.color}, ` : ''}${p.max.color})`,
                     }}
                     onClick={() => applyColorScalePreset(p)}
-                    title={p.label}
+                    title={t(p.labelKey)}
                   />
                 ))}
               </div>
@@ -696,11 +736,16 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
             {(['min', ...(csMidEnabled ? ['mid'] : []), 'max'] as const).map((slot) => {
               const point = slot === 'min' ? csMin : slot === 'mid' ? csMid : csMax;
               const setPoint = slot === 'min' ? setCsMin : slot === 'mid' ? setCsMid : setCsMax;
-              const label = slot === 'min' ? '最小点' : slot === 'mid' ? '中間点' : '最大点';
+              const labelKey =
+                slot === 'min'
+                  ? 'panels.conditionalFormat.label.minPointType'
+                  : slot === 'mid'
+                    ? 'panels.conditionalFormat.label.midPointType'
+                    : 'panels.conditionalFormat.label.maxPointType';
               return (
                 <div key={slot} className="flex items-end gap-1">
                   <label className={`${labelClass} flex-1`}>
-                    <span>{label}: 種類</span>
+                    <span>{t(labelKey)}</span>
                     <select
                       value={point.type}
                       onChange={(e) =>
@@ -710,7 +755,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
                     >
                       {POINT_TYPE_OPTIONS.map((o) => (
                         <option key={o.value} value={o.value}>
-                          {o.label}
+                          {t(o.labelKey)}
                         </option>
                       ))}
                     </select>
@@ -719,7 +764,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
                     point.type === 'percent' ||
                     point.type === 'percentile') && (
                     <label className={labelClass}>
-                      <span>値</span>
+                      <span>{t('panels.shared.value')}</span>
                       <input
                         type="number"
                         value={point.value ?? 0}
@@ -744,14 +789,14 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
                 checked={csMidEnabled}
                 onChange={(e) => setCsMidEnabled(e.target.checked)}
               />
-              <span>中間点を使用する</span>
+              <span>{t('panels.conditionalFormat.label.useMidpoint')}</span>
             </label>
           </div>
         )}
 
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className={btnClass} onClick={handleCancel}>
-            キャンセル
+            {t('common.cancel')}
           </button>
           <button
             type="button"
@@ -760,7 +805,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
             onClick={handleSave}
             data-testid="cf-panel-save"
           >
-            完了
+            {t('common.done')}
           </button>
         </div>
       </div>
@@ -770,7 +815,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
   return (
     <div className="space-y-2" data-testid="cf-panel-list">
       {sortedRules.length === 0 ? (
-        <p className="text-xs text-text-primary/40">ルールがありません</p>
+        <p className="text-xs text-text-primary/40">{t('panels.conditionalFormat.empty')}</p>
       ) : (
         sortedRules.map((rule, idx) => (
           <div
@@ -787,7 +832,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
             />
             <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleEditRule(rule)}>
               <div className="text-text-primary/60 truncate">{formatRangeLabel(rule.range)}</div>
-              <div className="text-text-primary truncate">{describeCfRule(rule)}</div>
+              <div className="text-text-primary truncate">{describeCfRule(rule, t)}</div>
             </div>
             <div className="flex flex-col shrink-0">
               <button
@@ -812,7 +857,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
               className="text-error text-[10px] hover:underline shrink-0"
               onClick={() => onDeleteRule(rule.id)}
             >
-              削除
+              {t('common.delete')}
             </button>
           </div>
         ))
@@ -824,7 +869,7 @@ export const ConditionalFormatPanel = memo(function ConditionalFormatPanel({
         onClick={handleNewRule}
         data-testid="cf-panel-add"
       >
-        + 条件を追加
+        {t('panels.conditionalFormat.addRule')}
       </button>
     </div>
   );

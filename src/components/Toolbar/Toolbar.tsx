@@ -11,6 +11,7 @@ import { ColorPicker } from './ColorPicker';
 import { BorderPicker } from './BorderPicker';
 import { NumberFormatDropdown } from './NumberFormatDropdown';
 import { HoverGlider } from '../HoverGlider';
+import { useI18n } from '../../i18n/useI18n';
 
 const ZOOM_OPTIONS = [50, 75, 90, 100, 125, 150, 200];
 
@@ -63,6 +64,7 @@ export const Toolbar = memo(function Toolbar({
   activeCellValue,
   onClearFormatting,
 }: ToolbarProps) {
+  const { t } = useI18n();
   const isBold = activeCellStyle?.bold ?? false;
   const isItalic = activeCellStyle?.italic ?? false;
   const isUnderline = activeCellStyle?.underline ?? false;
@@ -162,7 +164,7 @@ export const Toolbar = memo(function Toolbar({
       {onUndo && (
         <button
           type="button"
-          title="元に戻す (Ctrl+Z)"
+          title={t('chrome.toolbar.undo')}
           className={`${btnBase} ${btnInactive} ${!canUndo ? 'opacity-40' : ''}`}
           onMouseDown={(e) => {
             e.preventDefault();
@@ -189,7 +191,7 @@ export const Toolbar = memo(function Toolbar({
       {onRedo && (
         <button
           type="button"
-          title="やり直し (Ctrl+Y)"
+          title={t('chrome.toolbar.redo')}
           className={`${btnBase} ${btnInactive} ${!canRedo ? 'opacity-40' : ''}`}
           onMouseDown={(e) => {
             e.preventDefault();
@@ -218,7 +220,7 @@ export const Toolbar = memo(function Toolbar({
       {onFormatPainter && (
         <button
           type="button"
-          title="書式のコピー / 貼り付け"
+          title={t('chrome.toolbar.formatPainter')}
           className={`${btnBase} ${formatPainterActive ? btnActive : btnInactive}`}
           onMouseDown={(e) => {
             e.preventDefault();
@@ -248,7 +250,7 @@ export const Toolbar = memo(function Toolbar({
           value={zoom ?? 100}
           onChange={(e) => onZoomChange(Number(e.target.value))}
           className="h-7 px-1 text-xs border border-grid-line rounded bg-ui-bg text-text-primary outline-none focus:border-accent-selection cursor-pointer shrink-0"
-          title="ズーム"
+          title={t('chrome.toolbar.zoom')}
           data-testid="toolbar-zoom"
         >
           {ZOOM_OPTIONS.map((z) => (
@@ -266,7 +268,7 @@ export const Toolbar = memo(function Toolbar({
         <>
           <button
             type="button"
-            title="通貨"
+            title={t('chrome.toolbar.currency')}
             className={`${btnBase} ${btnInactive}`}
             onMouseDown={(e) => {
               e.preventDefault();
@@ -278,7 +280,7 @@ export const Toolbar = memo(function Toolbar({
           </button>
           <button
             type="button"
-            title="パーセント"
+            title={t('chrome.toolbar.percent')}
             className={`${btnBase} ${btnInactive}`}
             onMouseDown={(e) => {
               e.preventDefault();
@@ -293,7 +295,7 @@ export const Toolbar = memo(function Toolbar({
       {onDecreaseDecimals && (
         <button
           type="button"
-          title="小数点以下の桁数を減らす"
+          title={t('chrome.toolbar.decreaseDecimals')}
           className={`${btnBase} ${btnInactive} text-[10px]`}
           onMouseDown={(e) => {
             e.preventDefault();
@@ -307,7 +309,7 @@ export const Toolbar = memo(function Toolbar({
       {onIncreaseDecimals && (
         <button
           type="button"
-          title="小数点以下の桁数を増やす"
+          title={t('chrome.toolbar.increaseDecimals')}
           className={`${btnBase} ${btnInactive} text-[10px]`}
           onMouseDown={(e) => {
             e.preventDefault();
@@ -334,9 +336,9 @@ export const Toolbar = memo(function Toolbar({
         value={currentFontFamily ?? ''}
         onChange={(e) => setFontFamily(e.target.value || undefined)}
         className="h-7 px-1 text-xs border border-grid-line rounded bg-ui-bg text-text-primary outline-none focus:border-accent-selection cursor-pointer w-28 transition-[border-color,box-shadow] duration-150 shrink-0"
-        title="フォント"
+        title={t('chrome.toolbar.fontFamily')}
       >
-        <option value="">標準</option>
+        <option value="">{t('chrome.toolbar.fontFamilyDefault')}</option>
         {FONT_FAMILIES.map((f) => (
           <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>
             {f.label}
@@ -349,7 +351,7 @@ export const Toolbar = memo(function Toolbar({
         value={currentFontSize ?? ''}
         onChange={(e) => setFontSize(e.target.value ? Number(e.target.value) : undefined)}
         className="h-7 px-1 text-xs border border-grid-line rounded bg-ui-bg text-text-primary outline-none focus:border-accent-selection cursor-pointer w-14 transition-[border-color,box-shadow] duration-150 shrink-0"
-        title="フォントサイズ"
+        title={t('chrome.toolbar.fontSize')}
       >
         <option value="">-</option>
         {FONT_SIZES.map((s) => (
@@ -364,7 +366,7 @@ export const Toolbar = memo(function Toolbar({
       {/* Bold */}
       <button
         type="button"
-        title="太字 (Ctrl+B)"
+        title={t('chrome.toolbar.bold')}
         className={`${btnBase} font-bold ${isBold ? btnActive : btnInactive}`}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -378,7 +380,7 @@ export const Toolbar = memo(function Toolbar({
       {/* Italic */}
       <button
         type="button"
-        title="斜体 (Ctrl+I)"
+        title={t('chrome.toolbar.italic')}
         className={`${btnBase} italic ${isItalic ? btnActive : btnInactive}`}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -392,7 +394,7 @@ export const Toolbar = memo(function Toolbar({
       {/* Underline */}
       <button
         type="button"
-        title="下線 (Ctrl+U)"
+        title={t('chrome.toolbar.underline')}
         className={`${btnBase} underline ${isUnderline ? btnActive : btnInactive}`}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -406,7 +408,7 @@ export const Toolbar = memo(function Toolbar({
       {/* Strikethrough */}
       <button
         type="button"
-        title="取り消し線 (Ctrl+Shift+X)"
+        title={t('chrome.toolbar.strikethrough')}
         className={`${btnBase} line-through ${isStrikethrough ? btnActive : btnInactive}`}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -421,7 +423,7 @@ export const Toolbar = memo(function Toolbar({
       <ColorPicker
         currentColor={currentTextColor}
         onColorChange={setTextColor}
-        label="文字色"
+        label={t('chrome.toolbar.textColor')}
         icon={
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path d="M11 2L5.5 16h2.25l1.12-3h6.25l1.12 3h2.25L13 2h-2zm-1.38 9L12 4.67 14.38 11H9.62z" />
@@ -435,7 +437,7 @@ export const Toolbar = memo(function Toolbar({
       <ColorPicker
         currentColor={currentBgColor}
         onColorChange={setBgColor}
-        label="背景色"
+        label={t('chrome.toolbar.fillColor')}
         icon={
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15a1.49 1.49 0 000 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z" />
@@ -451,7 +453,7 @@ export const Toolbar = memo(function Toolbar({
       {isMerged ? (
         <button
           type="button"
-          title="セル結合解除"
+          title={t('chrome.toolbar.unmergeCells')}
           className={`${btnBase} ${btnInactive} text-[10px]`}
           onMouseDown={(e) => {
             e.preventDefault();
@@ -473,7 +475,7 @@ export const Toolbar = memo(function Toolbar({
       ) : (
         <button
           type="button"
-          title="セルを結合"
+          title={t('chrome.toolbar.mergeCells')}
           className={`${btnBase} ${canMerge ? btnInactive : 'opacity-30 cursor-default'}`}
           onMouseDown={(e) => {
             e.preventDefault();
@@ -501,7 +503,7 @@ export const Toolbar = memo(function Toolbar({
       {/* Horizontal alignment */}
       <button
         type="button"
-        title="左揃え"
+        title={t('chrome.toolbar.alignLeft')}
         className={`${btnBase} ${currentAlign === 'left' ? btnActive : btnInactive}`}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -525,7 +527,7 @@ export const Toolbar = memo(function Toolbar({
       </button>
       <button
         type="button"
-        title="中央揃え"
+        title={t('chrome.toolbar.alignCenter')}
         className={`${btnBase} ${currentAlign === 'center' ? btnActive : btnInactive}`}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -549,7 +551,7 @@ export const Toolbar = memo(function Toolbar({
       </button>
       <button
         type="button"
-        title="右揃え"
+        title={t('chrome.toolbar.alignRight')}
         className={`${btnBase} ${currentAlign === 'right' ? btnActive : btnInactive}`}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -575,7 +577,7 @@ export const Toolbar = memo(function Toolbar({
       {/* Vertical alignment */}
       <button
         type="button"
-        title="上揃え"
+        title={t('chrome.toolbar.alignTop')}
         className={`${btnBase} ${currentVerticalAlign === 'top' ? btnActive : btnInactive}`}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -599,7 +601,7 @@ export const Toolbar = memo(function Toolbar({
       </button>
       <button
         type="button"
-        title="上下中央揃え"
+        title={t('chrome.toolbar.alignMiddle')}
         className={`${btnBase} ${currentVerticalAlign === 'middle' ? btnActive : btnInactive}`}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -623,7 +625,7 @@ export const Toolbar = memo(function Toolbar({
       </button>
       <button
         type="button"
-        title="下揃え"
+        title={t('chrome.toolbar.alignBottom')}
         className={`${btnBase} ${currentVerticalAlign === 'bottom' ? btnActive : btnInactive}`}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -649,7 +651,7 @@ export const Toolbar = memo(function Toolbar({
       {/* Wrap Text */}
       <button
         type="button"
-        title="折り返して全体を表示"
+        title={t('chrome.toolbar.wrapText')}
         className={`${btnBase} ${isWrapText ? btnActive : btnInactive}`}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -678,7 +680,7 @@ export const Toolbar = memo(function Toolbar({
           {separator}
           <button
             type="button"
-            title="書式をクリア (Ctrl+\)"
+            title={t('chrome.toolbar.clearFormatting')}
             className={`${btnBase} ${btnInactive} text-[10px]`}
             onMouseDown={(e) => {
               e.preventDefault();

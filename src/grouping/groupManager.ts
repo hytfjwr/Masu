@@ -1,4 +1,5 @@
 import type { GroupRange } from '../types/grid';
+import { t } from '../i18n';
 
 /**
  * ネストレベルの自動計算。
@@ -30,7 +31,7 @@ export function addGroup(
 ): { groups: GroupRange[]; newGroup: GroupRange } | { error: string } {
   const level = computeGroupLevel(groups, start, end);
   if (level > 3) {
-    return { error: '最大3階層までのネストに制限されています' };
+    return { error: t('engine.groupManager.maxNestingExceeded') };
   }
 
   const newGroup: GroupRange = {

@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo, useRef } from 'react';
 import { GRID_CONSTANTS } from '../../types/grid';
 import { colIndexToLetter } from '../../utils/coordinates';
+import { useI18n } from '../../i18n/useI18n';
 
 interface ColumnHeaderProps {
   colIndex: number;
@@ -37,6 +38,7 @@ export const ColumnHeader = memo(function ColumnHeader({
   onUnhideBefore,
   onUnhideAfter,
 }: ColumnHeaderProps) {
+  const { t } = useI18n();
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);
 
@@ -139,7 +141,7 @@ export const ColumnHeader = memo(function ColumnHeader({
         <button
           type="button"
           data-testid={`unhide-col-before-${colIndex}`}
-          title="非表示の列を再表示"
+          title={t('grid.columnHeader.unhideColumn')}
           className="absolute left-0 top-0 w-[10px] h-[10px] flex items-center justify-center leading-none text-[8px] bg-accent-selection/20 hover:bg-accent-selection/40 text-accent-selection z-10"
           onMouseDown={(e) => {
             e.preventDefault();
@@ -154,7 +156,7 @@ export const ColumnHeader = memo(function ColumnHeader({
         <button
           type="button"
           data-testid={`unhide-col-after-${colIndex}`}
-          title="非表示の列を再表示"
+          title={t('grid.columnHeader.unhideColumn')}
           className="absolute right-0 top-0 w-[10px] h-[10px] flex items-center justify-center leading-none text-[8px] bg-accent-selection/20 hover:bg-accent-selection/40 text-accent-selection z-10"
           onMouseDown={(e) => {
             e.preventDefault();

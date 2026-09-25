@@ -1,5 +1,6 @@
 import { memo, useState, useSyncExternalStore } from 'react';
 import { recalcProfiler, type RecalcPassRecord } from '../../../engine/recalcProfiler';
+import { useI18n } from '../../../i18n/useI18n';
 import type { DevToolsHost } from '../types';
 import { splitGlobalKey } from './dependencyGraph';
 import { parseCellKey } from '../../../utils/coordinates';
@@ -15,6 +16,7 @@ const pct = (hits: number, misses: number) =>
  * over the grid. Recording costs nothing while off.
  */
 export const ProfilerTool = memo(function ProfilerTool({ host }: { host: DevToolsHost }) {
+  const { t } = useI18n();
   useSyncExternalStore(recalcProfiler.subscribe, recalcProfiler.getVersion);
   const records = recalcProfiler.getRecords();
   const recording = recalcProfiler.enabled;
@@ -47,7 +49,9 @@ export const ProfilerTool = memo(function ProfilerTool({ host }: { host: DevTool
           onClick={() => recalcProfiler.setEnabled(!recording)}
         >
           <span className="profiler-dot" />
-          {recording ? '記録中' : '記録を開始'}
+          {recording
+            ? t('devtools.profilerTool.recording')
+            : t('devtools.profilerTool.startRecording')}
         </button>
         <button
           type="button"
@@ -55,7 +59,7 @@ export const ProfilerTool = memo(function ProfilerTool({ host }: { host: DevTool
           onClick={() => recalcProfiler.clear()}
           disabled={records.length === 0}
         >
-          クリア
+          {t('devtools.profilerTool.clear')}
         </button>
         <label className="devtools-switch">
           <input
@@ -64,21 +68,27 @@ export const ProfilerTool = memo(function ProfilerTool({ host }: { host: DevTool
             onChange={(e) => host.setHeatmap(e.target.checked)}
           />
           <span />
-          グリッドにヒートマップ
+          {t('devtools.profilerTool.heatmapOnGrid')}
         </label>
-        <span className="devtools-muted devtools-push">{records.length} パス</span>
+        <span className="devtools-muted devtools-push">
+          {t('devtools.profilerTool.passCount', { count: records.length })}
+        </span>
       </div>
 
       {records.length === 0 ? (
         <div className="ast-viz-empty">
           {recording
-            ? 'セルを編集すると、再計算がここに記録されます'
-            : '「記録を開始」を押してからセルを編集すると、再計算を計測します'}
+            ? t('devtools.profilerTool.emptyRecording')
+            : t('devtools.profilerTool.emptyNotRecording')}
         </div>
       ) : (
         <div className="profiler-body">
           {/* Timeline of passes (newest right) */}
-          <div className="profiler-timeline" role="listbox" aria-label="再計算パス">
+          <div
+            className="profiler-timeline"
+            role="listbox"
+            aria-label={t('devtools.profilerTool.passesLabel')}
+          >
             {records
               .slice()
               .reverse()
@@ -90,7 +100,15 @@ export const ProfilerTool = memo(function ProfilerTool({ host }: { host: DevTool
                   aria-selected={r.id === selected?.id}
                   className="profiler-bar"
                   data-kind={r.kind}
-                  title={`#${r.id} ${r.kind === 'all' ? '全体' : '差分'} ${ms(r.durationMs)} / ${r.evaluations} 評価`}
+                  title={t('devtools.profilerTool.passTitle', {
+                    id: r.id,
+                    kind:
+                      r.kind === 'all'
+                        ? t('devtools.profilerTool.kindAll')
+                        : t('devtools.profilerTool.kindIncremental'),
+                    duration: ms(r.durationMs),
+                    count: r.evaluations,
+                  })}
                   style={{ height: `${Math.max(6, (r.durationMs / maxDuration) * 100)}%` }}
                   onClick={() => setSelectedId(r.id)}
                 />
@@ -101,15 +119,15 @@ export const ProfilerTool = memo(function ProfilerTool({ host }: { host: DevTool
             <>
               <div className="profiler-cards">
                 <div className="devtools-card">
-                  <span>所要時間</span>
+                  <span>{t('devtools.profilerTool.duration')}</span>
                   <strong>{ms(selected.durationMs)}</strong>
                 </div>
                 <div className="devtools-card">
-                  <span>評価した数式</span>
+                  <span>{t('devtools.profilerTool.evaluatedFormulas')}</span>
                   <strong>{selected.evaluations.toLocaleString()}</strong>
                 </div>
                 <div className="devtools-card">
-                  <span>1 数式あたり</span>
+                  <span>{t('devtools.profilerTool.perFormula')}</span>
                   <strong>
                     {selected.evaluations
                       ? `${((selected.durationMs / selected.evaluations) * 1000).toFixed(1)} µs`
@@ -117,25 +135,29 @@ export const ProfilerTool = memo(function ProfilerTool({ host }: { host: DevTool
                   </strong>
                 </div>
                 <div className="devtools-card">
-                  <span>関数キャッシュ</span>
+                  <span>{t('devtools.profilerTool.functionCache')}</span>
                   <strong>{pct(selected.stats.callHits, selected.stats.callMisses)}</strong>
-                  <em>{selected.stats.callHits} ヒット</em>
+                  <em>{t('devtools.profilerTool.hits', { count: selected.stats.callHits })}</em>
                 </div>
                 <div className="devtools-card">
-                  <span>範囲キャッシュ</span>
+                  <span>{t('devtools.profilerTool.rangeCache')}</span>
                   <strong>{pct(selected.stats.rangeHits, selected.stats.rangeMisses)}</strong>
-                  <em>{selected.stats.rangeHits} ヒット</em>
+                  <em>{t('devtools.profilerTool.hits', { count: selected.stats.rangeHits })}</em>
                 </div>
                 <div className="devtools-card">
-                  <span>種類</span>
-                  <strong>{selected.kind === 'all' ? '全体' : '差分'}</strong>
-                  <em>{selected.iterations} 反復</em>
+                  <span>{t('devtools.profilerTool.kind')}</span>
+                  <strong>
+                    {selected.kind === 'all'
+                      ? t('devtools.profilerTool.kindAll')
+                      : t('devtools.profilerTool.kindIncremental')}
+                  </strong>
+                  <em>{t('devtools.profilerTool.iterations', { count: selected.iterations })}</em>
                 </div>
               </div>
 
               <div className="profiler-columns">
                 <section>
-                  <h4>遅い数式</h4>
+                  <h4>{t('devtools.profilerTool.slowestFormulas')}</h4>
                   <ol className="profiler-slowest">
                     {selected.slowest.map((s) => (
                       <li key={s.key}>
@@ -153,7 +175,7 @@ export const ProfilerTool = memo(function ProfilerTool({ host }: { host: DevTool
                   </ol>
                 </section>
                 <section>
-                  <h4>評価順（トポロジカル順）</h4>
+                  <h4>{t('devtools.profilerTool.evaluationOrder')}</h4>
                   <div className="profiler-order">
                     {selected.order.slice(0, 80).map((g, i) => (
                       <button
@@ -166,7 +188,9 @@ export const ProfilerTool = memo(function ProfilerTool({ host }: { host: DevTool
                       </button>
                     ))}
                     {selected.evaluations > 80 && (
-                      <span className="devtools-muted">…ほか {selected.evaluations - 80}</span>
+                      <span className="devtools-muted">
+                        {t('devtools.profilerTool.more', { count: selected.evaluations - 80 })}
+                      </span>
                     )}
                   </div>
                 </section>

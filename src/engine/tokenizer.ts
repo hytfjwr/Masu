@@ -1,5 +1,6 @@
 import { type Token, TokenType } from './types';
 import { FormulaSyntaxError } from './syntaxError';
+import { t } from '../i18n';
 
 /** Known error literal codes, checked case-insensitively against a `#`-prefixed prefix of the input. */
 const ERROR_CODES = [
@@ -117,8 +118,8 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
     if (!isCellRef(upperRef)) {
       throw new FormulaSyntaxError(
         cellRef
-          ? `シート名の後のセル参照が正しくありません: ${cellRef}`
-          : 'シート名の後にセル参照が必要です',
+          ? t('engine.tokenizer.invalidCellRefAfterSheet', { ref: cellRef })
+          : t('engine.tokenizer.missingCellRefAfterSheet'),
         refStart,
         Math.max(pos, refStart + 1),
       );
@@ -132,7 +133,9 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
       const upperEnd = endRef.toUpperCase();
       if (!isCellRef(upperEnd)) {
         throw new FormulaSyntaxError(
-          endRef ? `範囲の終点が正しくありません: ${endRef}` : '範囲の終点にセル参照が必要です',
+          endRef
+            ? t('engine.tokenizer.invalidRangeEnd', { ref: endRef })
+            : t('engine.tokenizer.missingRangeEndCellRef'),
           endStart,
           Math.max(pos, endStart + 1),
         );
@@ -173,7 +176,7 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
       }
       if (!closed) {
         throw new FormulaSyntaxError(
-          "シート名が閉じられていません（' が必要です）",
+          t('engine.tokenizer.unclosedSheetName'),
           start,
           formula.length,
         );
@@ -182,7 +185,7 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
 
       // Must be followed by '!'
       if (pos >= formula.length || formula[pos] !== '!') {
-        throw new FormulaSyntaxError('シート名の後に ! が必要です', start, pos);
+        throw new FormulaSyntaxError(t('engine.tokenizer.missingBangAfterSheetName'), start, pos);
       }
       pos++; // skip '!'
       readSheetQualifiedRef(sheetName, start);
@@ -208,11 +211,7 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
         pos++;
       }
       if (!closed) {
-        throw new FormulaSyntaxError(
-          '文字列が閉じられていません（" が必要です）',
-          start,
-          formula.length,
-        );
+        throw new FormulaSyntaxError(t('engine.tokenizer.unclosedString'), start, formula.length);
       }
       pos++; // skip closing quote
       emit(TokenType.String, str, start);
@@ -232,7 +231,7 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
       while (unknownEnd < formula.length && /[A-Za-z0-9/!?]/.test(formula[unknownEnd]))
         unknownEnd++;
       throw new FormulaSyntaxError(
-        `不明なエラー値です: ${formula.slice(pos, unknownEnd)}`,
+        t('engine.tokenizer.unknownErrorLiteral', { text: formula.slice(pos, unknownEnd) }),
         start,
         unknownEnd,
       );
@@ -363,7 +362,11 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
       continue;
     }
 
-    throw new FormulaSyntaxError(`使用できない文字です: ${ch}`, start, start + 1);
+    throw new FormulaSyntaxError(
+      t('engine.tokenizer.invalidCharacter', { char: ch }),
+      start,
+      start + 1,
+    );
   }
 
   tokens.push({ type: TokenType.EOF, value: '' });

@@ -22,6 +22,7 @@ import type { ChartData } from '../../types/chart';
 import type { CellData } from '../../types/grid';
 import { buildChartModel, DEFAULT_PALETTE } from '../../utils/chartData';
 import type { ChartCell } from '../../utils/chartData';
+import { useI18n } from '../../i18n/useI18n';
 
 interface ChartPanelProps {
   chart: ChartData;
@@ -68,6 +69,7 @@ export const ChartPanel = memo(function ChartPanel({
   onDelete,
   onEdit,
 }: ChartPanelProps) {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<{
     startX: number;
@@ -425,7 +427,7 @@ export const ChartPanel = memo(function ChartPanel({
             className="text-xs text-text-primary/50 hover:text-text-primary leading-none px-1"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => setMenuOpen((v) => !v)}
-            aria-label="グラフのメニュー"
+            aria-label={t('grid.chartPanel.menuLabel')}
           >
             ⋮
           </button>
@@ -437,7 +439,7 @@ export const ChartPanel = memo(function ChartPanel({
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={handleEdit}
               >
-                グラフを編集
+                {t('grid.chartPanel.editChart')}
               </button>
             </div>
           )}
@@ -446,7 +448,7 @@ export const ChartPanel = memo(function ChartPanel({
             className="text-xs text-text-primary/50 hover:text-text-primary leading-none"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={handleDelete}
-            aria-label="グラフを削除"
+            aria-label={t('grid.chartPanel.deleteLabel')}
           >
             ×
           </button>

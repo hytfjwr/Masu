@@ -1,29 +1,31 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ConditionalOperator, FilterCondition } from '../../types/grid';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 
 interface OperatorOption {
   value: ConditionalOperator;
-  label: string;
+  labelKey: MessageKey;
   /** How many free-text value inputs this operator needs. */
   valueCount: 0 | 1 | 2;
 }
 
 const OPERATOR_OPTIONS: OperatorOption[] = [
-  { value: 'isEmpty', label: '空白', valueCount: 0 },
-  { value: 'isNotEmpty', label: '空白ではない', valueCount: 0 },
-  { value: 'textContains', label: 'テキストを含む', valueCount: 1 },
-  { value: 'textNotContains', label: 'テキストを含まない', valueCount: 1 },
-  { value: 'textStartsWith', label: 'テキストが次で始まる', valueCount: 1 },
-  { value: 'textEndsWith', label: 'テキストが次で終わる', valueCount: 1 },
-  { value: 'textEquals', label: 'テキストが次と完全一致', valueCount: 1 },
-  { value: 'greaterThan', label: 'より大きい', valueCount: 1 },
-  { value: 'greaterThanOrEqual', label: '以上', valueCount: 1 },
-  { value: 'lessThan', label: 'より小さい', valueCount: 1 },
-  { value: 'lessThanOrEqual', label: '以下', valueCount: 1 },
-  { value: 'equal', label: '等しい', valueCount: 1 },
-  { value: 'notEqual', label: '等しくない', valueCount: 1 },
-  { value: 'between', label: '間にある', valueCount: 2 },
-  { value: 'notBetween', label: '間にない', valueCount: 2 },
+  { value: 'isEmpty', labelKey: 'grid.filterMenu.opIsEmpty', valueCount: 0 },
+  { value: 'isNotEmpty', labelKey: 'grid.filterMenu.opIsNotEmpty', valueCount: 0 },
+  { value: 'textContains', labelKey: 'grid.filterMenu.opTextContains', valueCount: 1 },
+  { value: 'textNotContains', labelKey: 'grid.filterMenu.opTextNotContains', valueCount: 1 },
+  { value: 'textStartsWith', labelKey: 'grid.filterMenu.opTextStartsWith', valueCount: 1 },
+  { value: 'textEndsWith', labelKey: 'grid.filterMenu.opTextEndsWith', valueCount: 1 },
+  { value: 'textEquals', labelKey: 'grid.filterMenu.opTextEquals', valueCount: 1 },
+  { value: 'greaterThan', labelKey: 'grid.filterMenu.opGreaterThan', valueCount: 1 },
+  { value: 'greaterThanOrEqual', labelKey: 'grid.filterMenu.opGreaterThanOrEqual', valueCount: 1 },
+  { value: 'lessThan', labelKey: 'grid.filterMenu.opLessThan', valueCount: 1 },
+  { value: 'lessThanOrEqual', labelKey: 'grid.filterMenu.opLessThanOrEqual', valueCount: 1 },
+  { value: 'equal', labelKey: 'grid.filterMenu.opEqual', valueCount: 1 },
+  { value: 'notEqual', labelKey: 'grid.filterMenu.opNotEqual', valueCount: 1 },
+  { value: 'between', labelKey: 'grid.filterMenu.opBetween', valueCount: 2 },
+  { value: 'notBetween', labelKey: 'grid.filterMenu.opNotBetween', valueCount: 2 },
 ];
 
 interface FilterMenuProps {
@@ -53,6 +55,7 @@ export function FilterMenu({
   onSortDesc,
   style,
 }: FilterMenuProps) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const [checkedValues, setCheckedValues] = useState<Set<string>>(
     () => selectedValues ?? new Set(values),
@@ -108,14 +111,14 @@ export function FilterMenu({
         className="w-full text-left px-3 py-1.5 text-xs text-text-primary hover:bg-accent-selection/10"
         onClick={onSortAsc}
       >
-        A→Z で並べ替え
+        {t('grid.filterMenu.sortAsc')}
       </button>
       <button
         type="button"
         className="w-full text-left px-3 py-1.5 text-xs text-text-primary hover:bg-accent-selection/10"
         onClick={onSortDesc}
       >
-        Z→A で並べ替え
+        {t('grid.filterMenu.sortDesc')}
       </button>
 
       <div className="border-t border-grid-line my-1" />
@@ -126,7 +129,7 @@ export function FilterMenu({
         className="w-full flex items-center justify-between px-3 py-1.5 text-xs text-text-primary hover:bg-accent-selection/10"
         onClick={() => setConditionOpen((o) => !o)}
       >
-        <span>条件でフィルタ</span>
+        <span>{t('grid.filterMenu.filterByCondition')}</span>
         <span className="text-text-primary/40">{conditionOpen ? '▾' : '▸'}</span>
       </button>
       {conditionOpen && (
@@ -137,10 +140,10 @@ export function FilterMenu({
             onChange={(e) => setOperator(e.target.value as ConditionalOperator | '')}
             data-testid={`filter-condition-operator-${colIndex}`}
           >
-            <option value="">なし</option>
+            <option value="">{t('grid.filterMenu.noneOption')}</option>
             {OPERATOR_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
-                {o.label}
+                {t(o.labelKey)}
               </option>
             ))}
           </select>
@@ -150,7 +153,7 @@ export function FilterMenu({
               className="h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none"
               value={value1}
               onChange={(e) => setValue1(e.target.value)}
-              placeholder="値"
+              placeholder={t('grid.filterMenu.valuePlaceholder')}
             />
           )}
           {selectedOperator && selectedOperator.valueCount >= 2 && (
@@ -159,7 +162,7 @@ export function FilterMenu({
               className="h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none"
               value={value2}
               onChange={(e) => setValue2(e.target.value)}
-              placeholder="もう一方の値"
+              placeholder={t('grid.filterMenu.otherValuePlaceholder')}
             />
           )}
         </div>
@@ -169,11 +172,13 @@ export function FilterMenu({
 
       {/* Value filter */}
       <div className="px-3 py-1">
-        <div className="text-xs text-text-primary/70 mb-1">値でフィルタ</div>
+        <div className="text-xs text-text-primary/70 mb-1">
+          {t('grid.filterMenu.filterByValues')}
+        </div>
         <input
           type="text"
           className="w-full h-7 px-2 mb-1 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none"
-          placeholder="検索..."
+          placeholder={t('grid.filterMenu.searchPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -183,7 +188,7 @@ export function FilterMenu({
             className="text-[10px] text-accent-selection hover:underline"
             onClick={selectAll}
           >
-            すべて選択
+            {t('grid.filterMenu.selectAll')}
           </button>
           <span className="text-[10px] text-text-primary/30">|</span>
           <button
@@ -191,7 +196,7 @@ export function FilterMenu({
             className="text-[10px] text-accent-selection hover:underline"
             onClick={clearAll}
           >
-            クリア
+            {t('grid.filterMenu.clear')}
           </button>
         </div>
         <div className="max-h-[160px] overflow-y-auto">
@@ -206,7 +211,7 @@ export function FilterMenu({
                 onChange={() => toggleValue(value)}
                 className="w-3 h-3"
               />
-              <span className="truncate">{value || '(空白)'}</span>
+              <span className="truncate">{value || t('grid.filterMenu.blankValue')}</span>
             </label>
           ))}
         </div>
@@ -219,7 +224,7 @@ export function FilterMenu({
           className="h-6 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40"
           onClick={onClose}
         >
-          キャンセル
+          {t('common.cancel')}
         </button>
         <button
           type="button"

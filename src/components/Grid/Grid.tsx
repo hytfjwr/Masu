@@ -38,6 +38,8 @@ import { useTheme } from '../../hooks/useTheme';
 import { SpreadsheetContext } from '../../context/SpreadsheetContext';
 import type { SpreadsheetActions } from '../../context/SpreadsheetContext';
 import { ThemeToggle } from '../Toolbar/ThemeToggle';
+import { LanguageToggle } from '../Toolbar/LanguageToggle';
+import { useI18n } from '../../i18n/useI18n';
 import { cellKey, parseCellKey, clamp } from '../../utils/coordinates';
 import { detectFillPattern, generateFillValues } from '../../utils/fillAuto';
 import { toggleAbsoluteRef } from '../../utils/referenceUpdater';
@@ -47,7 +49,6 @@ import { formatDisplayValue, patternForStyle, adjustDecimals } from '../../utils
 import { getCellDisplay } from '../../utils/cellDisplay';
 import { evaluateCondition, createConditionalFormatter } from '../../utils/conditionalFormat';
 import { detectDelimiter } from '../../utils/dataCleanup';
-import { UNTITLED_SPREADSHEET_NAME } from '../../utils/filename';
 import { SidePanel } from '../SidePanel';
 const ConditionalFormatPanel = lazy(() =>
   import('../ConditionalFormatPanel').then((m) => ({ default: m.ConditionalFormatPanel })),
@@ -307,6 +308,7 @@ function fullStyle(s: CellStyle | null): CellStyle {
 }
 
 export function Grid() {
+  const { t } = useI18n();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const colHeaderRef = useRef<HTMLDivElement>(null);
   const rowHeaderRef = useRef<HTMLDivElement>(null);
@@ -1041,9 +1043,9 @@ export function Grid() {
       keys: SortKey[],
     ) => {
       const ok = sortRange(range, keys, (order) => animateSort(range, order));
-      if (!ok) showToast('結合されたセルを含む範囲は並べ替えできません', 'error');
+      if (!ok) showToast(t('grid.toast.sortMergedCellsError'), 'error');
     },
-    [sortRange, animateSort, showToast],
+    [sortRange, animateSort, showToast, t],
   );
 
   /** Sort the whole sheet (below any frozen rows) by a single column — used by the column
@@ -1160,11 +1162,9 @@ export function Grid() {
       checkCols: number[],
     ) => {
       const { duplicateCount, uniqueCount } = removeDuplicateRows(range, hasHeader, checkCols);
-      showToast(
-        `重複する行が ${duplicateCount} 行見つかり、削除されました。${uniqueCount} 行の一意の値が残っています。`,
-      );
+      showToast(t('grid.toast.duplicatesRemoved', { duplicateCount, uniqueCount }));
     },
-    [removeDuplicateRows, showToast],
+    [removeDuplicateRows, showToast, t],
   );
 
   const handleTrimWhitespace = useCallback(() => {
@@ -1441,8 +1441,8 @@ export function Grid() {
 
   // useEffect required: syncs the browser tab title with the document title (external system)
   useEffect(() => {
-    document.title = `${title || UNTITLED_SPREADSHEET_NAME} - Masu`;
-  }, [title]);
+    document.title = `${title || t('common.untitledSpreadsheet')} - Masu`;
+  }, [title, t]);
 
   // --- Drag & Drop ---
   const { isDragging, handleDragEnter, handleDragLeave, handleDragOver, handleDrop } =
@@ -1605,7 +1605,7 @@ export function Grid() {
     const chart: ChartData = {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
       type: 'bar',
-      title: 'グラフ',
+      title: t('grid.chart.defaultTitle'),
       sourceRange: {
         startCol: selectionRange
           ? Math.min(selectionRange.start.col, selectionRange.end.col)
@@ -1628,7 +1628,7 @@ export function Grid() {
     addChart(chart);
     setEditingChartId(chart.id);
     setSidePanel('chart');
-  }, [addChart, selectionRange, activeCell]);
+  }, [addChart, selectionRange, activeCell, t]);
 
   const handleEditChart = useCallback((id: string) => {
     setEditingChartId(id);
@@ -2985,7 +2985,7 @@ export function Grid() {
       if (rule?.rejectInvalid) {
         const result = validateInput(rule, editValue, activeCell, validationCtx);
         if (!result.valid) {
-          showToast(result.message ?? '入力値が無効です', 'error');
+          showToast(result.message ?? t('grid.toast.invalidInput'), 'error');
           return;
         }
       }
@@ -3035,6 +3035,7 @@ export function Grid() {
       getCellData,
       validationCtx,
       showToast,
+      t,
     ],
   );
 
@@ -3067,7 +3068,7 @@ export function Grid() {
         validationCtx,
       );
       if (!result.valid) {
-        showToast(result.message ?? '入力値が無効です', 'error');
+        showToast(result.message ?? t('grid.toast.invalidInput'), 'error');
         return;
       }
     }
@@ -3089,6 +3090,7 @@ export function Grid() {
     getCellData,
     validationCtx,
     showToast,
+    t,
   ]);
 
   // Insert a newline at the caret position in the cell editor (Alt+Enter)
@@ -4196,8 +4198,8 @@ export function Grid() {
               <button
                 type="button"
                 className="header-icon-button"
-                title="検索 (Ctrl+F)"
-                aria-label="検索"
+                title={t('grid.header.searchTitle')}
+                aria-label={t('grid.header.searchLabel')}
                 onClick={() => openSearch()}
               >
                 <svg
@@ -4214,6 +4216,7 @@ export function Grid() {
                   <path d="M10.4 10.4L14 14" />
                 </svg>
               </button>
+              <LanguageToggle />
               <ThemeToggle theme={theme} onThemeChange={setTheme} />
             </div>
           </div>
@@ -5072,7 +5075,7 @@ export function Grid() {
                       e.stopPropagation();
                       setFilterDropdownCol((prev) => (prev === col ? null : col));
                     }}
-                    title="フィルター"
+                    title={t('grid.filterButton.title')}
                   >
                     {isFiltered ? '▼' : '▽'}
                   </button>
@@ -5120,7 +5123,10 @@ export function Grid() {
 
           {/* Conditional format / data validation side panel (docked, shrinks the grid area) */}
           {sidePanel === 'conditionalFormat' && (
-            <SidePanel title="条件付き書式" onClose={() => setSidePanel(null)}>
+            <SidePanel
+              title={t('grid.sidePanel.conditionalFormat')}
+              onClose={() => setSidePanel(null)}
+            >
               <Suspense fallback={null}>
                 <ConditionalFormatPanel
                   rules={conditionalFormatRules}
@@ -5146,7 +5152,10 @@ export function Grid() {
             </SidePanel>
           )}
           {sidePanel === 'validation' && (
-            <SidePanel title="データの入力規則" onClose={() => setSidePanel(null)}>
+            <SidePanel
+              title={t('grid.sidePanel.dataValidation')}
+              onClose={() => setSidePanel(null)}
+            >
               <Suspense fallback={null}>
                 <DataValidationPanel
                   cells={getDataMap()}
@@ -5177,7 +5186,7 @@ export function Grid() {
               const editingChart = getCharts().find((c) => c.id === editingChartId);
               if (!editingChart) return null;
               return (
-                <SidePanel title="グラフエディタ" onClose={handleCloseChartEditor}>
+                <SidePanel title={t('grid.sidePanel.chartEditor')} onClose={handleCloseChartEditor}>
                   <Suspense fallback={null}>
                     <ChartEditorPanel
                       key={editingChart.id}
@@ -5341,7 +5350,7 @@ export function Grid() {
               setSidePanel('validation');
             }}
             onAddComment={() => {
-              const comment = window.prompt('コメントを入力してください:');
+              const comment = window.prompt(t('grid.prompt.enterComment'));
               if (comment !== null) {
                 setCellComment(cellContextMenu.col, cellContextMenu.row, comment || undefined);
               }
@@ -5553,7 +5562,7 @@ export function Grid() {
                 data-testid="split-delimiter-popover"
               >
                 <label className="flex items-center gap-2">
-                  区切り文字:
+                  {t('grid.splitDelimiter.label')}
                   <select
                     value={splitPopover.mode}
                     onChange={(e) =>
@@ -5564,12 +5573,12 @@ export function Grid() {
                     }
                     className="h-6 px-1 text-xs bg-ui-bg text-text-primary border border-grid-line rounded"
                   >
-                    <option value="auto">自動検出</option>
-                    <option value=",">カンマ</option>
-                    <option value=";">セミコロン</option>
-                    <option value=".">ピリオド</option>
-                    <option value=" ">スペース</option>
-                    <option value="custom">カスタム</option>
+                    <option value="auto">{t('grid.splitDelimiter.auto')}</option>
+                    <option value=",">{t('grid.splitDelimiter.comma')}</option>
+                    <option value=";">{t('grid.splitDelimiter.semicolon')}</option>
+                    <option value=".">{t('grid.splitDelimiter.period')}</option>
+                    <option value=" ">{t('grid.splitDelimiter.space')}</option>
+                    <option value="custom">{t('grid.splitDelimiter.custom')}</option>
                   </select>
                   {splitPopover.mode === 'custom' && (
                     <input
@@ -5577,7 +5586,7 @@ export function Grid() {
                       value={splitPopover.custom}
                       onChange={(e) => handleChangeSplitDelimiter('custom', e.target.value)}
                       className="w-12 h-6 px-1 text-xs bg-ui-bg text-text-primary border border-grid-line rounded"
-                      placeholder="区切り"
+                      placeholder={t('grid.splitDelimiter.customPlaceholder')}
                     />
                   )}
                   <button

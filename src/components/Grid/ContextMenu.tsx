@@ -1,6 +1,8 @@
 import { memo, useCallback, useEffect, useRef } from 'react';
 import { useClampFixedToViewport } from '../../hooks/useClampToViewport';
 import { colIndexToLetter } from '../../utils/coordinates';
+import type { TFunction } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 
 export interface ContextMenuState {
   type: 'column' | 'row';
@@ -36,15 +38,19 @@ interface ContextMenuProps {
 }
 
 /** 1-indexed row label, e.g. rangeStart=1, rangeEnd=3 -> "行 2–4" (rows are 0-indexed internally). */
-function rowRangeLabel(rangeStart: number, rangeEnd: number): string {
-  return rangeStart === rangeEnd ? `行 ${rangeStart + 1}` : `行 ${rangeStart + 1}–${rangeEnd + 1}`;
+function rowRangeLabel(t: TFunction, rangeStart: number, rangeEnd: number): string {
+  return rangeStart === rangeEnd
+    ? t('grid.contextMenu.rowSingle', { row: rangeStart + 1 })
+    : t('grid.contextMenu.rowRange', { start: rangeStart + 1, end: rangeEnd + 1 });
 }
 
 /** Column letter label, e.g. rangeStart=0, rangeEnd=2 -> "列 A–C". */
-function colRangeLabel(rangeStart: number, rangeEnd: number): string {
+function colRangeLabel(t: TFunction, rangeStart: number, rangeEnd: number): string {
   const a = colIndexToLetter(rangeStart);
   const b = colIndexToLetter(rangeEnd);
-  return rangeStart === rangeEnd ? `列 ${a}` : `列 ${a}–${b}`;
+  return rangeStart === rangeEnd
+    ? t('grid.contextMenu.colSingle', { col: a })
+    : t('grid.contextMenu.colRange', { start: a, end: b });
 }
 
 export const ContextMenu = memo(function ContextMenu({
@@ -63,6 +69,7 @@ export const ContextMenu = memo(function ContextMenu({
   onUnhide,
   canUnhide,
 }: ContextMenuProps) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   useClampFixedToViewport(ref, menu.x, menu.y);
 
@@ -93,29 +100,37 @@ export const ContextMenu = memo(function ContextMenu({
   const count = menu.rangeEnd - menu.rangeStart + 1;
   const insertBeforeLabel = isColumn
     ? count > 1
-      ? `左に ${count} 列挿入`
-      : '左に列を挿入'
+      ? t('grid.contextMenu.insertColsLeftCount', { count })
+      : t('grid.contextMenu.insertColLeft')
     : count > 1
-      ? `上に ${count} 行挿入`
-      : '上に行を挿入';
+      ? t('grid.contextMenu.insertRowsAboveCount', { count })
+      : t('grid.contextMenu.insertRowAbove');
   const insertAfterLabel = isColumn
     ? count > 1
-      ? `右に ${count} 列挿入`
-      : '右に列を挿入'
+      ? t('grid.contextMenu.insertColsRightCount', { count })
+      : t('grid.contextMenu.insertColRight')
     : count > 1
-      ? `下に ${count} 行挿入`
-      : '下に行を挿入';
+      ? t('grid.contextMenu.insertRowsBelowCount', { count })
+      : t('grid.contextMenu.insertRowBelow');
   const deleteLabel = isColumn
     ? count > 1
-      ? `${colRangeLabel(menu.rangeStart, menu.rangeEnd)}を削除`
-      : '列を削除'
+      ? t('grid.contextMenu.deleteRange', {
+          range: colRangeLabel(t, menu.rangeStart, menu.rangeEnd),
+        })
+      : t('grid.contextMenu.deleteColumn')
     : count > 1
-      ? `${rowRangeLabel(menu.rangeStart, menu.rangeEnd)}を削除`
-      : '行を削除';
-  const hideLabel = isColumn
-    ? `${colRangeLabel(menu.rangeStart, menu.rangeEnd)}を非表示`
-    : `${rowRangeLabel(menu.rangeStart, menu.rangeEnd)}を非表示`;
-  const unhideLabel = isColumn ? '列を再表示' : '行を再表示';
+      ? t('grid.contextMenu.deleteRange', {
+          range: rowRangeLabel(t, menu.rangeStart, menu.rangeEnd),
+        })
+      : t('grid.contextMenu.deleteRow');
+  const hideLabel = t('grid.contextMenu.hideRange', {
+    range: isColumn
+      ? colRangeLabel(t, menu.rangeStart, menu.rangeEnd)
+      : rowRangeLabel(t, menu.rangeStart, menu.rangeEnd),
+  });
+  const unhideLabel = isColumn
+    ? t('grid.contextMenu.unhideColumns')
+    : t('grid.contextMenu.unhideRows');
 
   return (
     <div
@@ -199,7 +214,7 @@ export const ContextMenu = memo(function ContextMenu({
                 handleAction(onSortAsc);
               }}
             >
-              シートを並べ替え (A→Z)
+              {t('grid.contextMenu.sortSheetAsc')}
             </button>
           )}
           {onSortDesc && (
@@ -211,7 +226,7 @@ export const ContextMenu = memo(function ContextMenu({
                 handleAction(onSortDesc);
               }}
             >
-              シートを並べ替え (Z→A)
+              {t('grid.contextMenu.sortSheetDesc')}
             </button>
           )}
         </>
@@ -228,7 +243,7 @@ export const ContextMenu = memo(function ContextMenu({
                 handleAction(onGroup);
               }}
             >
-              {isColumn ? '列のグループ化' : '行のグループ化'}
+              {isColumn ? t('grid.contextMenu.groupColumns') : t('grid.contextMenu.groupRows')}
             </button>
           )}
           {onUngroup && canUngroup && (
@@ -240,7 +255,7 @@ export const ContextMenu = memo(function ContextMenu({
                 handleAction(onUngroup);
               }}
             >
-              {isColumn ? '列のグループ解除' : '行のグループ解除'}
+              {isColumn ? t('grid.contextMenu.ungroupColumns') : t('grid.contextMenu.ungroupRows')}
             </button>
           )}
         </>

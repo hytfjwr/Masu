@@ -1,5 +1,7 @@
 import { memo, useCallback, useState } from 'react';
 import type { SparklineType, SparklineColors, SparklineConfig } from '../../types/sparkline';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 
 interface SparklineDialogProps {
   visible: boolean;
@@ -8,10 +10,10 @@ interface SparklineDialogProps {
   defaultLocationCell: string;
 }
 
-const SPARKLINE_TYPES: { value: SparklineType; label: string }[] = [
-  { value: 'line', label: '折れ線' },
-  { value: 'bar', label: '棒' },
-  { value: 'winloss', label: '勝敗（Win/Loss）' },
+const SPARKLINE_TYPES: { value: SparklineType; labelKey: MessageKey }[] = [
+  { value: 'line', labelKey: 'dialogs.sparkline.typeLine' },
+  { value: 'bar', labelKey: 'dialogs.sparkline.typeBar' },
+  { value: 'winloss', labelKey: 'dialogs.sparkline.typeWinLoss' },
 ];
 
 export const SparklineDialog = memo(function SparklineDialog({
@@ -20,6 +22,7 @@ export const SparklineDialog = memo(function SparklineDialog({
   onConfirm,
   defaultLocationCell,
 }: SparklineDialogProps) {
+  const { t } = useI18n();
   const [sparkType, setSparkType] = useState<SparklineType>('line');
   const [dataRange, setDataRange] = useState('');
   const [locationCell, setLocationCell] = useState(defaultLocationCell);
@@ -83,12 +86,14 @@ export const SparklineDialog = memo(function SparklineDialog({
         className="glass-panel rounded-2xl p-4 min-w-[360px] animate-dialog-spring"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <h3 className="text-sm font-medium text-text-primary mb-3">スパークラインの挿入</h3>
+        <h3 className="text-sm font-medium text-text-primary mb-3">
+          {t('dialogs.sparkline.title')}
+        </h3>
 
         <div className="space-y-3">
           {/* Type selector */}
           <label className="flex flex-col gap-1 text-xs text-text-primary">
-            <span>タイプ</span>
+            <span>{t('dialogs.sparkline.typeLabel')}</span>
             <div className="flex flex-col gap-1">
               {SPARKLINE_TYPES.map((st) => (
                 <label key={st.value} className="flex items-center gap-2 text-xs text-text-primary">
@@ -99,7 +104,7 @@ export const SparklineDialog = memo(function SparklineDialog({
                     checked={sparkType === st.value}
                     onChange={() => setSparkType(st.value)}
                   />
-                  <span>{st.label}</span>
+                  <span>{t(st.labelKey)}</span>
                 </label>
               ))}
             </div>
@@ -107,7 +112,7 @@ export const SparklineDialog = memo(function SparklineDialog({
 
           {/* Data range */}
           <label className="flex flex-col gap-1 text-xs text-text-primary">
-            <span>データ範囲（例: B2:L2）</span>
+            <span>{t('dialogs.sparkline.dataRangeLabel')}</span>
             <input
               type="text"
               value={dataRange}
@@ -119,7 +124,7 @@ export const SparklineDialog = memo(function SparklineDialog({
 
           {/* Location cell */}
           <label className="flex flex-col gap-1 text-xs text-text-primary">
-            <span>配置先セル</span>
+            <span>{t('dialogs.sparkline.locationLabel')}</span>
             <input
               type="text"
               value={locationCell}
@@ -131,10 +136,10 @@ export const SparklineDialog = memo(function SparklineDialog({
 
           {/* Colors */}
           <div className="flex flex-col gap-1 text-xs text-text-primary">
-            <span>色設定</span>
+            <span>{t('dialogs.sparkline.colorsLabel')}</span>
             <div className="grid grid-cols-2 gap-2">
               <label className="flex items-center gap-1">
-                <span className="w-16 text-[10px]">メイン色</span>
+                <span className="w-16 text-[10px]">{t('dialogs.sparkline.colorMain')}</span>
                 <input
                   type="color"
                   value={primaryColor}
@@ -143,7 +148,7 @@ export const SparklineDialog = memo(function SparklineDialog({
                 />
               </label>
               <label className="flex items-center gap-1">
-                <span className="w-16 text-[10px]">負の値</span>
+                <span className="w-16 text-[10px]">{t('dialogs.sparkline.colorNegative')}</span>
                 <input
                   type="color"
                   value={negativeColor}
@@ -152,22 +157,22 @@ export const SparklineDialog = memo(function SparklineDialog({
                 />
               </label>
               <label className="flex items-center gap-1">
-                <span className="w-16 text-[10px]">高値</span>
+                <span className="w-16 text-[10px]">{t('dialogs.sparkline.colorHigh')}</span>
                 <input
                   type="text"
                   value={highPointColor}
                   onChange={(e) => setHighPointColor(e.target.value)}
-                  placeholder="例: #FF0000"
+                  placeholder={t('dialogs.sparkline.colorHighPlaceholder')}
                   className="h-6 px-1 text-[10px] bg-ui-bg text-text-primary border border-grid-line rounded outline-none flex-1"
                 />
               </label>
               <label className="flex items-center gap-1">
-                <span className="w-16 text-[10px]">安値</span>
+                <span className="w-16 text-[10px]">{t('dialogs.sparkline.colorLow')}</span>
                 <input
                   type="text"
                   value={lowPointColor}
                   onChange={(e) => setLowPointColor(e.target.value)}
-                  placeholder="例: #00FF00"
+                  placeholder={t('dialogs.sparkline.colorLowPlaceholder')}
                   className="h-6 px-1 text-[10px] bg-ui-bg text-text-primary border border-grid-line rounded outline-none flex-1"
                 />
               </label>
@@ -176,12 +181,12 @@ export const SparklineDialog = memo(function SparklineDialog({
 
           {/* Group ID */}
           <label className="flex flex-col gap-1 text-xs text-text-primary">
-            <span>グループID（オプション）</span>
+            <span>{t('dialogs.sparkline.groupIdLabel')}</span>
             <input
               type="text"
               value={groupId}
               onChange={(e) => setGroupId(e.target.value)}
-              placeholder="同じIDのスパークラインでY軸を統一"
+              placeholder={t('dialogs.sparkline.groupIdPlaceholder')}
               className="h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none"
             />
           </label>
@@ -193,7 +198,7 @@ export const SparklineDialog = memo(function SparklineDialog({
               className="h-7 px-3 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40"
               onClick={onClose}
             >
-              キャンセル
+              {t('common.cancel')}
             </button>
             <button
               type="button"
@@ -202,7 +207,7 @@ export const SparklineDialog = memo(function SparklineDialog({
               onClick={handleConfirm}
               disabled={!dataRange.trim() || !locationCell.trim()}
             >
-              挿入
+              {t('dialogs.sparkline.insert')}
             </button>
           </div>
         </div>

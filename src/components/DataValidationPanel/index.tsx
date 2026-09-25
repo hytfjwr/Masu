@@ -7,6 +7,8 @@ import type {
 } from '../../types/grid';
 import { cellKey, parseCellKey } from '../../utils/coordinates';
 import { ymdToSerial, serialToParts } from '../../utils/dateSerial';
+import type { MessageKey, TFunction } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 
 type CfRange = { startCol: number; startRow: number; endCol: number; endRow: number };
 
@@ -31,25 +33,25 @@ type ConditionKind =
   | 'date'
   | 'customFormula';
 
-const CONDITION_OPTIONS: { value: ConditionKind; label: string }[] = [
-  { value: 'listValues', label: 'プルダウン' },
-  { value: 'listRange', label: 'プルダウン（範囲内）' },
-  { value: 'checkbox', label: 'チェックボックス' },
-  { value: 'number', label: '数値' },
-  { value: 'textLength', label: 'テキストの長さ' },
-  { value: 'date', label: '日付' },
-  { value: 'customFormula', label: 'カスタム数式' },
+const CONDITION_OPTIONS: { value: ConditionKind; labelKey: MessageKey }[] = [
+  { value: 'listValues', labelKey: 'panels.dataValidation.condition.listValues' },
+  { value: 'listRange', labelKey: 'panels.dataValidation.condition.listRange' },
+  { value: 'checkbox', labelKey: 'panels.dataValidation.condition.checkbox' },
+  { value: 'number', labelKey: 'panels.dataValidation.condition.number' },
+  { value: 'textLength', labelKey: 'panels.dataValidation.condition.textLength' },
+  { value: 'date', labelKey: 'panels.dataValidation.condition.date' },
+  { value: 'customFormula', labelKey: 'panels.dataValidation.condition.customFormula' },
 ];
 
-const OPERATOR_OPTIONS: { value: ValidationOperator; label: string }[] = [
-  { value: 'between', label: '次の間にある' },
-  { value: 'notBetween', label: '次の間にない' },
-  { value: 'equal', label: '次と等しい' },
-  { value: 'notEqual', label: '次と等しくない' },
-  { value: 'greaterThan', label: '次より大きい' },
-  { value: 'greaterThanOrEqual', label: '以上' },
-  { value: 'lessThan', label: '次より小さい' },
-  { value: 'lessThanOrEqual', label: '以下' },
+const OPERATOR_OPTIONS: { value: ValidationOperator; labelKey: MessageKey }[] = [
+  { value: 'between', labelKey: 'panels.shared.operator.between' },
+  { value: 'notBetween', labelKey: 'panels.shared.operator.notBetween' },
+  { value: 'equal', labelKey: 'panels.shared.operator.equal' },
+  { value: 'notEqual', labelKey: 'panels.shared.operator.notEqual' },
+  { value: 'greaterThan', labelKey: 'panels.shared.operator.greaterThan' },
+  { value: 'greaterThanOrEqual', labelKey: 'panels.shared.operator.greaterThanOrEqual' },
+  { value: 'lessThan', labelKey: 'panels.shared.operator.lessThan' },
+  { value: 'lessThanOrEqual', labelKey: 'panels.shared.operator.lessThanOrEqual' },
 ];
 
 function needsMax(operator: ValidationOperator): boolean {
@@ -164,22 +166,59 @@ function computeValidationGroups(cells: CellDataMap): ValidatedGroup[] {
   return groups.slice(0, 50);
 }
 
-function describeRuleForList(rule: ValidationRule): string {
+function describeRuleForList(rule: ValidationRule, t: TFunction): string {
+  const operatorLabel = (op: ValidationOperator) =>
+    t(OPERATOR_OPTIONS.find((o) => o.value === op)!.labelKey);
   switch (rule.type) {
     case 'list':
       return rule.listSource
-        ? `プルダウン(範囲: ${rule.listSource})`
-        : `プルダウン(${(rule.listValues ?? []).join(', ')})`;
+        ? t('panels.dataValidation.describe.listRange', { source: rule.listSource })
+        : t('panels.dataValidation.describe.listValues', {
+            values: (rule.listValues ?? []).join(', '),
+          });
     case 'checkbox':
-      return 'チェックボックス';
-    case 'number':
-      return `数値: ${OPERATOR_OPTIONS.find((o) => o.value === (rule.operator ?? 'between'))?.label} ${rule.min ?? ''}${needsMax(rule.operator ?? 'between') ? ` 〜 ${rule.max ?? ''}` : ''}`;
-    case 'textLength':
-      return `文字数: ${OPERATOR_OPTIONS.find((o) => o.value === (rule.operator ?? 'between'))?.label} ${rule.min ?? ''}${needsMax(rule.operator ?? 'between') ? ` 〜 ${rule.max ?? ''}` : ''}`;
-    case 'date':
-      return `日付: ${OPERATOR_OPTIONS.find((o) => o.value === (rule.operator ?? 'between'))?.label} ${dateStrFromSerial(rule.dateMin)}${needsMax(rule.operator ?? 'between') ? ` 〜 ${dateStrFromSerial(rule.dateMax)}` : ''}`;
+      return t('panels.dataValidation.condition.checkbox');
+    case 'number': {
+      const op = rule.operator ?? 'between';
+      return needsMax(op)
+        ? t('panels.dataValidation.describe.numberRange', {
+            operator: operatorLabel(op),
+            min: rule.min ?? '',
+            max: rule.max ?? '',
+          })
+        : t('panels.dataValidation.describe.number', {
+            operator: operatorLabel(op),
+            min: rule.min ?? '',
+          });
+    }
+    case 'textLength': {
+      const op = rule.operator ?? 'between';
+      return needsMax(op)
+        ? t('panels.dataValidation.describe.textLengthRange', {
+            operator: operatorLabel(op),
+            min: rule.min ?? '',
+            max: rule.max ?? '',
+          })
+        : t('panels.dataValidation.describe.textLength', {
+            operator: operatorLabel(op),
+            min: rule.min ?? '',
+          });
+    }
+    case 'date': {
+      const op = rule.operator ?? 'between';
+      return needsMax(op)
+        ? t('panels.dataValidation.describe.dateRange', {
+            operator: operatorLabel(op),
+            min: dateStrFromSerial(rule.dateMin),
+            max: dateStrFromSerial(rule.dateMax),
+          })
+        : t('panels.dataValidation.describe.date', {
+            operator: operatorLabel(op),
+            min: dateStrFromSerial(rule.dateMin),
+          });
+    }
     case 'customFormula':
-      return `カスタム数式: =${rule.formula ?? ''}`;
+      return t('panels.dataValidation.describe.customFormula', { formula: rule.formula ?? '' });
   }
 }
 
@@ -197,6 +236,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
   onSetRule,
   initialView = 'list',
 }: DataValidationPanelProps) {
+  const { t } = useI18n();
   const [editingPositions, setEditingPositions] = useState<CellPosition[] | null>(null);
   const [isNew, setIsNew] = useState(initialView === 'new');
 
@@ -303,7 +343,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
   const handleSave = useCallback(() => {
     const range = parseRangeInput(rangeInput);
     if (!range) {
-      setRangeError('範囲は "A1" または "A1:B10" の形式で入力してください');
+      setRangeError(t('panels.dataValidation.error.rangeFormat'));
       return;
     }
     setRangeError('');
@@ -385,6 +425,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
     showDropdown,
     dropdownStyle,
     onSetRule,
+    t,
   ]);
 
   const handleDelete = useCallback(() => {
@@ -400,7 +441,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
     return (
       <div className="space-y-3" data-testid="dv-panel-edit">
         <label className={labelClass}>
-          <span>範囲に適用</span>
+          <span>{t('panels.dataValidation.label.applyToRange')}</span>
           <input
             type="text"
             value={rangeInput}
@@ -412,7 +453,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
         {rangeError && <div className="text-xs text-error">{rangeError}</div>}
 
         <label className={labelClass}>
-          <span>条件</span>
+          <span>{t('panels.dataValidation.label.criteria')}</span>
           <select
             value={conditionKind}
             onChange={(e) => setConditionKind(e.target.value as ConditionKind)}
@@ -420,7 +461,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
           >
             {CONDITION_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
-                {o.label}
+                {t(o.labelKey)}
               </option>
             ))}
           </select>
@@ -428,7 +469,9 @@ export const DataValidationPanel = memo(function DataValidationPanel({
 
         {conditionKind === 'listValues' && (
           <div className="space-y-1">
-            <span className="text-xs text-text-primary">項目</span>
+            <span className="text-xs text-text-primary">
+              {t('panels.dataValidation.label.items')}
+            </span>
             {listItems.map((item, idx) => (
               <div key={idx} className="flex items-center gap-1">
                 <input
@@ -447,14 +490,14 @@ export const DataValidationPanel = memo(function DataValidationPanel({
               </div>
             ))}
             <button type="button" className={btnClass} onClick={handleAddListItem}>
-              項目を追加
+              {t('panels.dataValidation.addItem')}
             </button>
           </div>
         )}
 
         {conditionKind === 'listRange' && (
           <label className={labelClass}>
-            <span>範囲</span>
+            <span>{t('panels.dataValidation.label.sourceRange')}</span>
             <input
               type="text"
               value={listSource}
@@ -473,12 +516,12 @@ export const DataValidationPanel = memo(function DataValidationPanel({
                 checked={customChecked}
                 onChange={(e) => setCustomChecked(e.target.checked)}
               />
-              <span>カスタムのセル値を使用</span>
+              <span>{t('panels.dataValidation.label.useCustomCellValues')}</span>
             </label>
             {customChecked && (
               <div className="flex gap-2">
                 <label className={`${labelClass} flex-1`}>
-                  <span>オンの値</span>
+                  <span>{t('panels.dataValidation.label.checkedValue')}</span>
                   <input
                     type="text"
                     value={checkedValue}
@@ -487,7 +530,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
                   />
                 </label>
                 <label className={`${labelClass} flex-1`}>
-                  <span>オフの値</span>
+                  <span>{t('panels.dataValidation.label.uncheckedValue')}</span>
                   <input
                     type="text"
                     value={uncheckedValue}
@@ -505,7 +548,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
           conditionKind === 'date') && (
           <div className="space-y-2">
             <label className={labelClass}>
-              <span>条件</span>
+              <span>{t('panels.dataValidation.label.criteria')}</span>
               <select
                 value={operator}
                 onChange={(e) => setOperator(e.target.value as ValidationOperator)}
@@ -513,7 +556,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
               >
                 {OPERATOR_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
-                    {o.label}
+                    {t(o.labelKey)}
                   </option>
                 ))}
               </select>
@@ -521,7 +564,11 @@ export const DataValidationPanel = memo(function DataValidationPanel({
             {conditionKind === 'date' ? (
               <div className="flex gap-2">
                 <label className={`${labelClass} flex-1`}>
-                  <span>{needsMax(operator) ? '開始日' : '日付'}</span>
+                  <span>
+                    {needsMax(operator)
+                      ? t('panels.dataValidation.label.startDate')
+                      : t('panels.dataValidation.condition.date')}
+                  </span>
                   <input
                     type="date"
                     value={dateMinStr}
@@ -531,7 +578,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
                 </label>
                 {needsMax(operator) && (
                   <label className={`${labelClass} flex-1`}>
-                    <span>終了日</span>
+                    <span>{t('panels.dataValidation.label.endDate')}</span>
                     <input
                       type="date"
                       value={dateMaxStr}
@@ -544,7 +591,9 @@ export const DataValidationPanel = memo(function DataValidationPanel({
             ) : (
               <div className="flex gap-2">
                 <label className={`${labelClass} flex-1`}>
-                  <span>{needsMax(operator) ? '値1' : '値'}</span>
+                  <span>
+                    {needsMax(operator) ? t('panels.shared.value1') : t('panels.shared.value')}
+                  </span>
                   <input
                     type="number"
                     value={minStr}
@@ -554,7 +603,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
                 </label>
                 {needsMax(operator) && (
                   <label className={`${labelClass} flex-1`}>
-                    <span>値2</span>
+                    <span>{t('panels.shared.value2')}</span>
                     <input
                       type="number"
                       value={maxStr}
@@ -570,7 +619,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
 
         {conditionKind === 'customFormula' && (
           <label className={labelClass}>
-            <span>カスタム数式</span>
+            <span>{t('panels.dataValidation.condition.customFormula')}</span>
             <input
               type="text"
               value={formula}
@@ -588,32 +637,34 @@ export const DataValidationPanel = memo(function DataValidationPanel({
               checked={showDropdown}
               onChange={(e) => setShowDropdown(e.target.checked)}
             />
-            <span>ドロップダウンを表示</span>
+            <span>{t('panels.dataValidation.label.showDropdown')}</span>
           </label>
         )}
         {showDropdownStyleOption && showDropdown && (
           <label className={labelClass}>
-            <span>プルダウンの表示スタイル</span>
+            <span>{t('panels.dataValidation.label.dropdownStyle')}</span>
             <select
               value={dropdownStyle}
               onChange={(e) => setDropdownStyle(e.target.value as 'chip' | 'arrow')}
               className={inputClass}
             >
-              <option value="chip">チップ</option>
-              <option value="arrow">矢印</option>
+              <option value="chip">{t('panels.dataValidation.dropdownStyle.chip')}</option>
+              <option value="arrow">{t('panels.dataValidation.dropdownStyle.arrow')}</option>
             </select>
           </label>
         )}
 
         <div className="border-t border-grid-line pt-2 space-y-2">
-          <div className="text-xs text-text-primary/60">詳細オプション</div>
+          <div className="text-xs text-text-primary/60">
+            {t('panels.dataValidation.label.advancedOptions')}
+          </div>
           <label className="flex items-center gap-2 text-xs text-text-primary">
             <input
               type="checkbox"
               checked={showHelpText}
               onChange={(e) => setShowHelpText(e.target.checked)}
             />
-            <span>入力内容のヘルプテキストを表示</span>
+            <span>{t('panels.dataValidation.label.showHelpText')}</span>
           </label>
           {showHelpText && (
             <input
@@ -624,7 +675,9 @@ export const DataValidationPanel = memo(function DataValidationPanel({
             />
           )}
 
-          <div className="text-xs text-text-primary">データが無効な場合</div>
+          <div className="text-xs text-text-primary">
+            {t('panels.dataValidation.label.onInvalidData')}
+          </div>
           <label className="flex items-center gap-2 text-xs text-text-primary">
             <input
               type="radio"
@@ -632,7 +685,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
               checked={!rejectInvalid}
               onChange={() => setRejectInvalid(false)}
             />
-            <span>警告を表示</span>
+            <span>{t('panels.dataValidation.label.showWarning')}</span>
           </label>
           <label className="flex items-center gap-2 text-xs text-text-primary">
             <input
@@ -641,11 +694,11 @@ export const DataValidationPanel = memo(function DataValidationPanel({
               checked={rejectInvalid}
               onChange={() => setRejectInvalid(true)}
             />
-            <span>入力を拒否</span>
+            <span>{t('panels.dataValidation.label.rejectInput')}</span>
           </label>
 
           <label className={labelClass}>
-            <span>エラーメッセージ（任意）</span>
+            <span>{t('panels.dataValidation.label.errorMessage')}</span>
             <input
               type="text"
               value={errorMessage}
@@ -662,11 +715,11 @@ export const DataValidationPanel = memo(function DataValidationPanel({
               className="h-7 px-3 text-xs text-error bg-ui-bg border border-grid-line rounded hover:bg-error/10 mr-auto"
               onClick={handleDelete}
             >
-              ルールを削除
+              {t('panels.dataValidation.removeRule')}
             </button>
           )}
           <button type="button" className={btnClass} onClick={handleCancel}>
-            キャンセル
+            {t('common.cancel')}
           </button>
           <button
             type="button"
@@ -675,7 +728,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
             onClick={handleSave}
             data-testid="dv-panel-save"
           >
-            完了
+            {t('common.done')}
           </button>
         </div>
       </div>
@@ -685,7 +738,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
   return (
     <div className="space-y-2" data-testid="dv-panel-list">
       {groups.length === 0 ? (
-        <p className="text-xs text-text-primary/40">入力規則がありません</p>
+        <p className="text-xs text-text-primary/40">{t('panels.dataValidation.empty')}</p>
       ) : (
         groups.map((group) => (
           <div
@@ -695,7 +748,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
           >
             <div className="flex-1 min-w-0">
               <div className="text-text-primary/60 truncate">{group.rangeLabel}</div>
-              <div className="text-text-primary truncate">{describeRuleForList(group.rule)}</div>
+              <div className="text-text-primary truncate">{describeRuleForList(group.rule, t)}</div>
             </div>
             <button
               type="button"
@@ -705,7 +758,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
                 onSetRule(group.positions, undefined);
               }}
             >
-              削除
+              {t('common.delete')}
             </button>
           </div>
         ))
@@ -717,7 +770,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
         onClick={handleNewRule}
         data-testid="dv-panel-add"
       >
-        + ルールを追加
+        {t('panels.dataValidation.addRule')}
       </button>
     </div>
   );

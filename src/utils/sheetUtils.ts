@@ -6,6 +6,7 @@ import type {
   MergeInfo,
 } from '../types/grid';
 import { GRID_CONSTANTS } from '../types/grid';
+import { t } from '../i18n';
 
 /**
  * Generate a unique sheet ID.
@@ -54,7 +55,7 @@ export function generateSheetName(existingNames: string[]): string {
  * that doesn't conflict with existing sheet names.
  */
 export function generateCopyName(baseName: string, existingNames: string[]): string {
-  const base = `${baseName} のコピー`;
+  const base = t('engine.sheetUtils.copyOf', { sheetName: baseName });
   if (!existingNames.includes(base)) return base;
   let num = 2;
   while (existingNames.includes(`${base} (${num})`)) {

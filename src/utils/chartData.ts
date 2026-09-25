@@ -3,6 +3,7 @@
  * chart-library-agnostic model (labels + per-series numeric values), used by ChartPanel.
  */
 import type { ChartData } from '../types/chart';
+import { t } from '../i18n';
 
 export interface ChartSeries {
   name: string;
@@ -88,7 +89,7 @@ function buildOriented(
   let idx = 0;
   for (let p = dataPrimaryStart; p <= primaryEnd; p++) {
     const headerText = excludeSecondaryHeader ? displayOf(headerCellAt(p)) : '';
-    const name = headerText || `系列${idx + 1}`;
+    const name = headerText || t('engine.chartData.seriesName', { index: idx + 1 });
     const values: number[] = [];
     for (let s = dataSecondaryStart; s <= secondaryEnd; s++) {
       values.push(toNumber(cellAt(p, s)));

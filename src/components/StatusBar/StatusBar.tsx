@@ -2,6 +2,7 @@ import { memo, useDeferredValue, useMemo } from 'react';
 import type { CellData, CellPosition, SelectionRange } from '../../types/grid';
 import { calcAggregates } from '../../utils/statusBarCalc';
 import { useTweenedNumber } from '../../hooks/useTweenedNumber';
+import { useI18n } from '../../i18n/useI18n';
 
 interface StatusBarProps {
   activeCell: CellPosition;
@@ -35,6 +36,7 @@ export const StatusBar = memo(function StatusBar({
   getCells,
   version,
 }: StatusBarProps) {
+  const { t } = useI18n();
   // Aggregates are secondary UI: compute them at lower priority so drag-selecting stays responsive
   const deferredRange = useDeferredValue(selectionRange);
   const deferredVersion = useDeferredValue(version);
@@ -77,7 +79,7 @@ export const StatusBar = memo(function StatusBar({
         {selectionInfo.cellCount > 1 && (
           <>
             <span className="text-[11px] text-text-primary/60 select-none">
-              セル数: {selectionInfo.cellCount}
+              {t('chrome.statusBar.cellCount', { count: selectionInfo.cellCount })}
             </span>
             <span className="text-[11px] text-text-primary/60 select-none">
               {selectionInfo.rowCount}R x {selectionInfo.colCount}C
@@ -89,12 +91,14 @@ export const StatusBar = memo(function StatusBar({
             className={`text-[11px] text-text-primary/60 select-none tabular-nums${tweening ? ' statusbar-tweening' : ''}`}
             data-testid="statusbar-aggregates"
           >
-            合計: {formatAggregate(sum.value)} &nbsp; 平均: {formatAggregate(average.value)} &nbsp;
-            個数: {Math.round(count.value ?? aggregates.count)}
+            {t('chrome.statusBar.sum')} {formatAggregate(sum.value)} &nbsp;{' '}
+            {t('chrome.statusBar.average')} {formatAggregate(average.value)} &nbsp;{' '}
+            {t('chrome.statusBar.count')} {Math.round(count.value ?? aggregates.count)}
           </span>
         ) : (
           <span className="text-[11px] text-text-primary/40 select-none">
-            合計: -- &nbsp; 平均: -- &nbsp; 個数: --
+            {t('chrome.statusBar.sum')} -- &nbsp; {t('chrome.statusBar.average')} -- &nbsp;{' '}
+            {t('chrome.statusBar.count')} --
           </span>
         )}
       </div>

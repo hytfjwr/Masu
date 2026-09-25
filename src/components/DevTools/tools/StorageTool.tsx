@@ -5,6 +5,7 @@ import {
   loadAutosave,
   type AutosaveRecord,
 } from '../../../io/autosave';
+import { useI18n } from '../../../i18n/useI18n';
 import type { DevToolsHost } from '../types';
 import { STORAGE_PREFIX } from '../../../utils/storageKeys';
 
@@ -48,6 +49,7 @@ function summarize(json: string): Summary | null {
  * The record can be downloaded or deleted.
  */
 export const StorageTool = memo(function StorageTool({ host }: { host: DevToolsHost }) {
+  const { t } = useI18n();
   // Without IndexedDB there is no record to read
   const [record, setRecord] = useState<AutosaveRecord | null | 'loading' | 'error'>(() =>
     isAutosaveAvailable() ? 'loading' : 'error',
@@ -104,8 +106,7 @@ export const StorageTool = memo(function StorageTool({ host }: { host: DevToolsH
   };
 
   const remove = () => {
-    if (!window.confirm('自動保存データを削除しますか？（次に編集したときに、また保存されます）'))
-      return;
+    if (!window.confirm(t('devtools.storageTool.confirmDelete'))) return;
     clearAutosave().then(
       () => setReload((n) => n + 1),
       () => setRecord('error'),
@@ -115,16 +116,16 @@ export const StorageTool = memo(function StorageTool({ host }: { host: DevToolsH
   return (
     <div className="devtools-tool storage-tool">
       <div className="devtools-toolbar">
-        <span className="devtools-muted">IndexedDB「masu / autosave」</span>
+        <span className="devtools-muted">{t('devtools.storageTool.source')}</span>
         <button
           type="button"
           className="devtools-button devtools-push"
           onClick={() => setReload((n) => n + 1)}
         >
-          再読み込み
+          {t('devtools.storageTool.reload')}
         </button>
         <button type="button" className="devtools-button" onClick={download} disabled={!json}>
-          ダウンロード
+          {t('devtools.storageTool.download')}
         </button>
         <button
           type="button"
@@ -132,49 +133,56 @@ export const StorageTool = memo(function StorageTool({ host }: { host: DevToolsH
           onClick={remove}
           disabled={!json}
         >
-          削除
+          {t('common.delete')}
         </button>
       </div>
       <div className="inspector-body">
-        {record === 'loading' && <div className="devtools-muted">読み込み中…</div>}
+        {record === 'loading' && (
+          <div className="devtools-muted">{t('devtools.storageTool.loading')}</div>
+        )}
         {record === 'error' && (
           <div className="ast-viz-error">
-            <span>⚠ IndexedDB を利用できません</span>
+            <span>⚠ {t('devtools.storageTool.unavailable')}</span>
           </div>
         )}
-        {record === null && <div className="devtools-muted">自動保存データはまだありません</div>}
+        {record === null && (
+          <div className="devtools-muted">{t('devtools.storageTool.noData')}</div>
+        )}
         <div className="profiler-cards">
           <div className="devtools-card">
-            <span>保存データ</span>
+            <span>{t('devtools.storageTool.savedData')}</span>
             <strong>{json ? bytes(byteSize(json)) : '—'}</strong>
             {typeof record === 'object' && record && (
               <em>{new Date(record.savedAt).toLocaleString()}</em>
             )}
           </div>
           <div className="devtools-card">
-            <span>現在のブック</span>
+            <span>{t('devtools.storageTool.currentWorkbook')}</span>
             <strong>{liveSize !== null ? bytes(liveSize) : '—'}</strong>
             <button
               type="button"
               className="devtools-link"
               onClick={() => setLiveSize(byteSize(host.autosave.serialize()))}
             >
-              計測する
+              {t('devtools.storageTool.measure')}
             </button>
           </div>
           <div className="devtools-card">
-            <span>自動保存の状態</span>
+            <span>{t('devtools.storageTool.autosaveStatus')}</span>
             <strong>
               {
-                { idle: '待機', saving: '保存中', saved: '保存済み', error: 'エラー' }[
-                  host.autosave.status
-                ]
+                {
+                  idle: t('devtools.storageTool.status.idle'),
+                  saving: t('devtools.storageTool.status.saving'),
+                  saved: t('devtools.storageTool.status.saved'),
+                  error: t('devtools.storageTool.status.error'),
+                }[host.autosave.status]
               }
             </strong>
           </div>
           {estimate?.quota ? (
             <div className="devtools-card devtools-card-wide">
-              <span>ブラウザのストレージ</span>
+              <span>{t('devtools.storageTool.browserStorage')}</span>
               <strong>
                 {bytes(estimate.usage ?? 0)} / {bytes(estimate.quota)}
               </strong>
@@ -192,13 +200,15 @@ export const StorageTool = memo(function StorageTool({ host }: { host: DevToolsH
         {summary && (
           <>
             <h4 className="inspector-heading">
-              中身（形式バージョン {String(summary.version ?? '?')}）
+              {t('devtools.storageTool.contentsHeading', {
+                version: String(summary.version ?? '?'),
+              })}
             </h4>
             <table className="storage-table">
               <thead>
                 <tr>
-                  <th>シート</th>
-                  <th>保存されたセル</th>
+                  <th>{t('devtools.storageTool.sheet')}</th>
+                  <th>{t('devtools.storageTool.savedCells')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -210,12 +220,14 @@ export const StorageTool = memo(function StorageTool({ host }: { host: DevToolsH
                 ))}
               </tbody>
             </table>
-            <p className="devtools-muted">名前付き範囲 {summary.namedRanges} 件</p>
+            <p className="devtools-muted">
+              {t('devtools.storageTool.namedRangesCount', { count: summary.namedRanges })}
+            </p>
           </>
         )}
         {json && (
           <details className="storage-raw">
-            <summary>JSON を表示（先頭 6,000 文字）</summary>
+            <summary>{t('devtools.storageTool.showJson')}</summary>
             <pre className="json-view">
               {json.slice(0, 6000)}
               {json.length > 6000 ? '\n…' : ''}
@@ -237,7 +249,7 @@ export const StorageTool = memo(function StorageTool({ host }: { host: DevToolsH
             {localKeys.length === 0 && (
               <tr>
                 <td colSpan={2} className="devtools-muted">
-                  {STORAGE_PREFIX} で始まるキーはありません
+                  {t('devtools.storageTool.noKeysWithPrefix', { prefix: STORAGE_PREFIX })}
                 </td>
               </tr>
             )}

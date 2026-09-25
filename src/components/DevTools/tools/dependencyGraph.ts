@@ -1,4 +1,5 @@
 import type { GlobalRangeDep } from '../../../engine/dependency';
+import { t } from '../../../i18n';
 import { cellKey, parseCellKey } from '../../../utils/coordinates';
 import type { DevToolsHost } from '../types';
 
@@ -82,7 +83,10 @@ export function buildDependencyGraph(host: GraphHost, sheetId: string, key: stri
       level,
       kind: level === 0 ? 'center' : 'cell',
       label: parts.sheetId === sheetId ? parts.key : `${sheetName(parts.sheetId)}!${parts.key}`,
-      detail: cell?.formula !== undefined ? `=${cell.formula}` : cell?.displayValue || '（空）',
+      detail:
+        cell?.formula !== undefined
+          ? `=${cell.formula}`
+          : cell?.displayValue || t('devtools.dependencyTool.detailEmpty'),
       error: cell?.error !== undefined,
       sheetId: parts.sheetId,
       col,
@@ -123,7 +127,7 @@ export function buildDependencyGraph(host: GraphHost, sheetId: string, key: stri
             kind: 'range',
             label:
               r.sheetId === sheetId ? rangeLabel(r) : `${sheetName(r.sheetId)}!${rangeLabel(r)}`,
-            detail: '範囲',
+            detail: t('devtools.dependencyTool.detailRange'),
             sheetId: r.sheetId,
             col: r.startCol,
             row: r.startRow,

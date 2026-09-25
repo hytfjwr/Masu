@@ -2,19 +2,18 @@ import { memo, useMemo, useState } from 'react';
 import { parseCached } from '../../../engine/astCache';
 import { NON_MEMOIZABLE } from '../../../engine/evaluator';
 import type { ASTNode, FunctionMeta } from '../../../engine/types';
+import type { MessageKey } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { getCategorizedFunctions } from '../../../pivot/functionCategories';
 import type { DevToolsHost } from '../types';
 
 type Flag = 'volatile' | 'special' | 'lift' | 'memo' | 'used';
 
-const FLAG_INFO: Record<Exclude<Flag, 'used'>, { label: string; hint: string }> = {
-  volatile: {
-    label: 'volatile',
-    hint: '値の変化がなくても毎回再計算される（TODAY, RAND, OFFSET など）',
-  },
-  special: { label: 'special', hint: '引数を遅延評価する特別な形（IF, LET, LAMBDA など）' },
-  lift: { label: 'lift', hint: 'スカラー引数に配列を渡すと要素ごとに自動展開される' },
-  memo: { label: 'memo', hint: '同じ引数の呼び出しを再計算パス内でキャッシュする' },
+const FLAG_INFO: Record<Exclude<Flag, 'used'>, { label: string; hintKey: MessageKey }> = {
+  volatile: { label: 'volatile', hintKey: 'devtools.functionsTool.hint.volatile' },
+  special: { label: 'special', hintKey: 'devtools.functionsTool.hint.special' },
+  lift: { label: 'lift', hintKey: 'devtools.functionsTool.hint.lift' },
+  memo: { label: 'memo', hintKey: 'devtools.functionsTool.hint.memo' },
 };
 
 function flagsOf(fn: FunctionMeta): Array<Exclude<Flag, 'used'>> {
@@ -67,12 +66,13 @@ function countUsage(host: DevToolsHost): Map<string, number> {
  * flags (volatile / special / lift / memoized) and how often the workbook calls it.
  */
 export const FunctionsTool = memo(function FunctionsTool({ host }: { host: DevToolsHost }) {
+  const { t } = useI18n();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string | null>(null);
   const [flag, setFlag] = useState<Flag | null>(null);
   const [open, setOpen] = useState<string | null>(null);
 
-  const categories = getCategorizedFunctions();
+  const categories = useMemo(() => getCategorizedFunctions(t), [t]);
   const usage = useMemo(
     () => countUsage(host),
     // oxlint-disable-next-line react-hooks/exhaustive-deps
@@ -102,7 +102,7 @@ export const FunctionsTool = memo(function FunctionsTool({ host }: { host: DevTo
         <input
           type="search"
           className="ast-viz-search devtools-grow"
-          placeholder="関数名・説明で検索"
+          placeholder={t('devtools.functionsTool.searchPlaceholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -117,7 +117,7 @@ export const FunctionsTool = memo(function FunctionsTool({ host }: { host: DevTo
           aria-pressed={category === null}
           onClick={() => setCategory(null)}
         >
-          すべて
+          {t('devtools.functionsTool.all')}
         </button>
         {categories.map((c) => (
           <button
@@ -138,10 +138,12 @@ export const FunctionsTool = memo(function FunctionsTool({ host }: { host: DevTo
             type="button"
             className={`devtools-chip fn-flag-${f}`}
             aria-pressed={flag === f}
-            title={f === 'used' ? 'このブックの数式で使われている関数' : FLAG_INFO[f].hint}
+            title={f === 'used' ? t('devtools.functionsTool.usedHint') : t(FLAG_INFO[f].hintKey)}
             onClick={() => setFlag(flag === f ? null : f)}
           >
-            {f === 'used' ? `使用中 ${usage.size}` : `${FLAG_INFO[f].label} ${stat(f)}`}
+            {f === 'used'
+              ? t('devtools.functionsTool.inUse', { count: usage.size })
+              : `${FLAG_INFO[f].label} ${stat(f)}`}
           </button>
         ))}
       </div>
@@ -167,7 +169,7 @@ export const FunctionsTool = memo(function FunctionsTool({ host }: { host: DevTo
                   ))}
                 </span>
                 {n > 0 && (
-                  <span className="fn-usage" title="このブックでの呼び出し回数">
+                  <span className="fn-usage" title={t('devtools.functionsTool.usageCountTitle')}>
                     ×{n}
                   </span>
                 )}
@@ -180,13 +182,15 @@ export const FunctionsTool = memo(function FunctionsTool({ host }: { host: DevTo
                     {flagsOf(fn).map((f) => (
                       <li key={f}>
                         <i className={`fn-flag fn-flag-${f}`}>{FLAG_INFO[f].label}</i>
-                        {FLAG_INFO[f].hint}
+                        {t(FLAG_INFO[f].hintKey)}
                       </li>
                     ))}
                     {fn.liftExclude && fn.liftExclude.length > 0 && (
                       <li>
-                        <i className="fn-flag">liftExclude</i>引数{' '}
-                        {fn.liftExclude.map((i) => i + 1).join(', ')} は範囲のまま渡される
+                        <i className="fn-flag">liftExclude</i>
+                        {t('devtools.functionsTool.liftExcludeArgs', {
+                          args: fn.liftExclude.map((i) => i + 1).join(', '),
+                        })}
                       </li>
                     )}
                   </ul>

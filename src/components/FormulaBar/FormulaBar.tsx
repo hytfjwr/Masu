@@ -9,6 +9,7 @@ import { useFormulaBar } from '../../hooks/useFormulaBar';
 import type { FunctionMeta } from '../../engine/types';
 import { toggleAbsoluteRef } from '../../utils/referenceUpdater';
 import type { FormulaRef } from '../../utils/formulaRefExtractor';
+import { useI18n } from '../../i18n/useI18n';
 
 interface FormulaBarProps {
   activeCell: CellPosition;
@@ -46,6 +47,7 @@ export const FormulaBar = memo(function FormulaBar({
   refColors,
   parseError,
 }: FormulaBarProps) {
+  const { t } = useI18n();
   const cellName = cellKey(activeCell.col, activeCell.row);
   const inputRef = useRef<HTMLInputElement>(null);
   const nameBoxInputRef = useRef<HTMLInputElement>(null);
@@ -233,9 +235,12 @@ export const FormulaBar = memo(function FormulaBar({
       error: displayText.slice(start, end),
       after: displayText.slice(end),
       // 1-based column in the shown text; an empty range at the very end means "the formula stops short"
-      where: start === end && end === displayText.length ? '末尾' : `${start + 1}文字目`,
+      where:
+        start === end && end === displayText.length
+          ? t('chrome.formulaBar.errorAtEnd')
+          : t('chrome.formulaBar.errorAtPosition', { position: start + 1 }),
     };
-  }, [isEditing, parseError, displayText]);
+  }, [isEditing, parseError, displayText, t]);
 
   // Sync overlay scroll position with input scroll
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -339,7 +344,7 @@ export const FormulaBar = memo(function FormulaBar({
         type="button"
         className="flex items-center justify-center w-7 h-6 text-accent-formula text-xs font-semibold italic select-none hover:bg-accent-selection/10 active:scale-90 rounded cursor-pointer transition-all duration-100"
         onClick={onOpenFunctionWizard}
-        title="関数の挿入"
+        title={t('chrome.formulaBar.insertFunction')}
       >
         fx
       </button>

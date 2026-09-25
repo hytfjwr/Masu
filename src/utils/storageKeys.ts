@@ -7,6 +7,7 @@ export const STORAGE_KEYS = {
   theme: `${STORAGE_PREFIX}theme`,
   zoom: `${STORAGE_PREFIX}zoom`,
   devtoolsTab: `${STORAGE_PREFIX}devtools-tab`,
+  locale: `${STORAGE_PREFIX}locale`,
 } as const;
 
 /**

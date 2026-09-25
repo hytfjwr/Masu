@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useRef } from 'react';
 import { useClampFixedToViewport } from '../../hooks/useClampToViewport';
+import { useI18n } from '../../i18n/useI18n';
 
 export interface CellContextMenuState {
   col: number;
@@ -57,6 +58,7 @@ export const CellContextMenu = memo(function CellContextMenu({
   onEditLink,
   onRemoveLink,
 }: CellContextMenuProps) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   useClampFixedToViewport(ref, menu.x, menu.y);
 
@@ -98,7 +100,7 @@ export const CellContextMenu = memo(function CellContextMenu({
           handleAction(onCopy);
         }}
       >
-        コピー
+        {t('grid.cellContextMenu.copy')}
       </button>
       <button
         type="button"
@@ -108,7 +110,7 @@ export const CellContextMenu = memo(function CellContextMenu({
           handleAction(onCut);
         }}
       >
-        切り取り
+        {t('grid.cellContextMenu.cut')}
       </button>
       <button
         type="button"
@@ -118,7 +120,7 @@ export const CellContextMenu = memo(function CellContextMenu({
           handleAction(onPaste);
         }}
       >
-        貼り付け
+        {t('grid.cellContextMenu.paste')}
       </button>
       <div className="border-t border-grid-line my-1" />
       <button
@@ -129,7 +131,7 @@ export const CellContextMenu = memo(function CellContextMenu({
           handleAction(onInsertRowAbove);
         }}
       >
-        上に行を挿入
+        {t('grid.cellContextMenu.insertRowAbove')}
       </button>
       <button
         type="button"
@@ -139,7 +141,7 @@ export const CellContextMenu = memo(function CellContextMenu({
           handleAction(onInsertRowBelow);
         }}
       >
-        下に行を挿入
+        {t('grid.cellContextMenu.insertRowBelow')}
       </button>
       <button
         type="button"
@@ -149,7 +151,7 @@ export const CellContextMenu = memo(function CellContextMenu({
           handleAction(onInsertColLeft);
         }}
       >
-        左に列を挿入
+        {t('grid.cellContextMenu.insertColLeft')}
       </button>
       <button
         type="button"
@@ -159,7 +161,7 @@ export const CellContextMenu = memo(function CellContextMenu({
           handleAction(onInsertColRight);
         }}
       >
-        右に列を挿入
+        {t('grid.cellContextMenu.insertColRight')}
       </button>
       <div className="border-t border-grid-line my-1" />
       <button
@@ -170,7 +172,7 @@ export const CellContextMenu = memo(function CellContextMenu({
           handleAction(onDeleteRow);
         }}
       >
-        行を削除
+        {t('grid.cellContextMenu.deleteRow')}
       </button>
       <button
         type="button"
@@ -180,7 +182,7 @@ export const CellContextMenu = memo(function CellContextMenu({
           handleAction(onDeleteCol);
         }}
       >
-        列を削除
+        {t('grid.cellContextMenu.deleteCol')}
       </button>
       <div className="border-t border-grid-line my-1" />
       <button
@@ -191,7 +193,7 @@ export const CellContextMenu = memo(function CellContextMenu({
           handleAction(onInsertDropdown);
         }}
       >
-        プルダウン
+        {t('grid.cellContextMenu.insertDropdown')}
       </button>
       <button
         type="button"
@@ -201,7 +203,7 @@ export const CellContextMenu = memo(function CellContextMenu({
           handleAction(onOpenConditionalFormat);
         }}
       >
-        条件付き書式
+        {t('grid.cellContextMenu.conditionalFormat')}
       </button>
       <button
         type="button"
@@ -211,7 +213,7 @@ export const CellContextMenu = memo(function CellContextMenu({
           handleAction(onOpenDataValidation);
         }}
       >
-        データの入力規則
+        {t('grid.cellContextMenu.dataValidation')}
       </button>
       <div className="border-t border-grid-line my-1" />
       {hasComment ? (
@@ -223,7 +225,7 @@ export const CellContextMenu = memo(function CellContextMenu({
             handleAction(onDeleteComment);
           }}
         >
-          コメントを削除
+          {t('grid.cellContextMenu.deleteComment')}
         </button>
       ) : (
         <button
@@ -234,7 +236,7 @@ export const CellContextMenu = memo(function CellContextMenu({
             handleAction(onAddComment);
           }}
         >
-          コメントを追加
+          {t('grid.cellContextMenu.addComment')}
         </button>
       )}
       {hyperlink && (
@@ -249,7 +251,7 @@ export const CellContextMenu = memo(function CellContextMenu({
                 handleAction(onOpenLink);
               }}
             >
-              リンクを開く
+              {t('grid.cellContextMenu.openLink')}
             </button>
           )}
           {onEditLink && (
@@ -261,7 +263,7 @@ export const CellContextMenu = memo(function CellContextMenu({
                 handleAction(onEditLink);
               }}
             >
-              リンクを編集
+              {t('grid.cellContextMenu.editLink')}
             </button>
           )}
           {onRemoveLink && (
@@ -273,7 +275,7 @@ export const CellContextMenu = memo(function CellContextMenu({
                 handleAction(onRemoveLink);
               }}
             >
-              リンクを削除
+              {t('grid.cellContextMenu.removeLink')}
             </button>
           )}
         </>

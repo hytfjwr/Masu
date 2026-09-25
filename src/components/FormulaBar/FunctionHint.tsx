@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react';
 import { getFunctionRegistry } from '../../engine/functions';
 import { parseSignature } from '../../pivot/signatureParser';
 import { getFunctionCallContext } from '../../utils/functionCallContext';
+import { useI18n } from '../../i18n/useI18n';
 
 interface FunctionHintProps {
   /** Current editor text (a formula starting with "="). */
@@ -15,6 +16,7 @@ interface FunctionHintProps {
  * under the caret highlighted, plus the function's description. Renders nothing outside a known call.
  */
 export const FunctionHint = memo(function FunctionHint({ value, caret }: FunctionHintProps) {
+  const { t } = useI18n();
   const hint = useMemo(() => {
     const ctx = getFunctionCallContext(value, caret);
     if (!ctx) return null;
@@ -56,7 +58,9 @@ export const FunctionHint = memo(function FunctionHint({ value, caret }: Functio
       {activeArg && (
         <div key={hint.active} className="function-hint-current">
           <span className="function-hint-chip">{activeArg.name}</span>
-          {!activeArg.required && <span className="function-hint-optional">省略可</span>}
+          {!activeArg.required && (
+            <span className="function-hint-optional">{t('chrome.functionHint.optional')}</span>
+          )}
         </div>
       )}
       <div className="function-hint-description">{hint.description}</div>

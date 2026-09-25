@@ -26,6 +26,7 @@ import type { SheetSizes } from '../io/nativeSerializer';
 import { cellKey } from '../utils/coordinates';
 import { GRID_CONSTANTS } from '../types/grid';
 import { resolveFilename } from '../utils/filename';
+import { t } from '../i18n';
 
 /** Strip the extension from a file name ("Report.xlsx" -> "Report"). */
 function stripExtension(fileName: string): string {
@@ -253,10 +254,10 @@ export function useFileIO({
           replaceWorkbook(result.workbook);
           restoreAllSizes(result.sizesBySheet);
         } else {
-          alert(`Masu 形式のファイルを選択してください (${NATIVE_EXTENSION})`);
+          alert(t('grid.fileIo.selectNativeFile', { extension: NATIVE_EXTENSION }));
         }
       } catch (err) {
-        alert(err instanceof Error ? err.message : 'ファイルの読み込みに失敗しました');
+        alert(err instanceof Error ? err.message : t('grid.fileIo.readFailed'));
       }
     };
     input.click();

@@ -2,9 +2,11 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useClampDropdownToViewport } from '../../hooks/useClampToViewport';
 import { useSpreadsheetActions } from '../../context/SpreadsheetContext';
 import { HoverGlider } from '../HoverGlider';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 
 interface MenuItemDef {
-  label: string;
+  labelKey?: MessageKey;
   shortcut?: string;
   action: string;
   disabled?: boolean;
@@ -17,44 +19,49 @@ const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigat
 const mod = isMac ? '⌘' : 'Ctrl';
 
 const FILE_MENU: MenuItemDef[] = [
-  { label: '新規作成', action: 'newWorkbook' },
-  { label: '', separator: true, action: '' },
-  { label: 'インポート...', action: 'import' },
-  { label: 'エクスポート > CSV', action: 'exportCSV' },
-  { label: 'エクスポート > JSON', action: 'exportJSON' },
-  { label: 'エクスポート > Excel (.xlsx)', action: 'exportXLSX' },
-  { label: '', separator: true, action: '' },
-  { label: '名前を付けて保存 (.masu.json)', action: 'saveNative' },
-  { label: '開く (.masu.json)...', action: 'openNative' },
-  { label: '', separator: true, action: '' },
-  { label: '印刷プレビュー', action: 'printPreview' },
+  { labelKey: 'chrome.menuBar.newWorkbook', action: 'newWorkbook' },
+  { separator: true, action: '' },
+  { labelKey: 'chrome.menuBar.import', action: 'import' },
+  { labelKey: 'chrome.menuBar.exportCSV', action: 'exportCSV' },
+  { labelKey: 'chrome.menuBar.exportJSON', action: 'exportJSON' },
+  { labelKey: 'chrome.menuBar.exportXLSX', action: 'exportXLSX' },
+  { separator: true, action: '' },
+  { labelKey: 'chrome.menuBar.saveNative', action: 'saveNative' },
+  { labelKey: 'chrome.menuBar.openNative', action: 'openNative' },
+  { separator: true, action: '' },
+  { labelKey: 'chrome.menuBar.printPreview', action: 'printPreview' },
 ];
 
 const EDIT_MENU_TEMPLATE: MenuItemDef[] = [
-  { label: '元に戻す', shortcut: `${mod}+Z`, action: 'undo' },
-  { label: 'やり直し', shortcut: `${mod}+Y`, action: 'redo' },
-  { label: '', separator: true, action: '' },
-  { label: 'コピー', shortcut: `${mod}+C`, action: 'copy' },
-  { label: '切り取り', shortcut: `${mod}+X`, action: 'cut' },
-  { label: '貼り付け', shortcut: `${mod}+V`, action: 'paste' },
-  { label: '形式を選択して貼り付け > 値のみ', shortcut: `${mod}+Shift+V`, action: 'pasteValues' },
-  { label: '形式を選択して貼り付け > 書式のみ', action: 'pasteFormat' },
-  { label: '形式を選択して貼り付け > 転置', action: 'pasteTranspose' },
-  { label: '', separator: true, action: '' },
-  { label: '検索と置換', shortcut: `${mod}+H`, action: 'searchReplace' },
+  { labelKey: 'chrome.menuBar.undo', shortcut: `${mod}+Z`, action: 'undo' },
+  { labelKey: 'chrome.menuBar.redo', shortcut: `${mod}+Y`, action: 'redo' },
+  { separator: true, action: '' },
+  { labelKey: 'chrome.menuBar.copy', shortcut: `${mod}+C`, action: 'copy' },
+  { labelKey: 'chrome.menuBar.cut', shortcut: `${mod}+X`, action: 'cut' },
+  { labelKey: 'chrome.menuBar.paste', shortcut: `${mod}+V`, action: 'paste' },
+  {
+    labelKey: 'chrome.menuBar.pasteValues',
+    shortcut: `${mod}+Shift+V`,
+    action: 'pasteValues',
+  },
+  { labelKey: 'chrome.menuBar.pasteFormat', action: 'pasteFormat' },
+  { labelKey: 'chrome.menuBar.pasteTranspose', action: 'pasteTranspose' },
+  { separator: true, action: '' },
+  { labelKey: 'chrome.menuBar.searchReplace', shortcut: `${mod}+H`, action: 'searchReplace' },
 ];
 
-const MENU_ITEMS = [
-  { label: 'ファイル', id: 'file' },
-  { label: '編集', id: 'edit' },
-  { label: '表示', id: 'view' },
-  { label: '挿入', id: 'insert' },
-  { label: '書式', id: 'format' },
-  { label: 'データ', id: 'data' },
-  { label: 'ヘルプ', id: 'help' },
-] as const;
+const MENU_ITEMS: { labelKey: MessageKey; id: string }[] = [
+  { labelKey: 'chrome.menuBar.file', id: 'file' },
+  { labelKey: 'chrome.menuBar.edit', id: 'edit' },
+  { labelKey: 'chrome.menuBar.view', id: 'view' },
+  { labelKey: 'chrome.menuBar.insert', id: 'insert' },
+  { labelKey: 'chrome.menuBar.format', id: 'format' },
+  { labelKey: 'chrome.menuBar.data', id: 'data' },
+  { labelKey: 'chrome.menuBar.help', id: 'help' },
+];
 
 export const MenuBar = memo(function MenuBar() {
+  const { t } = useI18n();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
   const [freezeDialog, setFreezeDialog] = useState(false);
@@ -88,11 +95,7 @@ export const MenuBar = memo(function MenuBar() {
     (action: string) => {
       switch (action) {
         case 'newWorkbook':
-          if (
-            window.confirm(
-              '現在のスプレッドシートを閉じて新規作成しますか？（内容は自動保存から削除されます）',
-            )
-          ) {
+          if (window.confirm(t('chrome.menuBar.confirmNewWorkbook'))) {
             actions.newWorkbook();
           }
           break;
@@ -229,7 +232,7 @@ export const MenuBar = memo(function MenuBar() {
       setOpenMenu(null);
       setOpenSubmenu(null);
     },
-    [actions],
+    [actions, t],
   );
 
   const handleFileChange = useCallback(
@@ -264,66 +267,84 @@ export const MenuBar = memo(function MenuBar() {
       case 'view': {
         const hasFrozen = actions.frozenRows > 0 || actions.frozenCols > 0;
         return [
-          { label: '行列の固定...', action: 'freezePane' },
-          { label: '固定を解除', action: 'unfreezePane', disabled: !hasFrozen },
-          { label: '', separator: true, action: '' },
-          { label: '開発者ツール', shortcut: `${mod}+Shift+K`, action: 'devTools' },
+          { labelKey: 'chrome.menuBar.freezePane', action: 'freezePane' },
+          {
+            labelKey: 'chrome.menuBar.unfreezePane',
+            action: 'unfreezePane',
+            disabled: !hasFrozen,
+          },
+          { separator: true, action: '' },
+          {
+            labelKey: 'chrome.menuBar.devTools',
+            shortcut: `${mod}+Shift+K`,
+            action: 'devTools',
+          },
         ];
       }
       case 'insert':
         return [
-          { label: '上に行を挿入', action: 'insertRowAbove' },
-          { label: '下に行を挿入', action: 'insertRowBelow' },
-          { label: '', separator: true, action: '' },
-          { label: '左に列を挿入', action: 'insertColLeft' },
-          { label: '右に列を挿入', action: 'insertColRight' },
-          { label: '', separator: true, action: '' },
-          { label: 'グラフを挿入...', action: 'insertChart' },
-          { label: 'スパークライン...', action: 'insertSparkline' },
-          { label: 'ピボットテーブル...', action: 'insertPivotTable' },
-          { label: '', separator: true, action: '' },
-          { label: 'チェックボックス', action: 'insertCheckbox' },
-          { label: 'プルダウン', action: 'insertDropdown' },
-          { label: '', separator: true, action: '' },
-          { label: '名前付き範囲の管理...', action: 'namedRanges' },
+          { labelKey: 'chrome.menuBar.insertRowAbove', action: 'insertRowAbove' },
+          { labelKey: 'chrome.menuBar.insertRowBelow', action: 'insertRowBelow' },
+          { separator: true, action: '' },
+          { labelKey: 'chrome.menuBar.insertColLeft', action: 'insertColLeft' },
+          { labelKey: 'chrome.menuBar.insertColRight', action: 'insertColRight' },
+          { separator: true, action: '' },
+          { labelKey: 'chrome.menuBar.insertChart', action: 'insertChart' },
+          { labelKey: 'chrome.menuBar.insertSparkline', action: 'insertSparkline' },
+          { labelKey: 'chrome.menuBar.insertPivotTable', action: 'insertPivotTable' },
+          { separator: true, action: '' },
+          { labelKey: 'chrome.menuBar.insertCheckbox', action: 'insertCheckbox' },
+          { labelKey: 'chrome.menuBar.insertDropdown', action: 'insertDropdown' },
+          { separator: true, action: '' },
+          { labelKey: 'chrome.menuBar.namedRangesManage', action: 'namedRanges' },
         ];
       case 'format':
         return [
-          { label: '取り消し線', shortcut: `${mod}+Shift+X`, action: 'toggleStrikethrough' },
-          { label: '', separator: true, action: '' },
-          { label: '条件付き書式...', action: 'conditionalFormat' },
-          { label: 'データの入力規則...', action: 'dataValidation' },
-          { label: '', separator: true, action: '' },
-          { label: '書式をクリア', shortcut: `${mod}+\\`, action: 'clearFormatting' },
+          {
+            labelKey: 'chrome.menuBar.toggleStrikethrough',
+            shortcut: `${mod}+Shift+X`,
+            action: 'toggleStrikethrough',
+          },
+          { separator: true, action: '' },
+          { labelKey: 'chrome.menuBar.conditionalFormat', action: 'conditionalFormat' },
+          { labelKey: 'chrome.menuBar.dataValidation', action: 'dataValidation' },
+          { separator: true, action: '' },
+          {
+            labelKey: 'chrome.menuBar.clearFormatting',
+            shortcut: `${mod}+\\`,
+            action: 'clearFormatting',
+          },
         ];
       case 'data':
         return [
-          { label: '範囲を並べ替え...', action: 'sortRange' },
-          { label: 'シートを並べ替え (A→Z)', action: 'sortSheetAsc' },
-          { label: 'シートを並べ替え (Z→A)', action: 'sortSheetDesc' },
-          { label: '', separator: true, action: '' },
+          { labelKey: 'chrome.menuBar.sortRange', action: 'sortRange' },
+          { labelKey: 'chrome.menuBar.sortSheetAsc', action: 'sortSheetAsc' },
+          { labelKey: 'chrome.menuBar.sortSheetDesc', action: 'sortSheetDesc' },
+          { separator: true, action: '' },
           {
-            label: actions.filterRange ? 'フィルタを削除' : 'フィルタを作成',
+            labelKey: actions.filterRange
+              ? 'chrome.menuBar.removeFilter'
+              : 'chrome.menuBar.createFilter',
             action: 'toggleFilter',
           },
-          { label: '', separator: true, action: '' },
-          { label: 'データの入力規則...', action: 'dataValidation' },
-          { label: '名前付き範囲...', action: 'namedRanges' },
-          { label: '', separator: true, action: '' },
+          { separator: true, action: '' },
+          { labelKey: 'chrome.menuBar.dataValidation', action: 'dataValidation' },
+          { labelKey: 'chrome.menuBar.namedRanges', action: 'namedRanges' },
+          { separator: true, action: '' },
           {
-            label: 'データクリーンアップ',
+            labelKey: 'chrome.menuBar.dataCleanup',
             action: '',
             submenu: [
-              { label: '重複を削除...', action: 'removeDuplicates' },
-              { label: '空白文字を削除', action: 'trimWhitespace' },
+              { labelKey: 'chrome.menuBar.removeDuplicates', action: 'removeDuplicates' },
+              { labelKey: 'chrome.menuBar.trimWhitespace', action: 'trimWhitespace' },
             ],
           },
-          { label: 'テキストを列に分割', action: 'splitTextToColumns' },
+          { labelKey: 'chrome.menuBar.splitTextToColumns', action: 'splitTextToColumns' },
         ];
       case 'help':
         return [
-          { label: 'キーボード ショートカット', action: 'shortcuts' },
-          { label: '関数リスト', action: 'functionWizard' },
+          { labelKey: 'chrome.menuBar.shortcuts', action: 'shortcuts' },
+          { labelKey: 'chrome.menuBar.functionWizard', action: 'functionWizard' },
         ];
       default:
         return [];
@@ -343,7 +364,7 @@ export const MenuBar = memo(function MenuBar() {
                   ${openMenu === item.id ? 'bg-accent-selection/10 text-accent-selection' : ''}`}
                 onClick={() => handleMenuClick(item.id)}
               >
-                {item.label}
+                {t(item.labelKey)}
               </button>
               {openMenu === item.id && (
                 <div
@@ -365,7 +386,7 @@ export const MenuBar = memo(function MenuBar() {
                             setOpenSubmenu((prev) => (prev === idx ? null : idx));
                           }}
                         >
-                          <span>{menuItem.label}</span>
+                          <span>{menuItem.labelKey && t(menuItem.labelKey)}</span>
                           <span className="text-text-primary/30 text-[10px]">▸</span>
                         </button>
                         {openSubmenu === idx && (
@@ -383,7 +404,7 @@ export const MenuBar = memo(function MenuBar() {
                                   handleAction(subItem.action);
                                 }}
                               >
-                                {subItem.label}
+                                {subItem.labelKey && t(subItem.labelKey)}
                               </button>
                             ))}
                           </div>
@@ -407,7 +428,7 @@ export const MenuBar = memo(function MenuBar() {
                         }}
                         disabled={menuItem.disabled}
                       >
-                        <span>{menuItem.label}</span>
+                        <span>{menuItem.labelKey && t(menuItem.labelKey)}</span>
                         {menuItem.shortcut && (
                           <span className="text-text-primary/30 text-[10px]">
                             {menuItem.shortcut}
@@ -438,10 +459,12 @@ export const MenuBar = memo(function MenuBar() {
             className="glass-panel rounded-2xl p-4 min-w-[280px] animate-dialog-spring"
             data-testid="freeze-dialog"
           >
-            <h3 className="text-sm font-medium text-text-primary mb-3">行列の固定</h3>
+            <h3 className="text-sm font-medium text-text-primary mb-3">
+              {t('chrome.menuBar.freezeDialogTitle')}
+            </h3>
             <div className="flex flex-col gap-2 mb-4">
               <label className="flex items-center gap-2 text-xs text-text-primary">
-                <span className="w-20">固定する行数:</span>
+                <span className="w-20">{t('chrome.menuBar.freezeRowsLabel')}</span>
                 <input
                   type="number"
                   min="0"
@@ -453,7 +476,7 @@ export const MenuBar = memo(function MenuBar() {
                 />
               </label>
               <label className="flex items-center gap-2 text-xs text-text-primary">
-                <span className="w-20">固定する列数:</span>
+                <span className="w-20">{t('chrome.menuBar.freezeColsLabel')}</span>
                 <input
                   type="number"
                   min="0"
@@ -471,7 +494,7 @@ export const MenuBar = memo(function MenuBar() {
                 className="h-7 px-3 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40"
                 onClick={() => setFreezeDialog(false)}
               >
-                キャンセル
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
@@ -480,7 +503,7 @@ export const MenuBar = memo(function MenuBar() {
                 onClick={handleFreezeConfirm}
                 data-testid="freeze-confirm-button"
               >
-                適用
+                {t('common.apply')}
               </button>
             </div>
           </div>

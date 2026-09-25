@@ -1,6 +1,8 @@
 import { memo } from 'react';
 import type { ThemeMode } from '../../types/theme';
 import type { ThemeRevealOrigin } from '../../hooks/useTheme';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 
 interface ThemeToggleProps {
   theme: ThemeMode;
@@ -54,21 +56,27 @@ const AutoIcon = (
   </svg>
 );
 
-const THEME_OPTIONS: { value: ThemeMode; label: string; icon: React.ReactNode }[] = [
-  { value: 'light', label: 'ライト', icon: SunIcon },
-  { value: 'dark', label: 'ダーク', icon: MoonIcon },
-  { value: 'auto', label: '自動', icon: AutoIcon },
+const THEME_OPTIONS: { value: ThemeMode; labelKey: MessageKey; icon: React.ReactNode }[] = [
+  { value: 'light', labelKey: 'chrome.theme.light', icon: SunIcon },
+  { value: 'dark', labelKey: 'chrome.theme.dark', icon: MoonIcon },
+  { value: 'auto', labelKey: 'chrome.theme.auto', icon: AutoIcon },
 ];
 
 /** Segmented light / dark / auto switch; the thumb slides to the selected mode. */
 export const ThemeToggle = memo(function ThemeToggle({ theme, onThemeChange }: ThemeToggleProps) {
+  const { t } = useI18n();
   const index = Math.max(
     0,
     THEME_OPTIONS.findIndex((o) => o.value === theme),
   );
 
   return (
-    <div className="theme-segment" role="radiogroup" aria-label="テーマ" data-testid="theme-toggle">
+    <div
+      className="theme-segment"
+      role="radiogroup"
+      aria-label={t('chrome.theme')}
+      data-testid="theme-toggle"
+    >
       <span
         aria-hidden
         className="theme-segment-thumb"
@@ -80,7 +88,7 @@ export const ThemeToggle = memo(function ThemeToggle({ theme, onThemeChange }: T
           type="button"
           role="radio"
           aria-checked={opt.value === theme}
-          title={`テーマ: ${opt.label}`}
+          title={t('chrome.theme.option', { name: t(opt.labelKey) })}
           data-theme-option={opt.value}
           className="theme-segment-option"
           onClick={(e) => {

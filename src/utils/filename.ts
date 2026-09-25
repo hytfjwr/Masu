@@ -2,8 +2,12 @@
  * Helpers for turning the document title into a safe download file name.
  */
 
-/** Placeholder shown/used when the workbook has no title set (Google Sheets style). */
-export const UNTITLED_SPREADSHEET_NAME = '無題のスプレッドシート';
+import { t } from '../i18n';
+
+/** Placeholder shown/used when the workbook has no title set (Google Sheets style), in the current locale. */
+export function untitledSpreadsheetName(): string {
+  return t('common.untitledSpreadsheet');
+}
 
 /** Characters that are invalid in file names on common platforms. */
 const INVALID_FILENAME_CHARS_RE = /[\\/:*?"<>|]/g;
@@ -16,5 +20,5 @@ export function sanitizeFilename(name: string): string {
 /** Resolve the base file name (without extension) from the document title, falling back to the untitled placeholder. */
 export function resolveFilename(title: string | undefined): string {
   const trimmed = title?.trim() ?? '';
-  return sanitizeFilename(trimmed || UNTITLED_SPREADSHEET_NAME);
+  return sanitizeFilename(trimmed || untitledSpreadsheetName());
 }

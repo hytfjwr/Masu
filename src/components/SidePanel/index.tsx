@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react';
+import { useI18n } from '../../i18n/useI18n';
 
 interface SidePanelProps {
   title: string;
@@ -11,6 +12,7 @@ interface SidePanelProps {
  * Placed as a flex sibling of the grid area (not an overlay), so the grid shrinks to fit.
  */
 export const SidePanel = memo(function SidePanel({ title, onClose, children }: SidePanelProps) {
+  const { t } = useI18n();
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -33,7 +35,7 @@ export const SidePanel = memo(function SidePanel({ title, onClose, children }: S
           type="button"
           onClick={onClose}
           className="flex items-center justify-center w-6 h-6 rounded-full text-text-primary/60 hover:text-error hover:bg-error/10 hover:rotate-90 active:scale-90 text-lg leading-none transition-all duration-200"
-          aria-label="閉じる"
+          aria-label={t('common.close')}
         >
           &times;
         </button>

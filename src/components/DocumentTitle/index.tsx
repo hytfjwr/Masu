@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { UNTITLED_SPREADSHEET_NAME } from '../../utils/filename';
+import { useI18n } from '../../i18n/useI18n';
 
 interface DocumentTitleProps {
   title: string;
@@ -8,9 +8,11 @@ interface DocumentTitleProps {
 
 /**
  * Google Sheets-style editable document title: click to turn into an input,
- * Enter/blur commits, Esc cancels. Shown as "無題のスプレッドシート" when empty.
+ * Enter/blur commits, Esc cancels. Shown as "Untitled spreadsheet" when empty.
  */
 export const DocumentTitle = memo(function DocumentTitle({ title, onChange }: DocumentTitleProps) {
+  const { t } = useI18n();
+  const untitled = t('common.untitledSpreadsheet');
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -54,7 +56,7 @@ export const DocumentTitle = memo(function DocumentTitle({ title, onChange }: Do
             cancel();
           }
         }}
-        placeholder={UNTITLED_SPREADSHEET_NAME}
+        placeholder={untitled}
         className="h-7 px-2 -ml-2 text-[15px] font-medium tracking-tight bg-grid-bg text-text-primary border border-accent-selection rounded-lg outline-none w-64"
         data-testid="document-title-input"
       />
@@ -65,11 +67,11 @@ export const DocumentTitle = memo(function DocumentTitle({ title, onChange }: Do
     <button
       type="button"
       onClick={startEditing}
-      title={title || UNTITLED_SPREADSHEET_NAME}
+      title={title || untitled}
       className="h-7 max-w-[280px] px-2 -ml-2 text-[15px] font-medium tracking-tight text-text-primary rounded-lg hover:bg-grid-line/60 transition-colors duration-150 truncate text-left select-none"
       data-testid="document-title-button"
     >
-      {title || UNTITLED_SPREADSHEET_NAME}
+      {title || untitled}
     </button>
   );
 });

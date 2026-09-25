@@ -1,5 +1,6 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import type { SortKey } from '../../types/grid';
+import { useI18n } from '../../i18n/useI18n';
 import { colIndexToLetter, parseCellKey } from '../../utils/coordinates';
 
 interface ParsedRange {
@@ -46,6 +47,7 @@ export const SortRangeDialog = memo(function SortRangeDialog({
   getCellText,
   onConfirm,
 }: SortRangeDialogProps) {
+  const { t } = useI18n();
   const [rangeText, setRangeText] = useState(defaultRangeText);
   const [hasHeader, setHasHeader] = useState(true);
   const [keys, setKeys] = useState<SortKey[]>(() => {
@@ -62,10 +64,13 @@ export const SortRangeDialog = memo(function SortRangeDialog({
     const options: Array<{ col: number; label: string }> = [];
     for (let c = parsedRange.startCol; c <= parsedRange.endCol; c++) {
       const headerText = hasHeader ? getCellText(c, headerRow).trim() : '';
-      options.push({ col: c, label: headerText || `列 ${colIndexToLetter(c)}` });
+      options.push({
+        col: c,
+        label: headerText || t('dialogs.sortRange.columnLabel', { letter: colIndexToLetter(c) }),
+      });
     }
     return options;
-  }, [parsedRange, hasHeader, getCellText]);
+  }, [parsedRange, hasHeader, getCellText, t]);
 
   const handleAddKey = useCallback(() => {
     const usedCols = new Set(keys.map((k) => k.col));
@@ -89,17 +94,17 @@ export const SortRangeDialog = memo(function SortRangeDialog({
   const handleConfirm = useCallback(() => {
     const parsed = parseRangeText(rangeText);
     if (!parsed) {
-      setError('範囲の形式が正しくありません（例: A1:D10）');
+      setError(t('dialogs.sortRange.invalidRangeFormat'));
       return;
     }
     const sortStartRow = hasHeader ? parsed.startRow + 1 : parsed.startRow;
     if (sortStartRow > parsed.endRow) {
-      setError('並べ替え対象の行がありません');
+      setError(t('dialogs.sortRange.noRowsToSort'));
       return;
     }
     onConfirm({ ...parsed, startRow: sortStartRow }, keys);
     onClose();
-  }, [rangeText, hasHeader, keys, onConfirm, onClose]);
+  }, [rangeText, hasHeader, keys, onConfirm, onClose, t]);
 
   const handleBackdropMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -120,7 +125,9 @@ export const SortRangeDialog = memo(function SortRangeDialog({
         data-testid="sort-range-dialog"
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-grid-line">
-          <h2 className="text-sm font-semibold text-text-primary">範囲を並べ替え</h2>
+          <h2 className="text-sm font-semibold text-text-primary">
+            {t('dialogs.sortRange.title')}
+          </h2>
           <button
             onClick={onClose}
             className="text-text-primary hover:text-error text-lg leading-none"
@@ -131,13 +138,15 @@ export const SortRangeDialog = memo(function SortRangeDialog({
 
         <div className="p-4 space-y-3">
           <div>
-            <label className="text-xs text-text-primary/80 block mb-0.5">対象範囲</label>
+            <label className="text-xs text-text-primary/80 block mb-0.5">
+              {t('dialogs.sortRange.rangeLabel')}
+            </label>
             <input
               type="text"
               value={rangeText}
               onChange={(e) => setRangeText(e.target.value)}
               className="w-full h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded"
-              placeholder="例: A1:D10"
+              placeholder={t('dialogs.sortRange.rangePlaceholder')}
               data-testid="sort-range-input"
             />
           </div>
@@ -150,14 +159,16 @@ export const SortRangeDialog = memo(function SortRangeDialog({
               className="w-3.5 h-3.5"
               data-testid="sort-range-has-header"
             />
-            データにヘッダー行が含まれている
+            {t('dialogs.sortRange.hasHeaderLabel')}
           </label>
 
           <div className="space-y-2">
             {keys.map((key, idx) => (
               <div key={idx} className="flex items-center gap-2">
                 <span className="text-xs text-text-primary/60 w-16 shrink-0">
-                  {idx === 0 ? '並べ替え' : 'その他'}
+                  {idx === 0
+                    ? t('dialogs.sortRange.sortByLabel')
+                    : t('dialogs.sortRange.thenByLabel')}
                 </span>
                 <select
                   value={key.col}
@@ -184,7 +195,7 @@ export const SortRangeDialog = memo(function SortRangeDialog({
                     type="button"
                     onClick={() => handleRemoveKey(idx)}
                     className="text-text-primary/50 hover:text-error text-sm leading-none px-1"
-                    title="この基準を削除"
+                    title={t('dialogs.sortRange.removeRuleTitle')}
                   >
                     &times;
                   </button>
@@ -199,7 +210,7 @@ export const SortRangeDialog = memo(function SortRangeDialog({
             disabled={keys.length >= columnOptions.length}
             className="text-xs text-accent-selection hover:underline disabled:opacity-30 disabled:no-underline"
           >
-            + 別の並べ替え基準の列を追加
+            {t('dialogs.sortRange.addSortColumn')}
           </button>
 
           {error && <div className="text-xs text-error">{error}</div>}
@@ -210,14 +221,14 @@ export const SortRangeDialog = memo(function SortRangeDialog({
             onClick={onClose}
             className="px-3 py-1 text-xs bg-ui-bg border border-grid-line rounded hover:bg-header-bg"
           >
-            キャンセル
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleConfirm}
             className="px-3 py-1 text-xs bg-accent-selection text-white border border-accent-selection rounded hover:opacity-90"
             data-testid="sort-range-confirm"
           >
-            並べ替え
+            {t('dialogs.sortRange.confirm')}
           </button>
         </div>
       </div>

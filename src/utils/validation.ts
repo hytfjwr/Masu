@@ -9,6 +9,8 @@ import { toBoolean } from '../engine/coerce';
 import { parseUserInput } from './valueParser';
 import { shiftFormula } from './formulaShift';
 import { serialToParts } from './dateSerial';
+import type { MessageKey } from '../i18n';
+import { t } from '../i18n';
 
 export interface ValidationContext {
   /** Row-major values of a range string ('A1:A10' / 'Sheet2!A1:A10'). null if it can't be resolved. */
@@ -153,7 +155,7 @@ function formatDateThreshold(serial: number): string {
 }
 
 function describeThreshold(
-  label: string,
+  labelKey: MessageKey,
   min: number | undefined,
   max: number | undefined,
   operator: ValidationOperator,
@@ -161,23 +163,24 @@ function describeThreshold(
 ): string {
   const lo = formatValue(min ?? 0);
   const hi = formatValue(max ?? 0);
+  const label = t(labelKey);
   switch (operator) {
     case 'between':
-      return `${lo} から ${hi} までの${label}を入力してください`;
+      return t('panels.validation.threshold.between', { lo, hi, label });
     case 'notBetween':
-      return `${lo} から ${hi} の範囲外の${label}を入力してください`;
+      return t('panels.validation.threshold.notBetween', { lo, hi, label });
     case 'equal':
-      return `${lo} と等しい${label}を入力してください`;
+      return t('panels.validation.threshold.equal', { lo, label });
     case 'notEqual':
-      return `${lo} と異なる${label}を入力してください`;
+      return t('panels.validation.threshold.notEqual', { lo, label });
     case 'greaterThan':
-      return `${lo} より大きい${label}を入力してください`;
+      return t('panels.validation.threshold.greaterThan', { lo, label });
     case 'greaterThanOrEqual':
-      return `${lo} 以上の${label}を入力してください`;
+      return t('panels.validation.threshold.greaterThanOrEqual', { lo, label });
     case 'lessThan':
-      return `${lo} より小さい${label}を入力してください`;
+      return t('panels.validation.threshold.lessThan', { lo, label });
     case 'lessThanOrEqual':
-      return `${lo} 以下の${label}を入力してください`;
+      return t('panels.validation.threshold.lessThanOrEqual', { lo, label });
   }
 }
 
@@ -186,23 +189,35 @@ export function describeRule(rule: ValidationRule, ctx: ValidationContext): stri
   switch (rule.type) {
     case 'list': {
       const options = getListOptions(rule, ctx);
-      return `リスト内の項目を入力してください: ${options.join(', ')}`;
+      return t('panels.validation.list', { options: options.join(', ') });
     }
     case 'number':
-      return describeThreshold('数値', rule.min, rule.max, rule.operator ?? 'between', String);
+      return describeThreshold(
+        'panels.validation.label.number',
+        rule.min,
+        rule.max,
+        rule.operator ?? 'between',
+        String,
+      );
     case 'textLength':
-      return describeThreshold('文字数', rule.min, rule.max, rule.operator ?? 'between', String);
+      return describeThreshold(
+        'panels.validation.label.textLength',
+        rule.min,
+        rule.max,
+        rule.operator ?? 'between',
+        String,
+      );
     case 'date':
       return describeThreshold(
-        '日付',
+        'panels.validation.label.date',
         rule.dateMin,
         rule.dateMax,
         rule.operator ?? 'between',
         formatDateThreshold,
       );
     case 'checkbox':
-      return 'チェックボックスの値を入力してください';
+      return t('panels.validation.checkboxValue');
     case 'customFormula':
-      return '入力値がカスタム数式の条件を満たしていません';
+      return t('panels.validation.customFormulaInvalid');
   }
 }
