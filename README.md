@@ -7,6 +7,8 @@ A spreadsheet editor that runs entirely in your browser. There is no server and 
 
 **Live demo:** https://hytfjwr.github.io/Masu/
 
+![Masu editing a regional sales sheet with formulas, sparklines and a stacked bar chart](docs/images/screenshot.png)
+
 ## Features
 
 - **Formula engine** — 250+ Excel-compatible functions, dynamic arrays with spilling, `LET` / `LAMBDA` / `MAP` / `REDUCE`, cross-sheet references and named ranges
@@ -15,7 +17,10 @@ A spreadsheet editor that runs entirely in your browser. There is no server and 
 - **Visualization** — charts, sparklines and pivot tables
 - **Printing** — print preview and PDF export
 - **Autosave** — your workbook is kept in IndexedDB and restored on reload
+- **English / Japanese UI** — switch languages in place from the header
 - Frozen panes, find & replace, keyboard shortcuts, IME-friendly in-cell editing, and dark mode
+
+![The same sheet in dark mode with the Japanese UI](docs/images/screenshot-dark-ja.png)
 
 ## Getting started
 
