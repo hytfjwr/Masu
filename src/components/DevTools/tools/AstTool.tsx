@@ -4,6 +4,8 @@ import { parseWithTokens, type SpannedToken } from '../../../engine/parser';
 import { FormulaSyntaxError } from '../../../engine/syntaxError';
 import type { TokenSpan } from '../../../engine/tokenizer';
 import type { ASTNode } from '../../../engine/types';
+import type { MessageKey } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { buildVizTree, layoutTree, NODE_HEIGHT, type VizCategory, type VizNode } from './astLayout';
 
 interface AstToolProps {
@@ -20,14 +22,14 @@ interface AstToolProps {
 
 type Tab = 'tree' | 'tokens' | 'cache';
 
-const CATEGORY_LABELS: Array<[VizCategory, string]> = [
-  ['function', '関数'],
-  ['operator', '演算子'],
-  ['reference', '参照'],
-  ['literal', 'リテラル'],
-  ['array', '配列'],
-  ['named', '名前'],
-  ['error', 'エラー値'],
+const CATEGORY_LABELS: Array<[VizCategory, MessageKey]> = [
+  ['function', 'devtools.astTool.category.function'],
+  ['operator', 'devtools.astTool.category.operator'],
+  ['reference', 'devtools.astTool.category.reference'],
+  ['literal', 'devtools.astTool.category.literal'],
+  ['array', 'devtools.astTool.category.array'],
+  ['named', 'devtools.astTool.category.named'],
+  ['error', 'devtools.astTool.category.error'],
 ];
 
 type Analysis =
@@ -86,6 +88,7 @@ export const AstTool = memo(function AstTool({
   version,
   onSelectRange,
 }: AstToolProps) {
+  const { t } = useI18n();
   const [tab, setTab] = useState<Tab>('tree');
   const [pinned, setPinned] = useState<string | null>(null);
   const [hoverSpan, setHoverSpan] = useState<TokenSpan | null>(null);
@@ -139,24 +142,24 @@ export const AstTool = memo(function AstTool({
     <div className="devtools-tool ast-tool">
       <div className="ast-viz-source">
         <span className={`ast-viz-origin${pinned ? ' ast-viz-origin-cache' : ''}`}>
-          {pinned ? 'キャッシュ' : formulaLabel}
+          {pinned ? t('devtools.astTool.originCache') : formulaLabel}
         </span>
         {formula ? (
           <SourceLine formula={formula} highlight={hoverSpan} error={syntaxError} />
         ) : (
-          <span className="ast-viz-hint">数式のセルを選ぶか、キャッシュから選んでください</span>
+          <span className="ast-viz-hint">{t('devtools.astTool.hint')}</span>
         )}
         {analysis?.ok && !live && (
           <span className={`ast-viz-pill${analysis.cached ? ' ast-viz-pill-hit' : ''}`}>
-            {analysis.cached ? 'キャッシュ済み' : '新規'}
+            {analysis.cached ? t('devtools.astTool.cached') : t('devtools.astTool.new')}
           </span>
         )}
         {pinned && (
           <button type="button" className="ast-viz-link" onClick={() => setPinned(null)}>
-            選択中のセルに戻る
+            {t('devtools.astTool.backToSelectedCell')}
           </button>
         )}
-        <span className="ast-viz-meta" title="エンジンの AST キャッシュ">
+        <span className="ast-viz-meta" title={t('devtools.astTool.cacheTitle')}>
           {cacheEntries.length.toLocaleString()} / {MAX_CACHE_SIZE.toLocaleString()}
         </span>
       </div>
@@ -167,8 +170,8 @@ export const AstTool = memo(function AstTool({
           {syntaxError && formula && (
             <span className="ast-viz-error-where">
               {syntaxError.start === syntaxError.end && syntaxError.end === formula.length
-                ? '末尾'
-                : `${syntaxError.start + 2}文字目`}
+                ? t('devtools.astTool.errorAtEnd')
+                : t('devtools.astTool.errorAtPosition', { position: syntaxError.start + 2 })}
             </span>
           )}
         </div>
@@ -177,9 +180,9 @@ export const AstTool = memo(function AstTool({
       <nav className="ast-viz-tabs" role="tablist">
         {(
           [
-            ['tree', '木構造'],
-            ['tokens', `トークン ${tokenCount || ''}`],
-            ['cache', 'キャッシュ'],
+            ['tree', t('devtools.astTool.tab.tree')],
+            ['tokens', `${t('devtools.astTool.tab.tokens')} ${tokenCount || ''}`],
+            ['cache', t('devtools.astTool.tab.cache')],
           ] as Array<[Tab, string]>
         ).map(([id, label]) => (
           <button
@@ -238,14 +241,16 @@ export const AstTool = memo(function AstTool({
                         {n.kind}
                       </text>
                     </g>
-                    <title>{n.ref ? `${n.kind} — クリックでセルを選択` : n.kind}</title>
+                    <title>
+                      {n.ref ? t('devtools.astTool.nodeTitleRef', { kind: n.kind }) : n.kind}
+                    </title>
                   </g>
                 ))}
               </svg>
             </div>
           ) : (
             <div className="ast-viz-empty">
-              {formula ? '構文エラーのため木を作れません' : 'ここに AST が表示されます'}
+              {formula ? t('devtools.astTool.treeErrorEmpty') : t('devtools.astTool.treeEmpty')}
             </div>
           ))}
 
@@ -273,7 +278,7 @@ export const AstTool = memo(function AstTool({
             </div>
           ) : (
             <div className="ast-viz-empty">
-              {formula ? '字句解析の段階で止まりました' : 'ここにトークン列が表示されます'}
+              {formula ? t('devtools.astTool.tokensErrorEmpty') : t('devtools.astTool.tokensEmpty')}
             </div>
           ))}
 
@@ -282,12 +287,12 @@ export const AstTool = memo(function AstTool({
             <input
               type="search"
               className="ast-viz-search"
-              placeholder="数式で絞り込み"
+              placeholder={t('devtools.astTool.cacheSearchPlaceholder')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
             {filteredCache.length === 0 ? (
-              <div className="ast-viz-empty">キャッシュは空です</div>
+              <div className="ast-viz-empty">{t('devtools.astTool.cacheEmpty')}</div>
             ) : (
               <ul className="ast-viz-cache-list">
                 {filteredCache.map((entry) => (
@@ -314,10 +319,10 @@ export const AstTool = memo(function AstTool({
       </div>
 
       <footer className="ast-viz-legend">
-        {CATEGORY_LABELS.map(([cat, label]) => (
+        {CATEGORY_LABELS.map(([cat, labelKey]) => (
           <span key={cat} className={`ast-legend ast-node-${cat}`}>
             <i />
-            {label}
+            {t(labelKey)}
           </span>
         ))}
       </footer>

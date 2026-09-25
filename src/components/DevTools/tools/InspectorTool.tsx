@@ -1,18 +1,23 @@
 import { memo, useMemo, useState } from 'react';
+import type { TFunction } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import type { CellData } from '../../../types/grid';
 import { cellKey, parseCellKey } from '../../../utils/coordinates';
 import type { DevToolsHost } from '../types';
 import { splitGlobalKey } from './dependencyGraph';
 
 /** Human name of a CellData.computed value's type. */
-function typeOf(cell: CellData | undefined): string {
-  if (!cell) return '空';
-  if (cell.error) return 'エラー';
+function typeOf(cell: CellData | undefined, t: TFunction): string {
+  if (!cell) return t('devtools.inspectorTool.type.empty');
+  if (cell.error) return t('devtools.inspectorTool.type.error');
   const v = cell.computed;
-  if (v === undefined || v === null || v === '') return cell.rawValue === '' ? '空' : '文字列';
-  if (typeof v === 'number') return '数値';
-  if (typeof v === 'boolean') return '真偽値';
-  if (typeof v === 'string') return '文字列';
+  if (v === undefined || v === null || v === '')
+    return cell.rawValue === ''
+      ? t('devtools.inspectorTool.type.empty')
+      : t('devtools.inspectorTool.type.text');
+  if (typeof v === 'number') return t('devtools.inspectorTool.type.number');
+  if (typeof v === 'boolean') return t('devtools.inspectorTool.type.boolean');
+  if (typeof v === 'string') return t('devtools.inspectorTool.type.text');
   return typeof v;
 }
 
@@ -65,6 +70,7 @@ function HighlightedJson({ value }: { value: unknown }) {
  * type, spill / syntax-error details, and its direct precedents and dependents.
  */
 export const InspectorTool = memo(function InspectorTool({ host }: { host: DevToolsHost }) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const key = cellKey(host.activeCell.col, host.activeCell.row);
   const gKey = `${host.activeSheetId}:${key}`;
@@ -110,32 +116,40 @@ export const InspectorTool = memo(function InspectorTool({ host }: { host: DevTo
           onClick={copy}
           disabled={!cell}
         >
-          {copied ? 'コピーしました' : 'JSON をコピー'}
+          {copied ? t('devtools.inspectorTool.copied') : t('devtools.inspectorTool.copyJson')}
         </button>
       </div>
       <div className="inspector-body">
         <div className="profiler-cards">
           <div className="devtools-card">
-            <span>型</span>
-            <strong>{typeOf(cell)}</strong>
+            <span>{t('devtools.inspectorTool.type')}</span>
+            <strong>{typeOf(cell, t)}</strong>
           </div>
           <div className="devtools-card">
-            <span>数式</span>
-            <strong>{cell?.formula !== undefined ? 'あり' : 'なし'}</strong>
+            <span>{t('devtools.inspectorTool.formula')}</span>
+            <strong>
+              {cell?.formula !== undefined
+                ? t('devtools.inspectorTool.yes')
+                : t('devtools.inspectorTool.no')}
+            </strong>
           </div>
           <div className="devtools-card">
-            <span>スピル</span>
+            <span>{t('devtools.inspectorTool.spill')}</span>
             <strong>
               {cell?.spillExtent
                 ? `${cell.spillExtent.rows}×${cell.spillExtent.cols}`
                 : cell?.spillSource
-                  ? '受け側'
-                  : 'なし'}
+                  ? t('devtools.inspectorTool.spillReceiver')
+                  : t('devtools.inspectorTool.spillNone')}
             </strong>
-            {cell?.spillSource && <em>元: {cell.spillSource}</em>}
+            {cell?.spillSource && (
+              <em>{t('devtools.inspectorTool.spillSource', { source: cell.spillSource })}</em>
+            )}
           </div>
           <div className="devtools-card">
-            <span>参照元 / 参照先</span>
+            <span>
+              {t('devtools.inspectorTool.precedents')} / {t('devtools.inspectorTool.dependents')}
+            </span>
             <strong>
               {deps.precedents.length + deps.rangePrecedents.length} / {deps.dependents.length}
             </strong>
@@ -155,7 +169,7 @@ export const InspectorTool = memo(function InspectorTool({ host }: { host: DevTo
           <div className="inspector-links">
             {deps.precedents.length + deps.rangePrecedents.length > 0 && (
               <div>
-                <h4>参照元</h4>
+                <h4>{t('devtools.inspectorTool.precedents')}</h4>
                 {deps.precedents.map((g) => (
                   <button key={g} type="button" className="devtools-chip" onClick={() => goTo(g)}>
                     {label(g)}
@@ -171,7 +185,7 @@ export const InspectorTool = memo(function InspectorTool({ host }: { host: DevTo
             )}
             {deps.dependents.length > 0 && (
               <div>
-                <h4>参照先</h4>
+                <h4>{t('devtools.inspectorTool.dependents')}</h4>
                 {deps.dependents.slice(0, 40).map((g) => (
                   <button key={g} type="button" className="devtools-chip" onClick={() => goTo(g)}>
                     {label(g)}
@@ -186,7 +200,7 @@ export const InspectorTool = memo(function InspectorTool({ host }: { host: DevTo
           <HighlightedJson value={cell} />
         ) : (
           <div className="devtools-muted inspector-empty">
-            このセルにはデータがありません（Map にエントリなし）
+            {t('devtools.inspectorTool.cellDataEmpty')}
           </div>
         )}
       </div>

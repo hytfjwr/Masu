@@ -1,3 +1,4 @@
+import { t } from '../../../i18n';
 import type { CellData, CellStyle, SheetData } from '../../../types/grid';
 
 export interface WorkbookDiff {
@@ -65,17 +66,27 @@ export function diffWorkbooks(
   return diff;
 }
 
-/** One-line Japanese summary of a diff. */
+/** One-line summary of a diff, in the current UI language. */
 export function describeDiff(diff: WorkbookDiff): string {
   const parts: string[] = [];
-  if (diff.sheetsAdded.length) parts.push(`シート追加: ${diff.sheetsAdded.join(', ')}`);
-  if (diff.sheetsRemoved.length) parts.push(`シート削除: ${diff.sheetsRemoved.join(', ')}`);
+  if (diff.sheetsAdded.length)
+    parts.push(t('devtools.historyTool.sheetsAdded', { sheets: diff.sheetsAdded.join(', ') }));
+  if (diff.sheetsRemoved.length)
+    parts.push(t('devtools.historyTool.sheetsRemoved', { sheets: diff.sheetsRemoved.join(', ') }));
   if (diff.changedCells) {
     const more =
       diff.changedCells > diff.sample.length
-        ? ` ほか ${diff.changedCells - diff.sample.length}`
+        ? t('devtools.historyTool.changedCellsMore', {
+            count: diff.changedCells - diff.sample.length,
+          })
         : '';
-    parts.push(`${diff.changedCells} セル（${diff.sample.join(', ')}${more}）`);
+    parts.push(
+      t('devtools.historyTool.changedCells', {
+        count: diff.changedCells,
+        sample: diff.sample.join(', '),
+        more,
+      }),
+    );
   }
-  return parts.length ? parts.join(' / ') : '変更なし（シート設定などのみ）';
+  return parts.length ? parts.join(' / ') : t('devtools.historyTool.noChange');
 }

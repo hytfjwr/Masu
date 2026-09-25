@@ -1,4 +1,6 @@
 import { memo, useMemo, useState } from 'react';
+import type { MessageKey } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import { cellKey } from '../../../utils/coordinates';
 import type { DevToolsHost } from '../types';
 import { buildDependencyGraph, type DepNode } from './dependencyGraph';
@@ -10,12 +12,12 @@ const ROW_GAP = 12;
 const PAD = 28;
 const HEADER = 26;
 
-const LEVEL_TITLES: Record<number, string> = {
-  [-2]: '参照元 2',
-  [-1]: '参照元',
-  0: '選択中',
-  1: '参照先',
-  2: '参照先 2',
+const LEVEL_TITLES: Record<number, MessageKey> = {
+  [-2]: 'devtools.dependencyTool.level.precedents2',
+  [-1]: 'devtools.dependencyTool.level.precedents',
+  0: 'devtools.dependencyTool.level.selected',
+  1: 'devtools.dependencyTool.level.dependents',
+  2: 'devtools.dependencyTool.level.dependents2',
 };
 
 /**
@@ -23,6 +25,7 @@ const LEVEL_TITLES: Record<number, string> = {
  * two levels each, from the engine's dependency graph. Click a node to jump to that cell.
  */
 export const DependencyTool = memo(function DependencyTool({ host }: { host: DevToolsHost }) {
+  const { t } = useI18n();
   const [hoverId, setHoverId] = useState<string | null>(null);
   const key = cellKey(host.activeCell.col, host.activeCell.row);
   const graph = useMemo(
@@ -65,12 +68,14 @@ export const DependencyTool = memo(function DependencyTool({ host }: { host: Dev
       <div className="devtools-toolbar">
         <span className="ast-viz-origin">{key}</span>
         <span className="devtools-muted">
-          参照元 {graph.nodes.filter((n) => n.level < 0).length} ・ 参照先{' '}
-          {graph.nodes.filter((n) => n.level > 0).length}・ ノードをクリックでそのセルへ移動
+          {t('devtools.dependencyTool.summary', {
+            precedents: graph.nodes.filter((n) => n.level < 0).length,
+            dependents: graph.nodes.filter((n) => n.level > 0).length,
+          })}
         </span>
       </div>
       {isolated ? (
-        <div className="ast-viz-empty">このセルはほかのセルとつながっていません</div>
+        <div className="ast-viz-empty">{t('devtools.dependencyTool.empty')}</div>
       ) : (
         <div className="devtools-canvas" onMouseLeave={() => setHoverId(null)}>
           <svg
@@ -86,7 +91,7 @@ export const DependencyTool = memo(function DependencyTool({ host }: { host: Dev
                 x={PAD + li * COL_W + NODE_W / 2}
                 y={PAD + 8}
               >
-                {LEVEL_TITLES[level]}
+                {t(LEVEL_TITLES[level])}
               </text>
             ))}
             {graph.edges.map((e) => {

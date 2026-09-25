@@ -1,6 +1,7 @@
 import { getNodeSpan } from '../../../engine/parser';
 import type { TokenSpan } from '../../../engine/tokenizer';
 import type { ASTNode } from '../../../engine/types';
+import { t } from '../../../i18n';
 import { parseCellKey } from '../../../utils/coordinates';
 
 export type VizCategory =
@@ -99,7 +100,7 @@ export function buildVizTree(ast: ASTNode, source: string): VizNode {
       case 'ErrorLiteral':
         return { ...base, label: node.code, category: 'error', children: [] };
       case 'EmptyArg':
-        return { ...base, label: '（省略）', category: 'empty', children: [] };
+        return { ...base, label: t('devtools.astTool.emptyArg'), category: 'empty', children: [] };
       case 'NamedRef':
         return { ...base, label: node.name, category: 'named', children: [] };
       case 'CellRef':
@@ -163,7 +164,7 @@ export function buildVizTree(ast: ASTNode, source: string): VizNode {
           category: 'array',
           children: node.rows.map((row, r) => ({
             id: `n${nextId++}`,
-            label: `行 ${r + 1}`,
+            label: t('devtools.astTool.arrayRow', { row: r + 1 }),
             kind: 'Row',
             category: 'array' as const,
             depth: depth + 1,

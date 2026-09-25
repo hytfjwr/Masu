@@ -1,4 +1,6 @@
 import { memo, useMemo, useState } from 'react';
+import type { TFunction } from '../../../i18n';
+import { useI18n } from '../../../i18n/useI18n';
 import type { SheetData } from '../../../types/grid';
 import type { DevToolsHost } from '../types';
 import { describeDiff, diffWorkbooks } from './historyDiff';
@@ -23,16 +25,16 @@ function cachedSummary(before: { sheets: SheetData[] }, after: { sheets: SheetDa
   return summary;
 }
 
-const time = (t: number | null) =>
-  t === null ? '—' : new Date(t).toLocaleTimeString(undefined, { hour12: false });
+const time = (at: number | null) =>
+  at === null ? '—' : new Date(at).toLocaleTimeString(undefined, { hour12: false });
 
-function relative(t: number | null, now: number): string {
-  if (t === null) return '最初の状態';
-  const s = Math.round((now - t) / 1000);
-  if (s < 5) return 'たった今';
-  if (s < 60) return `${s} 秒前`;
-  if (s < 3600) return `${Math.floor(s / 60)} 分前`;
-  return `${Math.floor(s / 3600)} 時間前`;
+function relative(t: TFunction, at: number | null, now: number): string {
+  if (at === null) return t('devtools.historyTool.initialState');
+  const s = Math.round((now - at) / 1000);
+  if (s < 5) return t('devtools.historyTool.justNow');
+  if (s < 60) return t('devtools.historyTool.secondsAgo', { count: s });
+  if (s < 3600) return t('devtools.historyTool.minutesAgo', { count: Math.floor(s / 60) });
+  return t('devtools.historyTool.hoursAgo', { count: Math.floor(s / 3600) });
 }
 
 /**
@@ -41,6 +43,7 @@ function relative(t: number | null, now: number): string {
  * undo/redo — nothing is lost, you can travel back).
  */
 export const HistoryTool = memo(function HistoryTool({ host }: { host: DevToolsHost }) {
+  const { t } = useI18n();
   const timeline = host.historyTimeline;
   const currentIndex = timeline.findIndex((e) => e.current);
   const now = useMemo(
@@ -60,7 +63,7 @@ export const HistoryTool = memo(function HistoryTool({ host }: { host: DevToolsH
   const rows = useMemo(() => {
     return timeline
       .map((entry, i) => {
-        if (i === 0) return { entry, i, summary: '履歴の起点' };
+        if (i === 0) return { entry, i, summary: t('devtools.historyTool.origin') };
         const prevSnap = i - 1 === currentIndex ? null : host.getHistorySnapshot(i - 1);
         const curSnap = i === currentIndex ? null : host.getHistorySnapshot(i);
         let summary = '—';
@@ -75,14 +78,17 @@ export const HistoryTool = memo(function HistoryTool({ host }: { host: DevToolsH
       })
       .reverse();
     // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeline, host.version]);
+  }, [timeline, host.version, t]);
 
   return (
     <div className="devtools-tool history-tool">
       <div className="devtools-toolbar">
         <span className="devtools-muted">
-          {timeline.length} 状態（Undo {currentIndex} ・ Redo {timeline.length - 1 - currentIndex}
-          ）・ 最大 100 件
+          {t('devtools.historyTool.status', {
+            count: timeline.length,
+            undo: currentIndex,
+            redo: timeline.length - 1 - currentIndex,
+          })}
         </span>
       </div>
       <div className="history-scrubber">
@@ -97,20 +103,20 @@ export const HistoryTool = memo(function HistoryTool({ host }: { host: DevToolsH
           onPointerUp={commitPending}
           onKeyUp={commitPending}
           onBlur={commitPending}
-          aria-label="履歴のタイムトラベル"
+          aria-label={t('devtools.historyTool.timeTravel')}
         />
         <div className="history-scrubber-labels">
-          <span>最古</span>
+          <span>{t('devtools.historyTool.oldest')}</span>
           <span>
             {pending !== null && pending !== currentIndex
-              ? `#${pending} へ移動（離すと移動）`
+              ? t('devtools.historyTool.moveTo', { index: pending })
               : `#${currentIndex} / ${timeline.length - 1}`}
           </span>
-          <span>最新</span>
+          <span>{t('devtools.historyTool.newest')}</span>
         </div>
       </div>
       {timeline.length < 2 ? (
-        <div className="ast-viz-empty">操作すると、ここに履歴が並びます</div>
+        <div className="ast-viz-empty">{t('devtools.historyTool.empty')}</div>
       ) : (
         <ol className="history-list">
           {rows.map(({ entry, i, summary }) => (
@@ -126,7 +132,7 @@ export const HistoryTool = memo(function HistoryTool({ host }: { host: DevToolsH
                 <span className="history-index">#{i}</span>
                 <span className="history-summary">{summary}</span>
                 <span className="history-time" title={time(entry.time)}>
-                  {entry.current ? '現在' : relative(entry.time, now)}
+                  {entry.current ? t('devtools.historyTool.current') : relative(t, entry.time, now)}
                 </span>
               </button>
             </li>
