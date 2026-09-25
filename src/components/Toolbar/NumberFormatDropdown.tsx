@@ -2,20 +2,26 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { FloatingPanel } from '../FloatingPanel';
 import type { NumberFormat } from '../../types/grid';
 import { formatWithPattern } from '../../utils/numberFormat';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 
 /** Sample value used to preview a custom pattern when the active cell has no numeric value. */
 const FALLBACK_PREVIEW_VALUE = 1234.56;
 
-const FORMAT_ITEMS: { format: NumberFormat; label: string; example?: string }[] = [
-  { format: 'auto', label: '自動' },
-  { format: 'plainText', label: '書式なしテキスト' },
-  { format: 'number', label: '数値', example: '1,000.12' },
-  { format: 'percent', label: 'パーセント', example: '10.12%' },
-  { format: 'scientific', label: '指数', example: '1.01E+03' },
-  { format: 'currency', label: '通貨', example: '¥1,000.12' },
-  { format: 'date', label: '日付', example: '2026/09/26' },
-  { format: 'time', label: '時刻', example: '15:59:00' },
-  { format: 'datetime', label: '日時', example: '2026/09/26 15:59:00' },
+const FORMAT_ITEMS: { format: NumberFormat; labelKey: MessageKey; example?: string }[] = [
+  { format: 'auto', labelKey: 'chrome.numberFormatDropdown.auto' },
+  { format: 'plainText', labelKey: 'chrome.numberFormatDropdown.plainText' },
+  { format: 'number', labelKey: 'chrome.numberFormatDropdown.number', example: '1,000.12' },
+  { format: 'percent', labelKey: 'chrome.numberFormatDropdown.percent', example: '10.12%' },
+  { format: 'scientific', labelKey: 'chrome.numberFormatDropdown.scientific', example: '1.01E+03' },
+  { format: 'currency', labelKey: 'chrome.numberFormatDropdown.currency', example: '¥1,000.12' },
+  { format: 'date', labelKey: 'chrome.numberFormatDropdown.date', example: '2026/09/26' },
+  { format: 'time', labelKey: 'chrome.numberFormatDropdown.time', example: '15:59:00' },
+  {
+    format: 'datetime',
+    labelKey: 'chrome.numberFormatDropdown.datetime',
+    example: '2026/09/26 15:59:00',
+  },
 ];
 
 const COMMON_CUSTOM_PATTERNS = [
@@ -45,6 +51,7 @@ export const NumberFormatDropdown = memo(function NumberFormatDropdown({
   previewValue,
   onSetFormat,
 }: NumberFormatDropdownProps) {
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [showCustom, setShowCustom] = useState(false);
   const [customInput, setCustomInput] = useState('');
@@ -110,7 +117,7 @@ export const NumberFormatDropdown = memo(function NumberFormatDropdown({
     <div ref={containerRef} className="relative">
       <button
         type="button"
-        title="表示形式"
+        title={t('chrome.numberFormatDropdown.button')}
         className="flex items-center gap-0.5 h-7 px-1.5 rounded hover:bg-grid-line/60 active:scale-95 transition-all duration-100 text-text-primary text-xs"
         onMouseDown={(e) => {
           e.preventDefault();
@@ -142,7 +149,7 @@ export const NumberFormatDropdown = memo(function NumberFormatDropdown({
                     <span className="w-3 inline-block">
                       {currentFormat === item.format ? '✓' : ''}
                     </span>
-                    {item.label}
+                    {t(item.labelKey)}
                   </span>
                   {item.example && <span className="text-text-primary/40">{item.example}</span>}
                 </button>
@@ -157,7 +164,7 @@ export const NumberFormatDropdown = memo(function NumberFormatDropdown({
                 }}
               >
                 <span className="w-3 inline-block">{currentFormat === 'custom' ? '✓' : ''}</span>
-                カスタム...
+                {t('chrome.numberFormatDropdown.custom')}
               </button>
             </>
           ) : (
@@ -170,7 +177,7 @@ export const NumberFormatDropdown = memo(function NumberFormatDropdown({
                   setShowCustom(false);
                 }}
               >
-                ← 戻る
+                {t('chrome.numberFormatDropdown.back')}
               </button>
               <input
                 type="text"
@@ -209,7 +216,7 @@ export const NumberFormatDropdown = memo(function NumberFormatDropdown({
                   handleApplyCustom();
                 }}
               >
-                適用
+                {t('common.apply')}
               </button>
             </div>
           )}

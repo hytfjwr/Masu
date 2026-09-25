@@ -1,19 +1,21 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { FloatingPanel } from '../FloatingPanel';
 import type { CellBorders, BorderEdge } from '../../types/grid';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 
 const solidBlack: BorderEdge = { style: 'solid', color: '#000000' };
 const thickBlack: BorderEdge = { style: 'thick', color: '#000000' };
 
 interface BorderPreset {
-  label: string;
+  labelKey: MessageKey;
   borders: CellBorders | undefined;
   icon: React.ReactNode;
 }
 
 const BORDER_PRESETS: BorderPreset[] = [
   {
-    label: 'すべての罫線',
+    labelKey: 'chrome.borderPicker.all',
     borders: { top: solidBlack, right: solidBlack, bottom: solidBlack, left: solidBlack },
     icon: (
       <svg
@@ -31,7 +33,7 @@ const BORDER_PRESETS: BorderPreset[] = [
     ),
   },
   {
-    label: '外枠',
+    labelKey: 'chrome.borderPicker.outer',
     borders: { top: solidBlack, right: solidBlack, bottom: solidBlack, left: solidBlack },
     icon: (
       <svg
@@ -47,7 +49,7 @@ const BORDER_PRESETS: BorderPreset[] = [
     ),
   },
   {
-    label: '太い外枠',
+    labelKey: 'chrome.borderPicker.thickOuter',
     borders: { top: thickBlack, right: thickBlack, bottom: thickBlack, left: thickBlack },
     icon: (
       <svg
@@ -63,7 +65,7 @@ const BORDER_PRESETS: BorderPreset[] = [
     ),
   },
   {
-    label: '下罫線',
+    labelKey: 'chrome.borderPicker.bottom',
     borders: { bottom: solidBlack },
     icon: (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
@@ -81,7 +83,7 @@ const BORDER_PRESETS: BorderPreset[] = [
     ),
   },
   {
-    label: '罫線なし',
+    labelKey: 'chrome.borderPicker.none',
     borders: undefined,
     icon: (
       <svg
@@ -99,7 +101,7 @@ const BORDER_PRESETS: BorderPreset[] = [
     ),
   },
   {
-    label: '上下罫線',
+    labelKey: 'chrome.borderPicker.topBottom',
     borders: { top: solidBlack, bottom: solidBlack },
     icon: (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
@@ -124,6 +126,7 @@ interface BorderPickerProps {
 }
 
 export const BorderPicker = memo(function BorderPicker({ onBordersChange }: BorderPickerProps) {
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -162,7 +165,7 @@ export const BorderPicker = memo(function BorderPicker({ onBordersChange }: Bord
     <div ref={containerRef} className="relative">
       <button
         type="button"
-        title="罫線"
+        title={t('chrome.borderPicker.button')}
         className="flex items-center justify-center w-7 h-7 rounded hover:bg-grid-line/60 active:scale-90 transition-all duration-100 text-text-primary"
         onMouseDown={(e) => {
           e.preventDefault();
@@ -191,10 +194,10 @@ export const BorderPicker = memo(function BorderPicker({ onBordersChange }: Bord
           <div className="grid grid-cols-3 gap-1 mb-2">
             {BORDER_PRESETS.map((preset) => (
               <button
-                key={preset.label}
+                key={preset.labelKey}
                 type="button"
                 className="flex items-center justify-center w-9 h-9 rounded border border-grid-line hover:bg-grid-line/40 active:scale-90 transition-all duration-100 text-text-primary"
-                title={preset.label}
+                title={t(preset.labelKey)}
                 onMouseDown={(e) => {
                   e.preventDefault();
                   handlePresetClick(preset.borders);
@@ -212,7 +215,7 @@ export const BorderPicker = memo(function BorderPicker({ onBordersChange }: Bord
               handleClear();
             }}
           >
-            罫線をクリア
+            {t('chrome.borderPicker.clear')}
           </button>
         </FloatingPanel>
       )}

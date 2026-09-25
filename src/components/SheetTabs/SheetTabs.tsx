@@ -5,6 +5,7 @@ import {
 } from '../../hooks/useClampToViewport';
 import { PRESET_COLORS } from '../Toolbar/colorPalette';
 import type { SheetData } from '../../types/grid';
+import { useI18n } from '../../i18n/useI18n';
 
 interface SheetTabsProps {
   sheets: SheetData[];
@@ -56,6 +57,7 @@ export const SheetTabs = memo(function SheetTabs({
   onSetTabColor,
   onSetSheetHidden,
 }: SheetTabsProps) {
+  const { t } = useI18n();
   const [editingSheetId, setEditingSheetId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [contextMenuSheetId, setContextMenuSheetId] = useState<string | null>(null);
@@ -191,13 +193,13 @@ export const SheetTabs = memo(function SheetTabs({
         closeContextMenu();
         return;
       }
-      const confirmed = window.confirm('このシートを削除しますか？');
+      const confirmed = window.confirm(t('chrome.sheetTabs.confirmDelete'));
       if (confirmed) {
         onDeleteSheet(contextMenuSheetId);
       }
     }
     closeContextMenu();
-  }, [contextMenuSheetId, sheets.length, onDeleteSheet, closeContextMenu]);
+  }, [contextMenuSheetId, sheets.length, onDeleteSheet, closeContextMenu, t]);
 
   const handleRenameFromMenu = useCallback(() => {
     if (contextMenuSheetId) {
@@ -369,7 +371,7 @@ export const SheetTabs = memo(function SheetTabs({
         type="button"
         className="flex items-center justify-center w-6 h-6 text-text-primary/50 hover:text-text-primary hover:bg-grid-line/40 active:scale-90 rounded text-sm transition-all duration-100"
         onClick={handleAllSheetsButtonClick}
-        title="すべてのシート"
+        title={t('chrome.sheetTabs.allSheets')}
         data-testid="all-sheets-button"
       >
         ☰
@@ -453,7 +455,7 @@ export const SheetTabs = memo(function SheetTabs({
         type="button"
         className="flex items-center justify-center w-6 h-6 text-text-primary/50 hover:text-text-primary hover:bg-grid-line/40 active:scale-90 rounded text-sm transition-all duration-100"
         onClick={onAddSheet}
-        title="新しいシートを追加"
+        title={t('chrome.sheetTabs.addSheet')}
         data-testid="add-sheet-button"
       >
         +
@@ -476,7 +478,7 @@ export const SheetTabs = memo(function SheetTabs({
               handleDuplicateFromMenu();
             }}
           >
-            複製
+            {t('chrome.sheetTabs.duplicate')}
           </button>
           <button
             type="button"
@@ -486,7 +488,7 @@ export const SheetTabs = memo(function SheetTabs({
               handleRenameFromMenu();
             }}
           >
-            名前を変更
+            {t('chrome.sheetTabs.rename')}
           </button>
           <div className="relative">
             <button
@@ -497,7 +499,7 @@ export const SheetTabs = memo(function SheetTabs({
                 setColorSubmenuOpen((v) => !v);
               }}
             >
-              <span>色を変更</span>
+              <span>{t('chrome.sheetTabs.changeColor')}</span>
               <span className="text-text-primary/40">▸</span>
             </button>
             {colorSubmenuOpen && (
@@ -529,7 +531,7 @@ export const SheetTabs = memo(function SheetTabs({
                     handleColorPick(undefined);
                   }}
                 >
-                  リセット
+                  {t('chrome.sheetTabs.reset')}
                 </button>
               </div>
             )}
@@ -547,7 +549,7 @@ export const SheetTabs = memo(function SheetTabs({
               handleHideFromMenu();
             }}
           >
-            シートを非表示
+            {t('chrome.sheetTabs.hideSheet')}
           </button>
           <button
             type="button"
@@ -557,7 +559,7 @@ export const SheetTabs = memo(function SheetTabs({
               handleMoveLeftFromMenu();
             }}
           >
-            左へ移動
+            {t('chrome.sheetTabs.moveLeft')}
           </button>
           <button
             type="button"
@@ -567,7 +569,7 @@ export const SheetTabs = memo(function SheetTabs({
               handleMoveRightFromMenu();
             }}
           >
-            右へ移動
+            {t('chrome.sheetTabs.moveRight')}
           </button>
           <div className="border-t border-grid-line my-1" />
           <button
@@ -583,7 +585,7 @@ export const SheetTabs = memo(function SheetTabs({
               handleDeleteFromMenu();
             }}
           >
-            シートを削除
+            {t('chrome.sheetTabs.deleteSheet')}
           </button>
         </div>
       )}
@@ -610,7 +612,9 @@ export const SheetTabs = memo(function SheetTabs({
             >
               <span className="truncate">{sheet.name}</span>
               {sheet.hidden && (
-                <span className="text-[10px] text-text-primary/40 shrink-0">非表示</span>
+                <span className="text-[10px] text-text-primary/40 shrink-0">
+                  {t('chrome.sheetTabs.hidden')}
+                </span>
               )}
             </button>
           ))}

@@ -18,6 +18,7 @@ import { GRID_CONSTANTS } from '../types/grid';
 import type { DeserializeResult, SheetSizes } from './nativeSerializer';
 import { cellKey, parseCellKey } from '../utils/coordinates';
 import { createEmptySheet } from '../utils/sheetUtils';
+import { t } from '../i18n';
 
 export interface XlsxExportOptions {
   sheets: SheetData[];
@@ -587,7 +588,7 @@ export async function importXlsx(buffer: ArrayBuffer): Promise<DeserializeResult
 
   const worksheets = workbook.worksheets.filter((ws) => ws.state !== 'veryHidden');
   if (worksheets.length === 0) {
-    throw new Error('シートが含まれていません');
+    throw new Error(t('engine.xlsx.noSheets'));
   }
 
   const sheets: SheetData[] = [];

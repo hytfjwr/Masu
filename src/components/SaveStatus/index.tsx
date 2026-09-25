@@ -1,5 +1,6 @@
 import { memo, useMemo } from 'react';
 import type { SaveStatus as SaveStatusType } from '../../hooks/useAutosave';
+import { useI18n } from '../../i18n/useI18n';
 
 interface SaveStatusProps {
   status: SaveStatusType;
@@ -12,9 +13,13 @@ function formatTime(timestamp: number): string {
 }
 
 export const SaveStatus = memo(function SaveStatus({ status, lastSavedAt }: SaveStatusProps) {
+  const { t } = useI18n();
   const title = useMemo(
-    () => (lastSavedAt !== null ? `最終保存: ${formatTime(lastSavedAt)}` : undefined),
-    [lastSavedAt],
+    () =>
+      lastSavedAt !== null
+        ? t('chrome.saveStatus.lastSaved', { time: formatTime(lastSavedAt) })
+        : undefined,
+    [lastSavedAt, t],
   );
 
   if (status === 'idle') return null;
@@ -40,7 +45,7 @@ export const SaveStatus = memo(function SaveStatus({ status, lastSavedAt }: Save
             strokeLinecap="round"
           />
         </svg>
-        保存中…
+        {t('chrome.saveStatus.saving')}
       </span>
     );
   }
@@ -48,7 +53,7 @@ export const SaveStatus = memo(function SaveStatus({ status, lastSavedAt }: Save
   if (status === 'error') {
     return (
       <span className="text-xs text-error px-1.5 whitespace-nowrap select-none">
-        保存できませんでした
+        {t('chrome.saveStatus.error')}
       </span>
     );
   }
@@ -76,7 +81,7 @@ export const SaveStatus = memo(function SaveStatus({ status, lastSavedAt }: Save
           strokeLinejoin="round"
         />
       </svg>
-      すべての変更を保存しました
+      {t('chrome.saveStatus.saved')}
     </span>
   );
 });

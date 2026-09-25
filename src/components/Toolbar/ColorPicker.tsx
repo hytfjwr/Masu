@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { FloatingPanel } from '../FloatingPanel';
 import { PRESET_COLORS } from './colorPalette';
+import { useI18n } from '../../i18n/useI18n';
 
 interface ColorPickerProps {
   currentColor: string | undefined;
@@ -15,6 +16,7 @@ export const ColorPicker = memo(function ColorPicker({
   label,
   icon,
 }: ColorPickerProps) {
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [customColor, setCustomColor] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -131,7 +133,7 @@ export const ColorPicker = memo(function ColorPicker({
               handleClear();
             }}
           >
-            色をクリア
+            {t('chrome.colorPicker.clear')}
           </button>
         </FloatingPanel>
       )}
