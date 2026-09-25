@@ -1,11 +1,11 @@
 # Masu
 
-[![CI](https://github.com/hytfjwr/Tabula/actions/workflows/ci.yml/badge.svg)](https://github.com/hytfjwr/Tabula/actions/workflows/ci.yml)
-[![Deploy to GitHub Pages](https://github.com/hytfjwr/Tabula/actions/workflows/pages.yml/badge.svg)](https://github.com/hytfjwr/Tabula/actions/workflows/pages.yml)
+[![CI](https://github.com/hytfjwr/Masu/actions/workflows/ci.yml/badge.svg)](https://github.com/hytfjwr/Masu/actions/workflows/ci.yml)
+[![Deploy to GitHub Pages](https://github.com/hytfjwr/Masu/actions/workflows/pages.yml/badge.svg)](https://github.com/hytfjwr/Masu/actions/workflows/pages.yml)
 
 A spreadsheet editor that runs entirely in your browser. There is no server and no cloud: formula evaluation, file import/export, PDF generation and autosave all happen client-side.
 
-**Live demo:** https://hytfjwr.github.io/Tabula/
+**Live demo:** https://hytfjwr.github.io/Masu/
 
 ## Features
 
