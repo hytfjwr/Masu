@@ -184,6 +184,35 @@ describe('RANK', () => {
     const vals: Record<string, FormulaResult> = { A1: 3, A2: 1, A3: 5 };
     expect(evalFormula('RANK(10,A1:A3)', vals)).toEqual({ type: 'error', code: '#N/A' });
   });
+
+  it('accepts a cell reference as the number', () => {
+    const vals: Record<string, FormulaResult> = { A1: 3, A2: 1, A3: 5 };
+    expect(evalFormula('RANK(A1,A1:A3)', vals)).toBe(2);
+    expect(evalFormula('RANK(A1:A2,A1:A3)', vals)).toEqual({ type: 'error', code: '#VALUE!' });
+  });
+});
+
+describe('scalar numeric parameters given a bare cell reference', () => {
+  it('read the referenced cell (a 1x1 range) as a scalar', () => {
+    const vals: Record<string, FormulaResult> = { A1: -5, A2: 2.345, A3: 16, A4: '7', A5: true };
+    expect(evalFormula('ABS(A1)', vals)).toBe(5);
+    expect(evalFormula('ROUND(A2,1)', vals)).toBeCloseTo(2.3, 9);
+    expect(evalFormula('MOD(A3,A4)', vals)).toBe(2);
+    expect(evalFormula('SQRT(A3)', vals)).toBe(4);
+    expect(evalFormula('INT(A5)', vals)).toBe(1);
+  });
+
+  it('treat an empty cell as 0 and non-numeric text as #VALUE!', () => {
+    expect(evalFormula('ABS(A1)', {})).toBe(0);
+    expect(evalFormula('ABS(A1)', { A1: 'abc' })).toEqual({ type: 'error', code: '#VALUE!' });
+  });
+
+  it('propagate an error in the referenced cell', () => {
+    expect(evalFormula('ABS(A1)', { A1: { type: 'error', code: '#N/A' } })).toEqual({
+      type: 'error',
+      code: '#N/A',
+    });
+  });
 });
 
 describe('ROUNDUP', () => {

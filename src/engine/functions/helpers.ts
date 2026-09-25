@@ -169,7 +169,8 @@ export function makeSpill(values: FormulaResult[][]): FunctionReturnValue {
  * For range/array arguments, resolves/flattens each cell and extracts numeric values.
  * Options:
  * - skipNonNumeric: skip non-numeric values in ranges/arrays (for SUM, AVERAGE, etc.)
- * - strictScalar: requires all args to be scalar values (not ranges/arrays), and they must be numeric
+ * - strictScalar: requires all args to be scalar values, and they must be numeric. A 1x1 range/array
+ *   (e.g. a bare cell reference, which arrives as a 1x1 range) counts as a scalar.
  */
 export function resolveNumericArgs(
   args: FunctionArgValue[],
@@ -179,10 +180,8 @@ export function resolveNumericArgs(
   const result: number[] = [];
 
   for (const arg of args) {
-    if (arg.kind === 'range' || arg.kind === 'array') {
-      if (options.strictScalar) {
-        return makeError('#VALUE!');
-      }
+    if (arg.kind === 'lambda') return makeError('#VALUE!');
+    if ((arg.kind === 'range' || arg.kind === 'array') && !options.strictScalar) {
       for (const val of argToFlat(arg, ctx)) {
         if (isFormulaError(val)) return val;
         if (typeof val === 'number') {
@@ -197,29 +196,26 @@ export function resolveNumericArgs(
           result.push(num);
         }
       }
-    } else if (arg.kind === 'lambda') {
-      return makeError('#VALUE!');
-    } else {
-      // Scalar value (or omitted, treated as an empty value)
-      const val: FormulaResult = arg.kind === 'omitted' ? '' : arg.value;
-      if (isFormulaError(val)) return val;
-      if (typeof val === 'number') {
-        result.push(val);
-      } else if (typeof val === 'boolean') {
-        result.push(val ? 1 : 0);
-      } else if (typeof val === 'string') {
-        if (val === '') {
-          result.push(0);
-        } else {
-          const num = Number(val);
-          if (isNaN(num)) return makeError('#VALUE!');
-          result.push(num);
-        }
-      }
+      continue;
     }
+    // Scalar value (omitted = an empty value; under strictScalar a 1x1 range/array is its single value)
+    if (isMultiValued(arg)) return makeError('#VALUE!');
+    const num = scalarToNumber(resolveScalar(arg, ctx));
+    if (isFormulaError(num)) return num;
+    result.push(num);
   }
 
   return result;
+}
+
+/** A scalar as a number the way scalar numeric parameters read it ('' = 0, non-numeric text = #VALUE!). */
+function scalarToNumber(val: FormulaResult): number | FormulaError {
+  if (isFormulaError(val)) return val;
+  if (typeof val === 'number') return val;
+  if (typeof val === 'boolean') return val ? 1 : 0;
+  if (val === '') return 0;
+  const num = Number(val);
+  return isNaN(num) ? makeError('#VALUE!') : num;
 }
 
 /**
