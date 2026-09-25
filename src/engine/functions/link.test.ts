@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { evaluate } from '../evaluator';
 import { parse } from '../parser';
 import type { FormulaResult, RangeExpander } from '../types';
@@ -17,7 +17,7 @@ const expandRange: RangeExpander = (start: string, end: string): string[] => {
   return keys;
 };
 
-const emptyResolve = (key: string): FormulaResult => key ? '' : '';
+const emptyResolve = (key: string): FormulaResult => (key ? '' : '');
 
 describe('HYPERLINK', () => {
   it('returns the label as display value with 2 args', () => {

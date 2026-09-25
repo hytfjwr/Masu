@@ -7,7 +7,11 @@ import { applyCommands } from '../../sparkline/canvasApplier';
 import { noteCellCommit } from '../../devtools/renderStats';
 
 const VERTICAL_ALIGN_ITEMS = { top: 'flex-start', middle: 'center', bottom: 'flex-end' } as const;
-const HORIZONTAL_ALIGN_JUSTIFY = { left: 'flex-start', center: 'center', right: 'flex-end' } as const;
+const HORIZONTAL_ALIGN_JUSTIFY = {
+  left: 'flex-start',
+  center: 'center',
+  right: 'flex-end',
+} as const;
 
 /** Data-validation-driven display mode for a cell (checkbox toggle / dropdown chip or arrow). */
 export type CellValidationUi =
@@ -144,58 +148,100 @@ export const Cell = memo(function Cell({
   // Merge base style with conditional format style (conditional wins)
   const baseStyle = data?.style;
   const mergedStyle = conditionalStyle
-    ? (baseStyle ? { ...baseStyle, ...conditionalStyle } : conditionalStyle)
+    ? baseStyle
+      ? { ...baseStyle, ...conditionalStyle }
+      : conditionalStyle
     : baseStyle;
 
   const display = useMemo(
     () => getCellDisplay(data, mergedStyle),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data?.rawValue, data?.displayValue, data?.computed, data?.error,
-      mergedStyle?.numberFormat, mergedStyle?.numberFormatPattern, mergedStyle?.textAlign],
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+    [
+      data?.rawValue,
+      data?.displayValue,
+      data?.computed,
+      data?.error,
+      mergedStyle?.numberFormat,
+      mergedStyle?.numberFormatPattern,
+      mergedStyle?.textAlign,
+    ],
   );
 
   // Value-change ripple: bump a counter when the displayed text changes while this component still shows
   // the same cell of the same sheet (virtualized components get reused for other cells / sheets — no flash).
   const [flash, setFlash] = useState({ col, row, scope: flashScope, text: display.text, count: 0 });
-  if (flash.text !== display.text || flash.col !== col || flash.row !== row || flash.scope !== flashScope) {
+  if (
+    flash.text !== display.text ||
+    flash.col !== col ||
+    flash.row !== row ||
+    flash.scope !== flashScope
+  ) {
     // A row that just slid into place after a sort doesn't also flash
-    const sameCell = flash.col === col && flash.row === row && flash.scope === flashScope && !sortMotion;
-    setFlash({ col, row, scope: flashScope, text: display.text, count: sameCell ? flash.count + 1 : flash.count });
+    const sameCell =
+      flash.col === col && flash.row === row && flash.scope === flashScope && !sortMotion;
+    setFlash({
+      col,
+      row,
+      scope: flashScope,
+      text: display.text,
+      count: sameCell ? flash.count + 1 : flash.count,
+    });
   }
 
   const verticalAlign = mergedStyle?.verticalAlign ?? 'bottom';
 
-  const textDecoration = mergedStyle?.underline && mergedStyle?.strikethrough
-    ? 'underline line-through'
-    : mergedStyle?.underline
-      ? 'underline'
-      : mergedStyle?.strikethrough
-        ? 'line-through'
-        : undefined;
+  const textDecoration =
+    mergedStyle?.underline && mergedStyle?.strikethrough
+      ? 'underline line-through'
+      : mergedStyle?.underline
+        ? 'underline'
+        : mergedStyle?.strikethrough
+          ? 'line-through'
+          : undefined;
 
   // Compute cell content styles from CellStyle
-  const cellContentStyle: React.CSSProperties = useMemo(() => ({
-    fontWeight: mergedStyle?.bold ? 'bold' : undefined,
-    fontStyle: mergedStyle?.italic ? 'italic' : undefined,
-    textDecoration,
-    textAlign: display.align,
-    color: display.color ?? mergedStyle?.textColor ?? undefined,
-    fontSize: mergedStyle?.fontSize ? `${mergedStyle.fontSize}pt` : undefined,
-    fontFamily: mergedStyle?.fontFamily ?? undefined,
-  }), [mergedStyle?.bold, mergedStyle?.italic, textDecoration, display.align, display.color, mergedStyle?.textColor, mergedStyle?.fontSize, mergedStyle?.fontFamily]);
+  const cellContentStyle: React.CSSProperties = useMemo(
+    () => ({
+      fontWeight: mergedStyle?.bold ? 'bold' : undefined,
+      fontStyle: mergedStyle?.italic ? 'italic' : undefined,
+      textDecoration,
+      textAlign: display.align,
+      color: display.color ?? mergedStyle?.textColor ?? undefined,
+      fontSize: mergedStyle?.fontSize ? `${mergedStyle.fontSize}pt` : undefined,
+      fontFamily: mergedStyle?.fontFamily ?? undefined,
+    }),
+    [
+      mergedStyle?.bold,
+      mergedStyle?.italic,
+      textDecoration,
+      display.align,
+      display.color,
+      mergedStyle?.textColor,
+      mergedStyle?.fontSize,
+      mergedStyle?.fontFamily,
+    ],
+  );
 
   // Determine background: user-set bg color, active cell, or selected range
   const bgColor = mergedStyle?.backgroundColor;
-  const bgClass = bgColor
-    ? ''
-    : isSelected && !isActive
-      ? 'bg-accent-selection/10'
-      : 'bg-grid-bg';
+  const bgClass = bgColor ? '' : isSelected && !isActive ? 'bg-accent-selection/10' : 'bg-grid-bg';
 
   // Border styles from CellStyle.borders
   const borders = mergedStyle?.borders;
-  const borderStyleMap = { solid: 'solid', dashed: 'dashed', dotted: 'dotted', double: 'double', thick: 'solid' };
-  const borderWidthMap = { solid: '1px', dashed: '1px', dotted: '1px', double: '3px', thick: '2px' };
+  const borderStyleMap = {
+    solid: 'solid',
+    dashed: 'dashed',
+    dotted: 'dotted',
+    double: 'double',
+    thick: 'solid',
+  };
+  const borderWidthMap = {
+    solid: '1px',
+    dashed: '1px',
+    dotted: '1px',
+    double: '3px',
+    thick: '2px',
+  };
 
   // Non-anchor merge cells are hidden
   const isNonAnchorMerge = mergeInfo && mergeInfo.colSpan === 0 && mergeInfo.rowSpan === 0;
@@ -240,25 +286,48 @@ export const Cell = memo(function Cell({
     }
     if (borders?.right) {
       s.borderRightWidth = borderWidthMap[borders.right.style];
-      s.borderRightStyle = borderStyleMap[borders.right.style] as React.CSSProperties['borderRightStyle'];
+      s.borderRightStyle = borderStyleMap[
+        borders.right.style
+      ] as React.CSSProperties['borderRightStyle'];
       s.borderRightColor = borders.right.color;
     }
     if (borders?.bottom) {
       s.borderBottomWidth = borderWidthMap[borders.bottom.style];
-      s.borderBottomStyle = borderStyleMap[borders.bottom.style] as React.CSSProperties['borderBottomStyle'];
+      s.borderBottomStyle = borderStyleMap[
+        borders.bottom.style
+      ] as React.CSSProperties['borderBottomStyle'];
       s.borderBottomColor = borders.bottom.color;
     }
     if (borders?.left) {
       s.borderLeftWidth = borderWidthMap[borders.left.style];
-      s.borderLeftStyle = borderStyleMap[borders.left.style] as React.CSSProperties['borderLeftStyle'];
+      s.borderLeftStyle = borderStyleMap[
+        borders.left.style
+      ] as React.CSSProperties['borderLeftStyle'];
       s.borderLeftColor = borders.left.color;
     }
     return s;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [left, top, width, height, bgColor, isActive, activeOutline, isSelected, isNonAnchorMerge, isOverflowing,
-    borders?.top?.style, borders?.top?.color, borders?.right?.style, borders?.right?.color,
-    borders?.bottom?.style, borders?.bottom?.color, borders?.left?.style, borders?.left?.color,
-    data?.spillSource]);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    left,
+    top,
+    width,
+    height,
+    bgColor,
+    isActive,
+    activeOutline,
+    isSelected,
+    isNonAnchorMerge,
+    isOverflowing,
+    borders?.top?.style,
+    borders?.top?.color,
+    borders?.right?.style,
+    borders?.right?.color,
+    borders?.bottom?.style,
+    borders?.bottom?.color,
+    borders?.left?.style,
+    borders?.left?.color,
+    data?.spillSource,
+  ]);
 
   const wrapText = mergedStyle?.wrapText ?? false;
 
@@ -311,7 +380,9 @@ export const Cell = memo(function Cell({
     borders?.right ? '' : 'border-r',
     borders?.bottom ? '' : 'border-b',
     'border-grid-line',
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div
@@ -322,19 +393,25 @@ export const Cell = memo(function Cell({
       data-col={col}
       data-row={row}
       className={`absolute ${borderClasses} overflow-hidden ${bgClass}`}
-      style={sortMotion ? {
-        ...positionStyle,
-        zIndex: 3,
-        ['--sort-dy' as string]: `${sortMotion.dy}px`,
-        // Alternate between two identical keyframes so a second sort restarts the animation
-        animation: `${sortMotion.phase % 2 ? 'cell-sort-a' : 'cell-sort-b'} 640ms cubic-bezier(0.32, 0.72, 0, 1) ${sortMotion.delay}ms both`,
-      } : positionStyle}
+      style={
+        sortMotion
+          ? {
+              ...positionStyle,
+              zIndex: 3,
+              ['--sort-dy' as string]: `${sortMotion.dy}px`,
+              // Alternate between two identical keyframes so a second sort restarts the animation
+              animation: `${sortMotion.phase % 2 ? 'cell-sort-a' : 'cell-sort-b'} 640ms cubic-bezier(0.32, 0.72, 0, 1) ${sortMotion.delay}ms both`,
+            }
+          : positionStyle
+      }
       onMouseDown={handleMouseDown}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={onMouseLeave}
-      title={invalidMessage ?? (data?.parseError ? `数式エラー: ${data.parseError.message}` : undefined)}
+      title={
+        invalidMessage ?? (data?.parseError ? `数式エラー: ${data.parseError.message}` : undefined)
+      }
       {...(isActive && activeOutline ? { 'data-active-cell-indicator': true } : {})}
     >
       {flash.count > 0 && !isEditing && (
@@ -347,39 +424,67 @@ export const Cell = memo(function Cell({
       )}
       {/* Invalid-input indicator takes priority over the comment triangle when both apply */}
       {invalidMessage && !isEditing ? (
-        <div className="absolute top-0 right-0 w-0 h-0 z-10"
+        <div
+          className="absolute top-0 right-0 w-0 h-0 z-10"
           style={{
             borderLeft: '5px solid transparent',
             borderTop: '5px solid #d93025',
           }}
         />
-      ) : hasComment && !isEditing && (
-        <div className="absolute top-0 right-0 w-0 h-0"
-          style={{
-            borderLeft: '5px solid transparent',
-            borderTop: '5px solid #EF4444',
-          }}
-        />
+      ) : (
+        hasComment &&
+        !isEditing && (
+          <div
+            className="absolute top-0 right-0 w-0 h-0"
+            style={{
+              borderLeft: '5px solid transparent',
+              borderTop: '5px solid #EF4444',
+            }}
+          />
+        )
       )}
       {isEditing ? null : validationUi?.kind === 'checkbox' ? (
-        <div className="w-full h-full flex items-center justify-center cursor-pointer" onClick={handleCheckboxClick}>
+        <div
+          className="w-full h-full flex items-center justify-center cursor-pointer"
+          onClick={handleCheckboxClick}
+        >
           <svg width="16" height="16" viewBox="0 0 16 16">
             {validationUi.checked ? (
               <>
-                <rect x="1" y="1" width="14" height="14" rx="2" fill="var(--color-accent-selection)" />
-                <path d="M4 8.3l2.7 2.7 5-6" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                <rect
+                  x="1"
+                  y="1"
+                  width="14"
+                  height="14"
+                  rx="2"
+                  fill="var(--color-accent-selection)"
+                />
+                <path
+                  d="M4 8.3l2.7 2.7 5-6"
+                  stroke="white"
+                  strokeWidth="2"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </>
             ) : (
-              <rect x="1.5" y="1.5" width="13" height="13" rx="2" fill="none" stroke="currentColor" strokeOpacity="0.5" strokeWidth="1.5" />
+              <rect
+                x="1.5"
+                y="1.5"
+                width="13"
+                height="13"
+                rx="2"
+                fill="none"
+                stroke="currentColor"
+                strokeOpacity="0.5"
+                strokeWidth="1.5"
+              />
             )}
           </svg>
         </div>
       ) : sparklineConfig && sparklineValues ? (
-        <canvas
-          ref={canvasRef}
-          className="w-full h-full"
-          style={{ width, height }}
-        />
+        <canvas ref={canvasRef} className="w-full h-full" style={{ width, height }} />
       ) : (
         <div
           className={`w-full px-1 select-none text-[13px] ${wrapText ? 'overflow-hidden' : 'h-full'} ${hasError ? 'text-error' : ''} ${data?.hyperlink ? 'text-accent-link underline cursor-pointer' : ''}`}
@@ -403,7 +508,9 @@ export const Cell = memo(function Cell({
                   paddingBottom: '2px',
                 }),
             ...cellContentStyle,
-            ...(data?.hyperlink ? { color: 'var(--color-accent-link)', textDecoration: 'underline' } : {}),
+            ...(data?.hyperlink
+              ? { color: 'var(--color-accent-link)', textDecoration: 'underline' }
+              : {}),
           }}
         >
           {wrapText ? (
@@ -415,22 +522,49 @@ export const Cell = memo(function Cell({
                   className="inline-flex items-center gap-1 max-w-full rounded-full px-2 bg-grid-line/60 text-[12px] cursor-pointer"
                   onClick={handleDropdownChipClick}
                 >
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">{display.text}</span>
-                  <span className="shrink-0 text-[9px] text-text-primary/60" onClick={handleDropdownArrowClick}>▾</span>
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                    {display.text}
+                  </span>
+                  <span
+                    className="shrink-0 text-[9px] text-text-primary/60"
+                    onClick={handleDropdownArrowClick}
+                  >
+                    ▾
+                  </span>
                 </span>
               ) : (
-                <span className="text-[9px] text-text-primary/60 cursor-pointer px-1" onClick={handleDropdownArrowClick}>▾</span>
+                <span
+                  className="text-[9px] text-text-primary/60 cursor-pointer px-1"
+                  onClick={handleDropdownArrowClick}
+                >
+                  ▾
+                </span>
               )
             ) : (
               <>
-                <span className="overflow-hidden text-ellipsis whitespace-nowrap flex-1">{display.text}</span>
-                <span className="shrink-0 text-[9px] text-text-primary/60 cursor-pointer pr-0.5" onClick={handleDropdownArrowClick}>▾</span>
+                <span className="overflow-hidden text-ellipsis whitespace-nowrap flex-1">
+                  {display.text}
+                </span>
+                <span
+                  className="shrink-0 text-[9px] text-text-primary/60 cursor-pointer pr-0.5"
+                  onClick={handleDropdownArrowClick}
+                >
+                  ▾
+                </span>
               </>
             )
           ) : (
             <span
-              className={isOverflowing ? 'whitespace-nowrap' : 'overflow-hidden text-ellipsis whitespace-nowrap'}
-              style={isOverflowing ? { maxWidth: overflowWidth, overflow: 'hidden', flexShrink: 0 } : undefined}
+              className={
+                isOverflowing
+                  ? 'whitespace-nowrap'
+                  : 'overflow-hidden text-ellipsis whitespace-nowrap'
+              }
+              style={
+                isOverflowing
+                  ? { maxWidth: overflowWidth, overflow: 'hidden', flexShrink: 0 }
+                  : undefined
+              }
             >
               {display.text}
             </span>

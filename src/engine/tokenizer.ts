@@ -20,7 +20,9 @@ const COL_OPEN_RANGE_RE = /^([A-Za-z]{1,3})(\d+)?:([A-Za-z]{1,3})(?![A-Za-z0-9_(
 /** Row-full range: `1:3`. */
 const ROW_OPEN_RANGE_RE = /^(\d+):(\d+)(?![\d.A-Za-z])/;
 
-function matchColOpenRange(rest: string): { normalized: string; length: number; hasStartRow: boolean } | null {
+function matchColOpenRange(
+  rest: string,
+): { normalized: string; length: number; hasStartRow: boolean } | null {
   const m = COL_OPEN_RANGE_RE.exec(rest);
   if (!m) return null;
   const [full, colStart, rowStart, colEnd] = m;
@@ -114,7 +116,9 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
     const upperRef = cellRef.toUpperCase();
     if (!isCellRef(upperRef)) {
       throw new FormulaSyntaxError(
-        cellRef ? `シート名の後のセル参照が正しくありません: ${cellRef}` : 'シート名の後にセル参照が必要です',
+        cellRef
+          ? `シート名の後のセル参照が正しくありません: ${cellRef}`
+          : 'シート名の後にセル参照が必要です',
         refStart,
         Math.max(pos, refStart + 1),
       );
@@ -168,7 +172,11 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
         pos++;
       }
       if (!closed) {
-        throw new FormulaSyntaxError("シート名が閉じられていません（' が必要です）", start, formula.length);
+        throw new FormulaSyntaxError(
+          "シート名が閉じられていません（' が必要です）",
+          start,
+          formula.length,
+        );
       }
       pos++; // skip closing quote
 
@@ -200,7 +208,11 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
         pos++;
       }
       if (!closed) {
-        throw new FormulaSyntaxError('文字列が閉じられていません（" が必要です）', start, formula.length);
+        throw new FormulaSyntaxError(
+          '文字列が閉じられていません（" が必要です）',
+          start,
+          formula.length,
+        );
       }
       pos++; // skip closing quote
       emit(TokenType.String, str, start);
@@ -210,15 +222,20 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
     // Error literal: #N/A, #DIV/0!, etc.
     if (ch === '#') {
       const rest = formula.slice(pos);
-      const found = ERROR_CODES.find(code => rest.slice(0, code.length).toUpperCase() === code);
+      const found = ERROR_CODES.find((code) => rest.slice(0, code.length).toUpperCase() === code);
       if (found) {
         pos += found.length;
         emit(TokenType.ErrorLiteral, found, start);
         continue;
       }
       let unknownEnd = pos + 1;
-      while (unknownEnd < formula.length && /[A-Za-z0-9/!?]/.test(formula[unknownEnd])) unknownEnd++;
-      throw new FormulaSyntaxError(`不明なエラー値です: ${formula.slice(pos, unknownEnd)}`, start, unknownEnd);
+      while (unknownEnd < formula.length && /[A-Za-z0-9/!?]/.test(formula[unknownEnd]))
+        unknownEnd++;
+      throw new FormulaSyntaxError(
+        `不明なエラー値です: ${formula.slice(pos, unknownEnd)}`,
+        start,
+        unknownEnd,
+      );
     }
 
     // Row-full range (1:3) — must be checked before number literals
@@ -291,7 +308,11 @@ export function tokenizeWithSpans(formula: string): { tokens: Token[]; spans: To
       const colOpen = matchColOpenRange(formula.slice(pos));
       if (colOpen) {
         pos += colOpen.length;
-        emit(colOpen.hasStartRow ? TokenType.OpenRangeRef : TokenType.ColRangeRef, colOpen.normalized, start);
+        emit(
+          colOpen.hasStartRow ? TokenType.OpenRangeRef : TokenType.ColRangeRef,
+          colOpen.normalized,
+          start,
+        );
         continue;
       }
 

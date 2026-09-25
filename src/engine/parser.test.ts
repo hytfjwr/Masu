@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { parse } from './parser';
 
 describe('parser - sheet references', () => {
@@ -11,7 +11,7 @@ describe('parser - sheet references', () => {
     });
   });
 
-  it('parses quoted sheet cell reference (\'My Sheet\'!A1)', () => {
+  it("parses quoted sheet cell reference ('My Sheet'!A1)", () => {
     const ast = parse("'My Sheet'!A1");
     expect(ast).toEqual({
       kind: 'SheetCellRef',

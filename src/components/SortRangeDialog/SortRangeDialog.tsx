@@ -39,7 +39,13 @@ function parseRangeText(text: string): ParsedRange | null {
 // Note: relies on being conditionally mounted at the call site (e.g. `{visible && <SortRangeDialog .../>}`)
 // so that opening the dialog again always starts from a fresh default (a new mount), rather than
 // resetting existing state from a `visible` prop change inside an effect.
-export const SortRangeDialog = memo(function SortRangeDialog({ visible, onClose, defaultRangeText, getCellText, onConfirm }: SortRangeDialogProps) {
+export const SortRangeDialog = memo(function SortRangeDialog({
+  visible,
+  onClose,
+  defaultRangeText,
+  getCellText,
+  onConfirm,
+}: SortRangeDialogProps) {
   const [rangeText, setRangeText] = useState(defaultRangeText);
   const [hasHeader, setHasHeader] = useState(true);
   const [keys, setKeys] = useState<SortKey[]>(() => {
@@ -62,22 +68,22 @@ export const SortRangeDialog = memo(function SortRangeDialog({ visible, onClose,
   }, [parsedRange, hasHeader, getCellText]);
 
   const handleAddKey = useCallback(() => {
-    const usedCols = new Set(keys.map(k => k.col));
-    const next = columnOptions.find(o => !usedCols.has(o.col)) ?? columnOptions[0];
+    const usedCols = new Set(keys.map((k) => k.col));
+    const next = columnOptions.find((o) => !usedCols.has(o.col)) ?? columnOptions[0];
     if (!next) return;
-    setKeys(prev => [...prev, { col: next.col, ascending: true }]);
+    setKeys((prev) => [...prev, { col: next.col, ascending: true }]);
   }, [keys, columnOptions]);
 
   const handleRemoveKey = useCallback((idx: number) => {
-    setKeys(prev => prev.filter((_, i) => i !== idx));
+    setKeys((prev) => prev.filter((_, i) => i !== idx));
   }, []);
 
   const handleKeyColChange = useCallback((idx: number, col: number) => {
-    setKeys(prev => prev.map((k, i) => (i === idx ? { ...k, col } : k)));
+    setKeys((prev) => prev.map((k, i) => (i === idx ? { ...k, col } : k)));
   }, []);
 
   const handleKeyDirectionChange = useCallback((idx: number, ascending: boolean) => {
-    setKeys(prev => prev.map((k, i) => (i === idx ? { ...k, ascending } : k)));
+    setKeys((prev) => prev.map((k, i) => (i === idx ? { ...k, ascending } : k)));
   }, []);
 
   const handleConfirm = useCallback(() => {
@@ -95,9 +101,12 @@ export const SortRangeDialog = memo(function SortRangeDialog({ visible, onClose,
     onClose();
   }, [rangeText, hasHeader, keys, onConfirm, onClose]);
 
-  const handleBackdropMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) onClose();
-  }, [onClose]);
+  const handleBackdropMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget) onClose();
+    },
+    [onClose],
+  );
 
   if (!visible) return null;
 
@@ -106,10 +115,18 @@ export const SortRangeDialog = memo(function SortRangeDialog({ visible, onClose,
       className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-backdrop-in"
       onMouseDown={handleBackdropMouseDown}
     >
-      <div className="glass-panel rounded-2xl w-[420px] flex flex-col animate-dialog-spring" data-testid="sort-range-dialog">
+      <div
+        className="glass-panel rounded-2xl w-[420px] flex flex-col animate-dialog-spring"
+        data-testid="sort-range-dialog"
+      >
         <div className="flex items-center justify-between px-4 py-3 border-b border-grid-line">
           <h2 className="text-sm font-semibold text-text-primary">範囲を並べ替え</h2>
-          <button onClick={onClose} className="text-text-primary hover:text-error text-lg leading-none">&times;</button>
+          <button
+            onClick={onClose}
+            className="text-text-primary hover:text-error text-lg leading-none"
+          >
+            &times;
+          </button>
         </div>
 
         <div className="p-4 space-y-3">
@@ -148,8 +165,10 @@ export const SortRangeDialog = memo(function SortRangeDialog({ visible, onClose,
                   className="flex-1 h-7 px-1.5 text-xs bg-ui-bg text-text-primary border border-grid-line rounded"
                   data-testid={`sort-key-col-${idx}`}
                 >
-                  {columnOptions.map(o => (
-                    <option key={o.col} value={o.col}>{o.label}</option>
+                  {columnOptions.map((o) => (
+                    <option key={o.col} value={o.col}>
+                      {o.label}
+                    </option>
                   ))}
                 </select>
                 <select
@@ -187,7 +206,10 @@ export const SortRangeDialog = memo(function SortRangeDialog({ visible, onClose,
         </div>
 
         <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-grid-line">
-          <button onClick={onClose} className="px-3 py-1 text-xs bg-ui-bg border border-grid-line rounded hover:bg-header-bg">
+          <button
+            onClick={onClose}
+            className="px-3 py-1 text-xs bg-ui-bg border border-grid-line rounded hover:bg-header-bg"
+          >
             キャンセル
           </button>
           <button

@@ -11,12 +11,15 @@ interface SidePanelProps {
  * Placed as a flex sibling of the grid area (not an overlay), so the grid shrinks to fit.
  */
 export const SidePanel = memo(function SidePanel({ title, onClose, children }: SidePanelProps) {
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.stopPropagation();
-      onClose();
-    }
-  }, [onClose]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    },
+    [onClose],
+  );
 
   return (
     <div
@@ -35,9 +38,7 @@ export const SidePanel = memo(function SidePanel({ title, onClose, children }: S
           &times;
         </button>
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto p-3">
-        {children}
-      </div>
+      <div className="flex-1 min-h-0 overflow-y-auto p-3">{children}</div>
     </div>
   );
 });

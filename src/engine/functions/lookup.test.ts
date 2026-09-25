@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { evaluate } from '../evaluator';
 import { parse } from '../parser';
 import type {
@@ -28,12 +28,29 @@ const expandRange: RangeExpander = (start: string, end: string): string[] => {
 function evalFormula(
   formula: string,
   cellValues: Record<string, FormulaResult>,
-  extra?: { resolveSheetName?: SheetNameResolver; resolveNamedRange?: NamedRangeResolver; options?: EvaluateOptions },
+  extra?: {
+    resolveSheetName?: SheetNameResolver;
+    resolveNamedRange?: NamedRangeResolver;
+    options?: EvaluateOptions;
+  },
 ): FormulaResult {
   const resolve = (key: string): FormulaResult => cellValues[key] ?? '';
   const ast = parse(formula);
-  const result = evaluate(ast, resolve, expandRange, extra?.resolveSheetName, extra?.resolveNamedRange, undefined, extra?.options);
-  if (typeof result === 'object' && result !== null && 'type' in result && result.type === 'spill') {
+  const result = evaluate(
+    ast,
+    resolve,
+    expandRange,
+    extra?.resolveSheetName,
+    extra?.resolveNamedRange,
+    undefined,
+    extra?.options,
+  );
+  if (
+    typeof result === 'object' &&
+    result !== null &&
+    'type' in result &&
+    result.type === 'spill'
+  ) {
     return { type: 'error', code: '#VALUE!' };
   }
   return result as FormulaResult;
@@ -42,21 +59,45 @@ function evalFormula(
 function evalToSpill(
   formula: string,
   cellValues: Record<string, FormulaResult>,
-  extra?: { resolveSheetName?: SheetNameResolver; resolveNamedRange?: NamedRangeResolver; options?: EvaluateOptions },
+  extra?: {
+    resolveSheetName?: SheetNameResolver;
+    resolveNamedRange?: NamedRangeResolver;
+    options?: EvaluateOptions;
+  },
 ): FormulaResult | SpillResult {
   const resolve = (key: string): FormulaResult => cellValues[key] ?? '';
   const ast = parse(formula);
-  return evaluate(ast, resolve, expandRange, extra?.resolveSheetName, extra?.resolveNamedRange, undefined, extra?.options);
+  return evaluate(
+    ast,
+    resolve,
+    expandRange,
+    extra?.resolveSheetName,
+    extra?.resolveNamedRange,
+    undefined,
+    extra?.options,
+  );
 }
 
 describe('SUMIFS', () => {
   const vals: Record<string, FormulaResult> = {
     // Sum range
-    A1: 100, A2: 200, A3: 300, A4: 400, A5: 150,
+    A1: 100,
+    A2: 200,
+    A3: 300,
+    A4: 400,
+    A5: 150,
     // Criteria range 1 (region)
-    B1: '東京', B2: '大阪', B3: '東京', B4: '大阪', B5: '東京',
+    B1: '東京',
+    B2: '大阪',
+    B3: '東京',
+    B4: '大阪',
+    B5: '東京',
     // Criteria range 2 (amount)
-    C1: 100, C2: 200, C3: 300, C4: 400, C5: 150,
+    C1: 100,
+    C2: 200,
+    C3: 300,
+    C4: 400,
+    C5: 150,
   };
 
   it('single criteria', () => {
@@ -70,8 +111,8 @@ describe('SUMIFS', () => {
   });
 
   it('supports comparison operators', () => {
-    expect(evalFormula('SUMIFS(A1:A5,C1:C5,">=200")', vals)).toBe(200+300+400); // 900
-    expect(evalFormula('SUMIFS(A1:A5,C1:C5,"<200")', vals)).toBe(100+150); // 250
+    expect(evalFormula('SUMIFS(A1:A5,C1:C5,">=200")', vals)).toBe(200 + 300 + 400); // 900
+    expect(evalFormula('SUMIFS(A1:A5,C1:C5,"<200")', vals)).toBe(100 + 150); // 250
   });
 
   it('returns #VALUE! with invalid arg count', () => {
@@ -82,8 +123,16 @@ describe('SUMIFS', () => {
 
 describe('COUNTIFS', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: '東京', A2: '大阪', A3: '東京', A4: '大阪', A5: '東京',
-    B1: 100, B2: 200, B3: 300, B4: 400, B5: 150,
+    A1: '東京',
+    A2: '大阪',
+    A3: '東京',
+    A4: '大阪',
+    A5: '東京',
+    B1: 100,
+    B2: 200,
+    B3: 300,
+    B4: 400,
+    B5: 150,
   };
 
   it('single criteria', () => {
@@ -102,8 +151,16 @@ describe('COUNTIFS', () => {
 
 describe('AVERAGEIFS', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: 100, A2: 200, A3: 300, A4: 400, A5: 150,
-    B1: '東京', B2: '大阪', B3: '東京', B4: '大阪', B5: '東京',
+    A1: 100,
+    A2: 200,
+    A3: 300,
+    A4: 400,
+    A5: 150,
+    B1: '東京',
+    B2: '大阪',
+    B3: '東京',
+    B4: '大阪',
+    B5: '東京',
   };
 
   it('calculates conditional average', () => {
@@ -114,14 +171,21 @@ describe('AVERAGEIFS', () => {
   });
 
   it('returns #DIV/0! when no matches', () => {
-    expect(evalFormula('AVERAGEIFS(A1:A5,B1:B5,"福岡")', vals)).toEqual({ type: 'error', code: '#DIV/0!' });
+    expect(evalFormula('AVERAGEIFS(A1:A5,B1:B5,"福岡")', vals)).toEqual({
+      type: 'error',
+      code: '#DIV/0!',
+    });
   });
 });
 
 describe('XLOOKUP', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: 'Apple', A2: 'Banana', A3: 'Cherry',
-    B1: 100, B2: 200, B3: 300,
+    A1: 'Apple',
+    A2: 'Banana',
+    A3: 'Cherry',
+    B1: 100,
+    B2: 200,
+    B3: 300,
   };
 
   it('exact match', () => {
@@ -133,13 +197,22 @@ describe('XLOOKUP', () => {
   });
 
   it('returns #N/A when not found and no default', () => {
-    expect(evalFormula('XLOOKUP("Durian",A1:A3,B1:B3)', vals)).toEqual({ type: 'error', code: '#N/A' });
+    expect(evalFormula('XLOOKUP("Durian",A1:A3,B1:B3)', vals)).toEqual({
+      type: 'error',
+      code: '#N/A',
+    });
   });
 
   it('reverse search mode (-1)', () => {
     const vals2: Record<string, FormulaResult> = {
-      A1: 'A', A2: 'B', A3: 'B', A4: 'C',
-      B1: 1, B2: 2, B3: 3, B4: 4,
+      A1: 'A',
+      A2: 'B',
+      A3: 'B',
+      A4: 'C',
+      B1: 1,
+      B2: 2,
+      B3: 3,
+      B4: 4,
     };
     // search_mode = -1 → search from last to first, find last 'B'
     expect(evalFormula('XLOOKUP("B",A1:A4,B1:B4,"NF",0,-1)', vals2)).toBe(3);
@@ -147,8 +220,14 @@ describe('XLOOKUP', () => {
 
   it('approximate match (-1 = next smaller)', () => {
     const vals2: Record<string, FormulaResult> = {
-      A1: 10, A2: 20, A3: 30, A4: 40,
-      B1: 'ten', B2: 'twenty', B3: 'thirty', B4: 'forty',
+      A1: 10,
+      A2: 20,
+      A3: 30,
+      A4: 40,
+      B1: 'ten',
+      B2: 'twenty',
+      B3: 'thirty',
+      B4: 'forty',
     };
     // match_mode = -1, search for 25 → next smaller is 20 → "twenty"
     expect(evalFormula('XLOOKUP(25,A1:A4,B1:B4,"NF",-1)', vals2)).toBe('twenty');
@@ -157,7 +236,9 @@ describe('XLOOKUP', () => {
 
 describe('XMATCH', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: 'Apple', A2: 'Banana', A3: 'Cherry',
+    A1: 'Apple',
+    A2: 'Banana',
+    A3: 'Cherry',
   };
 
   it('exact match returns 1-based position', () => {
@@ -170,7 +251,10 @@ describe('XMATCH', () => {
 
   it('approximate match (-1 = next smaller)', () => {
     const vals2: Record<string, FormulaResult> = {
-      A1: 10, A2: 20, A3: 30, A4: 40,
+      A1: 10,
+      A2: 20,
+      A3: 30,
+      A4: 40,
     };
     // match_mode = -1, search for 25 → next smaller is 20 at position 2
     expect(evalFormula('XMATCH(25,A1:A4,-1)', vals2)).toBe(2);
@@ -179,8 +263,12 @@ describe('XMATCH', () => {
 
 describe('HLOOKUP', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: 'Apple', B1: 'Banana', C1: 'Cherry',
-    A2: 100, B2: 200, C2: 300,
+    A1: 'Apple',
+    B1: 'Banana',
+    C1: 'Cherry',
+    A2: 100,
+    B2: 200,
+    C2: 300,
   };
 
   it('exact match finds the value in the given row', () => {
@@ -188,52 +276,77 @@ describe('HLOOKUP', () => {
   });
 
   it('returns #N/A when exact match not found', () => {
-    expect(evalFormula('HLOOKUP("Durian",A1:C2,2,FALSE)', vals)).toEqual({ type: 'error', code: '#N/A' });
+    expect(evalFormula('HLOOKUP("Durian",A1:C2,2,FALSE)', vals)).toEqual({
+      type: 'error',
+      code: '#N/A',
+    });
   });
 
   it('approximate match finds the largest value <= lookup_value', () => {
     const vals2: Record<string, FormulaResult> = {
-      A1: 10, B1: 20, C1: 30,
-      A2: 'ten', B2: 'twenty', C2: 'thirty',
+      A1: 10,
+      B1: 20,
+      C1: 30,
+      A2: 'ten',
+      B2: 'twenty',
+      C2: 'thirty',
     };
     expect(evalFormula('HLOOKUP(25,A1:C2,2)', vals2)).toBe('twenty');
   });
 
   it('returns #REF! when row_index_num is out of range', () => {
-    expect(evalFormula('HLOOKUP("Banana",A1:C2,5,FALSE)', vals)).toEqual({ type: 'error', code: '#REF!' });
+    expect(evalFormula('HLOOKUP("Banana",A1:C2,5,FALSE)', vals)).toEqual({
+      type: 'error',
+      code: '#REF!',
+    });
   });
 });
 
 describe('LOOKUP', () => {
   it('vector form: finds the last value <= lookup_value', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 10, A2: 20, A3: 30,
-      B1: 'ten', B2: 'twenty', B3: 'thirty',
+      A1: 10,
+      A2: 20,
+      A3: 30,
+      B1: 'ten',
+      B2: 'twenty',
+      B3: 'thirty',
     };
     expect(evalFormula('LOOKUP(25,A1:A3,B1:B3)', vals)).toBe('twenty');
   });
 
   it('returns #N/A when lookup_value is smaller than every entry', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 10, A2: 20, A3: 30,
-      B1: 'ten', B2: 'twenty', B3: 'thirty',
+      A1: 10,
+      A2: 20,
+      A3: 30,
+      B1: 'ten',
+      B2: 'twenty',
+      B3: 'thirty',
     };
     expect(evalFormula('LOOKUP(5,A1:A3,B1:B3)', vals)).toEqual({ type: 'error', code: '#N/A' });
   });
 
   it('array form (taller than wide): searches first column, returns last column', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 1, B1: 'one',
-      A2: 2, B2: 'two',
-      A3: 3, B3: 'three',
+      A1: 1,
+      B1: 'one',
+      A2: 2,
+      B2: 'two',
+      A3: 3,
+      B3: 'three',
     };
     expect(evalFormula('LOOKUP(2,A1:B3)', vals)).toBe('two');
   });
 
   it('array form (wider than tall): searches first row, returns last row', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 1, B1: 2, C1: 3,
-      A2: 'one', B2: 'two', C2: 'three',
+      A1: 1,
+      B1: 2,
+      C1: 3,
+      A2: 'one',
+      B2: 'two',
+      C2: 'three',
     };
     expect(evalFormula('LOOKUP(2,A1:C2)', vals)).toBe('two');
   });
@@ -323,11 +436,15 @@ describe('INDIRECT', () => {
   it('resolves a range reference text as a spill', () => {
     const result = evalToSpill('INDIRECT("A1:B2")', { A1: 1, B1: 2, A2: 3, B2: 4 });
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[1, 2], [3, 4]]);
+    expect((result as SpillResult).values).toEqual([
+      [1, 2],
+      [3, 4],
+    ]);
   });
 
   it('resolves a sheet-qualified reference via resolveSheetName', () => {
-    const resolveSheetName: SheetNameResolver = (name) => (name === 'Sheet2' ? 'sheet2Id' : undefined);
+    const resolveSheetName: SheetNameResolver = (name) =>
+      name === 'Sheet2' ? 'sheet2Id' : undefined;
     const resolve = (key: string): FormulaResult => (key === 'sheet2Id:A1' ? 'hello' : '');
     const ast = parse('INDIRECT("Sheet2!A1")');
     expect(evaluate(ast, resolve, expandRange, resolveSheetName)).toBe('hello');
@@ -350,7 +467,10 @@ describe('OFFSET', () => {
   it('expands to a range when height/width are given', () => {
     const result = evalToSpill('OFFSET(A1:A1,0,0,2,2)', { A1: 1, B1: 2, A2: 3, B2: 4 });
     expect(isSpillResult(result)).toBe(true);
-    expect((result as SpillResult).values).toEqual([[1, 2], [3, 4]]);
+    expect((result as SpillResult).values).toEqual([
+      [1, 2],
+      [3, 4],
+    ]);
   });
 
   it('returns #VALUE! when reference is not a range', () => {

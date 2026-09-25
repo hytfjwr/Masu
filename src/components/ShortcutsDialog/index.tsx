@@ -88,11 +88,14 @@ export const ShortcutsDialog = memo(function ShortcutsDialog({
   visible,
   onClose,
 }: ShortcutsDialogProps) {
-  const handleBackdropMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  }, [onClose]);
+  const handleBackdropMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    },
+    [onClose],
+  );
 
   // useEffect required: global keydown listener to close the dialog on Escape
   useEffect(() => {
@@ -131,7 +134,10 @@ export const ShortcutsDialog = memo(function ShortcutsDialog({
                 <div className="text-xs font-semibold text-text-primary">{category.title}</div>
                 <div className="space-y-1">
                   {category.items.map((item) => (
-                    <div key={item.label} className="flex items-center justify-between gap-2 text-xs">
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-between gap-2 text-xs"
+                    >
                       <span className="text-text-primary/80">{item.label}</span>
                       <kbd className="px-1.5 py-0.5 rounded border border-grid-line bg-header-bg text-[11px] font-mono whitespace-nowrap">
                         {item.keys}

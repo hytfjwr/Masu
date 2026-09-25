@@ -25,7 +25,10 @@ export interface DevToolsHost {
   selectRange: (range: CellRange) => void;
   /** Switch to `sheetId` if needed and select the cell. */
   goToCell: (sheetId: string, col: number, row: number) => void;
-  getDependencyInfo: (sheetId: string, key: string) => {
+  getDependencyInfo: (
+    sheetId: string,
+    key: string,
+  ) => {
     precedents: string[];
     rangePrecedents: GlobalRangeDep[];
     dependents: string[];

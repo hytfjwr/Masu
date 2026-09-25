@@ -28,21 +28,31 @@ function readDom(): DomInfo {
     if (c < minC) minC = c;
     if (c > maxC) maxC = c;
   }
-  return { cells: cells.length, rows: maxR >= 0 ? [minR, maxR] : null, cols: maxC >= 0 ? [minC, maxC] : null };
+  return {
+    cells: cells.length,
+    rows: maxR >= 0 ? [minR, maxR] : null,
+    cols: maxC >= 0 ? [minC, maxC] : null,
+  };
 }
 
 /** Tiny area chart of the last HISTORY samples. */
 function Spark({ values, max, className }: { values: number[]; max: number; className: string }) {
   const w = 240;
   const h = 44;
-  const pts = values.map((v, i) => `${(i / (HISTORY - 1)) * w},${h - (Math.min(v, max) / max) * (h - 4) - 2}`);
+  const pts = values.map(
+    (v, i) => `${(i / (HISTORY - 1)) * w},${h - (Math.min(v, max) / max) * (h - 4) - 2}`,
+  );
   const offset = HISTORY - values.length;
   const shifted = pts.map((p, i) => {
     const [, y] = p.split(',');
     return `${((i + offset) / (HISTORY - 1)) * w},${y}`;
   });
   return (
-    <svg className={`render-spark ${className}`} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+    <svg
+      className={`render-spark ${className}`}
+      viewBox={`0 0 ${w} ${h}`}
+      preserveAspectRatio="none"
+    >
       {shifted.length > 1 && (
         <>
           <polygon points={`${shifted[0].split(',')[0]},${h} ${shifted.join(' ')} ${w},${h}`} />
@@ -61,7 +71,10 @@ function Spark({ values, max, className }: { values: number[]; max: number; clas
 export const RenderTool = memo(function RenderTool() {
   const [samples, setSamples] = useState<Sample[]>([]);
   const [dom, setDom] = useState<DomInfo>({ cells: 0, rows: null, cols: null });
-  const [longTasks, setLongTasks] = useState<{ count: number; last: number | null }>({ count: 0, last: null });
+  const [longTasks, setLongTasks] = useState<{ count: number; last: number | null }>({
+    count: 0,
+    last: null,
+  });
   const [flash, setFlash] = useState(renderStats.flash);
 
   // useEffect required: rAF frame counter + 1 s sampling timer (FPS, commits/s, mounted cells)
@@ -87,10 +100,17 @@ export const RenderTool = memo(function RenderTool() {
 
   // useEffect required: PerformanceObserver for long tasks (Chromium only; silently absent elsewhere)
   useEffect(() => {
-    if (typeof PerformanceObserver === 'undefined' || !PerformanceObserver.supportedEntryTypes?.includes('longtask')) return;
+    if (
+      typeof PerformanceObserver === 'undefined' ||
+      !PerformanceObserver.supportedEntryTypes?.includes('longtask')
+    )
+      return;
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
-      setLongTasks((prev) => ({ count: prev.count + entries.length, last: entries[entries.length - 1]?.duration ?? prev.last }));
+      setLongTasks((prev) => ({
+        count: prev.count + entries.length,
+        last: entries[entries.length - 1]?.duration ?? prev.last,
+      }));
     });
     observer.observe({ type: 'longtask' });
     return () => observer.disconnect();
@@ -100,9 +120,12 @@ export const RenderTool = memo(function RenderTool() {
   useEffect(() => {
     renderStats.flash = flash;
   }, [flash]);
-  useEffect(() => () => {
-    renderStats.flash = false;
-  }, []);
+  useEffect(
+    () => () => {
+      renderStats.flash = false;
+    },
+    [],
+  );
 
   const latest = samples[samples.length - 1];
   const fpsValues = samples.map((s) => s.fps);
@@ -123,7 +146,9 @@ export const RenderTool = memo(function RenderTool() {
         <div className="render-panel">
           <div className="render-panel-head">
             <span>FPS</span>
-            <strong data-warn={(latest && latest.fps < 45) || undefined}>{latest?.fps ?? '—'}</strong>
+            <strong data-warn={(latest && latest.fps < 45) || undefined}>
+              {latest?.fps ?? '—'}
+            </strong>
           </div>
           <Spark values={fpsValues} max={Math.max(60, ...fpsValues)} className="render-spark-fps" />
         </div>
@@ -135,7 +160,10 @@ export const RenderTool = memo(function RenderTool() {
           <Spark values={commitValues} max={maxCommits} className="render-spark-commits" />
         </div>
         <div className="profiler-cards">
-          <div className="devtools-card"><span>マウント中のセル</span><strong>{dom.cells.toLocaleString()}</strong></div>
+          <div className="devtools-card">
+            <span>マウント中のセル</span>
+            <strong>{dom.cells.toLocaleString()}</strong>
+          </div>
           <div className="devtools-card">
             <span>描画中の行</span>
             <strong>{dom.rows ? `${dom.rows[0] + 1}–${dom.rows[1] + 1}` : '—'}</strong>

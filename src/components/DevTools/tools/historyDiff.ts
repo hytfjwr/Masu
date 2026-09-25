@@ -20,7 +20,12 @@ function sameStyle(a: CellStyle | undefined, b: CellStyle | undefined): boolean 
     const va = a[k];
     const vb = b[k];
     if (va === vb) continue;
-    if (typeof va !== 'object' || typeof vb !== 'object' || JSON.stringify(va) !== JSON.stringify(vb)) return false;
+    if (
+      typeof va !== 'object' ||
+      typeof vb !== 'object' ||
+      JSON.stringify(va) !== JSON.stringify(vb)
+    )
+      return false;
   }
   return true;
 }
@@ -29,7 +34,11 @@ const sameCell = (a: CellData | undefined, b: CellData | undefined) =>
   a === b || ((a?.rawValue ?? '') === (b?.rawValue ?? '') && sameStyle(a?.style, b?.style));
 
 /** What changed from workbook `before` to workbook `after` (cell values/styles and sheet list). */
-export function diffWorkbooks(before: SheetData[], after: SheetData[], sampleSize = 4): WorkbookDiff {
+export function diffWorkbooks(
+  before: SheetData[],
+  after: SheetData[],
+  sampleSize = 4,
+): WorkbookDiff {
   const beforeById = new Map(before.map((s) => [s.id, s]));
   const afterById = new Map(after.map((s) => [s.id, s]));
   const diff: WorkbookDiff = {
@@ -62,7 +71,10 @@ export function describeDiff(diff: WorkbookDiff): string {
   if (diff.sheetsAdded.length) parts.push(`シート追加: ${diff.sheetsAdded.join(', ')}`);
   if (diff.sheetsRemoved.length) parts.push(`シート削除: ${diff.sheetsRemoved.join(', ')}`);
   if (diff.changedCells) {
-    const more = diff.changedCells > diff.sample.length ? ` ほか ${diff.changedCells - diff.sample.length}` : '';
+    const more =
+      diff.changedCells > diff.sample.length
+        ? ` ほか ${diff.changedCells - diff.sample.length}`
+        : '';
     parts.push(`${diff.changedCells} セル（${diff.sample.join(', ')}${more}）`);
   }
   return parts.length ? parts.join(' / ') : '変更なし（シート設定などのみ）';

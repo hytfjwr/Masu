@@ -1,11 +1,6 @@
 import { tokenizeWithSpans, type TokenSpan } from './tokenizer';
 import { FormulaSyntaxError } from './syntaxError';
-import type {
-  ASTNode,
-  BinaryOperator,
-  ErrorCode,
-  Token,
-} from './types';
+import type { ASTNode, BinaryOperator, ErrorCode, Token } from './types';
 import { TokenType } from './types';
 import { colLetterToIndex } from '../utils/coordinates';
 
@@ -122,12 +117,22 @@ function parseOpenRangeCoords(rangeStr: string): OpenRangeCoords {
   // Row-full: '1:3'
   const rowFull = /^(\d+):(\d+)$/.exec(rangeStr);
   if (rowFull) {
-    return { startCol: 0, startRow: parseInt(rowFull[1], 10) - 1, endCol: null, endRow: parseInt(rowFull[2], 10) - 1 };
+    return {
+      startCol: 0,
+      startRow: parseInt(rowFull[1], 10) - 1,
+      endCol: null,
+      endRow: parseInt(rowFull[2], 10) - 1,
+    };
   }
   // Column-full: 'A:C'
   const colFull = /^([A-Z]+):([A-Z]+)$/.exec(rangeStr);
   if (colFull) {
-    return { startCol: colLetterToIndex(colFull[1]), startRow: 0, endCol: colLetterToIndex(colFull[2]), endRow: null };
+    return {
+      startCol: colLetterToIndex(colFull[1]),
+      startRow: 0,
+      endCol: colLetterToIndex(colFull[2]),
+      endRow: null,
+    };
   }
   // End-open: 'A2:C' (start has a row, end doesn't)
   const openEnd = /^([A-Z]+)(\d+):([A-Z]+)$/.exec(rangeStr);
@@ -199,9 +204,15 @@ class Parser {
         throw this.errorAt(`余分な記述があります: ${this.currentText()}`);
       }
       if (token.type === TokenType.EOF) {
-        throw this.errorAt(expected ? `式が途中で終わっています（${expected}）` : '式が途中で終わっています');
+        throw this.errorAt(
+          expected ? `式が途中で終わっています（${expected}）` : '式が途中で終わっています',
+        );
       }
-      throw this.errorAt(expected ? `${expected}（${this.currentText()} があります）` : `ここに ${this.currentText()} は置けません`);
+      throw this.errorAt(
+        expected
+          ? `${expected}（${this.currentText()} があります）`
+          : `ここに ${this.currentText()} は置けません`,
+      );
     }
     return this.advance();
   }
@@ -226,12 +237,15 @@ class Parser {
       if (!token) break;
 
       const right = this.parseConcat();
-      left = this.mark({
-        kind: 'BinaryOp',
-        op: token.value as BinaryOperator,
-        left,
-        right,
-      }, startIdx);
+      left = this.mark(
+        {
+          kind: 'BinaryOp',
+          op: token.value as BinaryOperator,
+          left,
+          right,
+        },
+        startIdx,
+      );
     }
 
     return left;
@@ -261,12 +275,15 @@ class Parser {
       if (!token) break;
 
       const right = this.parseMultiplicative();
-      left = this.mark({
-        kind: 'BinaryOp',
-        op: token.value as BinaryOperator,
-        left,
-        right,
-      }, startIdx);
+      left = this.mark(
+        {
+          kind: 'BinaryOp',
+          op: token.value as BinaryOperator,
+          left,
+          right,
+        },
+        startIdx,
+      );
     }
 
     return left;
@@ -281,12 +298,15 @@ class Parser {
       if (!token) break;
 
       const right = this.parsePower();
-      left = this.mark({
-        kind: 'BinaryOp',
-        op: token.value as BinaryOperator,
-        left,
-        right,
-      }, startIdx);
+      left = this.mark(
+        {
+          kind: 'BinaryOp',
+          op: token.value as BinaryOperator,
+          left,
+          right,
+        },
+        startIdx,
+      );
     }
 
     return left;
@@ -484,7 +504,10 @@ class Parser {
     if (sign) {
       const numToken = this.expect(TokenType.Number);
       const value = parseFloat(numToken.value);
-      return this.mark({ kind: 'NumberLiteral', value: sign.value === '-' ? -value : value }, startIdx);
+      return this.mark(
+        { kind: 'NumberLiteral', value: sign.value === '-' ? -value : value },
+        startIdx,
+      );
     }
 
     const token = this.peek();
@@ -505,7 +528,8 @@ class Parser {
       return this.mark({ kind: 'ErrorLiteral', code: token.value as ErrorCode }, startIdx);
     }
 
-    if (token.type === TokenType.EOF) throw this.errorAt("式が途中で終わっています（'}' が必要です）");
+    if (token.type === TokenType.EOF)
+      throw this.errorAt("式が途中で終わっています（'}' が必要です）");
     throw this.errorAt('配列には定数（数値・文字列・TRUE/FALSE・エラー値）だけを書けます');
   }
 

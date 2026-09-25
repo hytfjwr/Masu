@@ -1,9 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { parseSignature } from './signatureParser';
 
 describe('parseSignature', () => {
   it('parses basic signature with required args', () => {
-    const result = parseSignature('VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])');
+    const result = parseSignature(
+      'VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])',
+    );
     expect(result.funcName).toBe('VLOOKUP');
     expect(result.args).toHaveLength(4);
     expect(result.args[0]).toEqual({ name: 'lookup_value', required: true, variadic: false });
@@ -49,7 +51,9 @@ describe('parseSignature', () => {
   });
 
   it('parses XLOOKUP signature', () => {
-    const result = parseSignature('XLOOKUP(lookup_value, lookup_array, return_array, [if_not_found], [match_mode], [search_mode])');
+    const result = parseSignature(
+      'XLOOKUP(lookup_value, lookup_array, return_array, [if_not_found], [match_mode], [search_mode])',
+    );
     expect(result.funcName).toBe('XLOOKUP');
     expect(result.args).toHaveLength(6);
     expect(result.args[0].required).toBe(true);

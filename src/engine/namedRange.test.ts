@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { tokenize } from './tokenizer';
 import { parse } from './parser';
 import { evaluate, extractDependencies } from './evaluator';

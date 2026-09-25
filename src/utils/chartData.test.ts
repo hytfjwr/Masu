@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { buildChartModel, DEFAULT_PALETTE } from './chartData';
 import type { ChartData, ChartDataRange } from '../types/chart';
 import type { ChartCell, ChartCellGetter } from './chartData';

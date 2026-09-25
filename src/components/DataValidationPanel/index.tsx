@@ -1,5 +1,10 @@
 import { memo, useCallback, useMemo, useState } from 'react';
-import type { CellDataMap, CellPosition, ValidationOperator, ValidationRule } from '../../types/grid';
+import type {
+  CellDataMap,
+  CellPosition,
+  ValidationOperator,
+  ValidationRule,
+} from '../../types/grid';
 import { cellKey, parseCellKey } from '../../utils/coordinates';
 import { ymdToSerial, serialToParts } from '../../utils/dateSerial';
 
@@ -17,7 +22,14 @@ interface DataValidationPanelProps {
 }
 
 /** UI-level condition kind (splits ValidationType 'list' into value-list vs range-source variants). */
-type ConditionKind = 'listValues' | 'listRange' | 'checkbox' | 'number' | 'textLength' | 'date' | 'customFormula';
+type ConditionKind =
+  | 'listValues'
+  | 'listRange'
+  | 'checkbox'
+  | 'number'
+  | 'textLength'
+  | 'date'
+  | 'customFormula';
 
 const CONDITION_OPTIONS: { value: ConditionKind; label: string }[] = [
   { value: 'listValues', label: 'プルダウン' },
@@ -120,16 +132,31 @@ function computeValidationGroups(cells: CellDataMap): ValidatedGroup[] {
   const groups: ValidatedGroup[] = [];
   let groupIdx = 0;
   for (const { rule, positions } of byRuleJson.values()) {
-    const minCol = Math.min(...positions.map(p => p.col));
-    const maxCol = Math.max(...positions.map(p => p.col));
-    const minRow = Math.min(...positions.map(p => p.row));
-    const maxRow = Math.max(...positions.map(p => p.row));
+    const minCol = Math.min(...positions.map((p) => p.col));
+    const maxCol = Math.max(...positions.map((p) => p.col));
+    const minRow = Math.min(...positions.map((p) => p.row));
+    const maxRow = Math.max(...positions.map((p) => p.row));
     const isRect = positions.length === (maxCol - minCol + 1) * (maxRow - minRow + 1);
     if (isRect) {
-      groups.push({ key: `g${groupIdx}`, rangeLabel: formatRangeLabel({ startCol: minCol, startRow: minRow, endCol: maxCol, endRow: maxRow }), rule, positions });
+      groups.push({
+        key: `g${groupIdx}`,
+        rangeLabel: formatRangeLabel({
+          startCol: minCol,
+          startRow: minRow,
+          endCol: maxCol,
+          endRow: maxRow,
+        }),
+        rule,
+        positions,
+      });
     } else {
       for (const pos of positions) {
-        groups.push({ key: `g${groupIdx}-${cellKey(pos.col, pos.row)}`, rangeLabel: cellKey(pos.col, pos.row), rule, positions: [pos] });
+        groups.push({
+          key: `g${groupIdx}-${cellKey(pos.col, pos.row)}`,
+          rangeLabel: cellKey(pos.col, pos.row),
+          rule,
+          positions: [pos],
+        });
       }
     }
     groupIdx++;
@@ -140,23 +167,27 @@ function computeValidationGroups(cells: CellDataMap): ValidatedGroup[] {
 function describeRuleForList(rule: ValidationRule): string {
   switch (rule.type) {
     case 'list':
-      return rule.listSource ? `プルダウン(範囲: ${rule.listSource})` : `プルダウン(${(rule.listValues ?? []).join(', ')})`;
+      return rule.listSource
+        ? `プルダウン(範囲: ${rule.listSource})`
+        : `プルダウン(${(rule.listValues ?? []).join(', ')})`;
     case 'checkbox':
       return 'チェックボックス';
     case 'number':
-      return `数値: ${OPERATOR_OPTIONS.find(o => o.value === (rule.operator ?? 'between'))?.label} ${rule.min ?? ''}${needsMax(rule.operator ?? 'between') ? ` 〜 ${rule.max ?? ''}` : ''}`;
+      return `数値: ${OPERATOR_OPTIONS.find((o) => o.value === (rule.operator ?? 'between'))?.label} ${rule.min ?? ''}${needsMax(rule.operator ?? 'between') ? ` 〜 ${rule.max ?? ''}` : ''}`;
     case 'textLength':
-      return `文字数: ${OPERATOR_OPTIONS.find(o => o.value === (rule.operator ?? 'between'))?.label} ${rule.min ?? ''}${needsMax(rule.operator ?? 'between') ? ` 〜 ${rule.max ?? ''}` : ''}`;
+      return `文字数: ${OPERATOR_OPTIONS.find((o) => o.value === (rule.operator ?? 'between'))?.label} ${rule.min ?? ''}${needsMax(rule.operator ?? 'between') ? ` 〜 ${rule.max ?? ''}` : ''}`;
     case 'date':
-      return `日付: ${OPERATOR_OPTIONS.find(o => o.value === (rule.operator ?? 'between'))?.label} ${dateStrFromSerial(rule.dateMin)}${needsMax(rule.operator ?? 'between') ? ` 〜 ${dateStrFromSerial(rule.dateMax)}` : ''}`;
+      return `日付: ${OPERATOR_OPTIONS.find((o) => o.value === (rule.operator ?? 'between'))?.label} ${dateStrFromSerial(rule.dateMin)}${needsMax(rule.operator ?? 'between') ? ` 〜 ${dateStrFromSerial(rule.dateMax)}` : ''}`;
     case 'customFormula':
       return `カスタム数式: =${rule.formula ?? ''}`;
   }
 }
 
-const inputClass = 'h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none';
+const inputClass =
+  'h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none';
 const labelClass = 'flex flex-col gap-1 text-xs text-text-primary';
-const btnClass = 'h-7 px-3 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40';
+const btnClass =
+  'h-7 px-3 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40';
 const primaryBtnClass = 'h-7 px-3 text-xs text-white bg-accent-selection rounded hover:opacity-90';
 
 export const DataValidationPanel = memo(function DataValidationPanel({
@@ -193,7 +224,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
 
   const groups = useMemo(
     () => computeValidationGroups(cells),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [cells, version],
   );
 
@@ -258,15 +289,15 @@ export const DataValidationPanel = memo(function DataValidationPanel({
   }, []);
 
   const handleAddListItem = useCallback(() => {
-    setListItems(items => [...items, '']);
+    setListItems((items) => [...items, '']);
   }, []);
 
   const handleListItemChange = useCallback((idx: number, value: string) => {
-    setListItems(items => items.map((v, i) => (i === idx ? value : v)));
+    setListItems((items) => items.map((v, i) => (i === idx ? value : v)));
   }, []);
 
   const handleRemoveListItem = useCallback((idx: number) => {
-    setListItems(items => (items.length <= 1 ? [''] : items.filter((_, i) => i !== idx)));
+    setListItems((items) => (items.length <= 1 ? [''] : items.filter((_, i) => i !== idx)));
   }, []);
 
   const handleSave = useCallback(() => {
@@ -278,16 +309,22 @@ export const DataValidationPanel = memo(function DataValidationPanel({
     setRangeError('');
 
     const base: ValidationRule = {
-      type: conditionKind === 'listValues' || conditionKind === 'listRange' ? 'list' : conditionKind,
+      type:
+        conditionKind === 'listValues' || conditionKind === 'listRange' ? 'list' : conditionKind,
       errorMessage: errorMessage || undefined,
-      helpText: showHelpText ? (helpText || undefined) : undefined,
+      helpText: showHelpText ? helpText || undefined : undefined,
       rejectInvalid: rejectInvalid || undefined,
     };
 
     let rule: ValidationRule;
     switch (conditionKind) {
       case 'listValues':
-        rule = { ...base, listValues: listItems.map(v => v.trim()).filter(v => v.length > 0), showDropdown, dropdownStyle };
+        rule = {
+          ...base,
+          listValues: listItems.map((v) => v.trim()).filter((v) => v.length > 0),
+          showDropdown,
+          dropdownStyle,
+        };
         break;
       case 'listRange':
         rule = { ...base, listSource: listSource.trim(), showDropdown, dropdownStyle };
@@ -296,13 +333,28 @@ export const DataValidationPanel = memo(function DataValidationPanel({
         rule = customChecked ? { ...base, checkedValue, uncheckedValue } : base;
         break;
       case 'number':
-        rule = { ...base, operator, min: Number(minStr) || 0, max: needsMax(operator) ? (Number(maxStr) || 0) : undefined };
+        rule = {
+          ...base,
+          operator,
+          min: Number(minStr) || 0,
+          max: needsMax(operator) ? Number(maxStr) || 0 : undefined,
+        };
         break;
       case 'textLength':
-        rule = { ...base, operator, min: Number(minStr) || 0, max: needsMax(operator) ? (Number(maxStr) || 0) : undefined };
+        rule = {
+          ...base,
+          operator,
+          min: Number(minStr) || 0,
+          max: needsMax(operator) ? Number(maxStr) || 0 : undefined,
+        };
         break;
       case 'date':
-        rule = { ...base, operator, dateMin: serialFromDateStr(dateMinStr) ?? 0, dateMax: needsMax(operator) ? serialFromDateStr(dateMaxStr) : undefined };
+        rule = {
+          ...base,
+          operator,
+          dateMin: serialFromDateStr(dateMinStr) ?? 0,
+          dateMax: needsMax(operator) ? serialFromDateStr(dateMaxStr) : undefined,
+        };
         break;
       case 'customFormula':
         rule = { ...base, formula, anchor: { col: range.startCol, row: range.startRow } };
@@ -312,9 +364,28 @@ export const DataValidationPanel = memo(function DataValidationPanel({
     onSetRule(rangePositions(range), rule);
     setEditingPositions(null);
     setIsNew(false);
-  }, [rangeInput, conditionKind, listItems, listSource, customChecked, checkedValue, uncheckedValue,
-    operator, minStr, maxStr, dateMinStr, dateMaxStr, formula, showHelpText, helpText, rejectInvalid,
-    errorMessage, showDropdown, dropdownStyle, onSetRule]);
+  }, [
+    rangeInput,
+    conditionKind,
+    listItems,
+    listSource,
+    customChecked,
+    checkedValue,
+    uncheckedValue,
+    operator,
+    minStr,
+    maxStr,
+    dateMinStr,
+    dateMaxStr,
+    formula,
+    showHelpText,
+    helpText,
+    rejectInvalid,
+    errorMessage,
+    showDropdown,
+    dropdownStyle,
+    onSetRule,
+  ]);
 
   const handleDelete = useCallback(() => {
     if (editingPositions) onSetRule(editingPositions, undefined);
@@ -330,14 +401,28 @@ export const DataValidationPanel = memo(function DataValidationPanel({
       <div className="space-y-3" data-testid="dv-panel-edit">
         <label className={labelClass}>
           <span>範囲に適用</span>
-          <input type="text" value={rangeInput} onChange={(e) => setRangeInput(e.target.value)} className={inputClass} placeholder="A1:B10" />
+          <input
+            type="text"
+            value={rangeInput}
+            onChange={(e) => setRangeInput(e.target.value)}
+            className={inputClass}
+            placeholder="A1:B10"
+          />
         </label>
         {rangeError && <div className="text-xs text-error">{rangeError}</div>}
 
         <label className={labelClass}>
           <span>条件</span>
-          <select value={conditionKind} onChange={(e) => setConditionKind(e.target.value as ConditionKind)} className={inputClass}>
-            {CONDITION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          <select
+            value={conditionKind}
+            onChange={(e) => setConditionKind(e.target.value as ConditionKind)}
+            className={inputClass}
+          >
+            {CONDITION_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
           </select>
         </label>
 
@@ -346,60 +431,113 @@ export const DataValidationPanel = memo(function DataValidationPanel({
             <span className="text-xs text-text-primary">項目</span>
             {listItems.map((item, idx) => (
               <div key={idx} className="flex items-center gap-1">
-                <input type="text" value={item} onChange={(e) => handleListItemChange(idx, e.target.value)} className={`${inputClass} flex-1`} />
-                <button type="button" className="text-text-primary/40 hover:text-error text-xs px-1" onClick={() => handleRemoveListItem(idx)}>×</button>
+                <input
+                  type="text"
+                  value={item}
+                  onChange={(e) => handleListItemChange(idx, e.target.value)}
+                  className={`${inputClass} flex-1`}
+                />
+                <button
+                  type="button"
+                  className="text-text-primary/40 hover:text-error text-xs px-1"
+                  onClick={() => handleRemoveListItem(idx)}
+                >
+                  ×
+                </button>
               </div>
             ))}
-            <button type="button" className={btnClass} onClick={handleAddListItem}>項目を追加</button>
+            <button type="button" className={btnClass} onClick={handleAddListItem}>
+              項目を追加
+            </button>
           </div>
         )}
 
         {conditionKind === 'listRange' && (
           <label className={labelClass}>
             <span>範囲</span>
-            <input type="text" value={listSource} onChange={(e) => setListSource(e.target.value)} className={inputClass} placeholder="Sheet2!A1:A10" />
+            <input
+              type="text"
+              value={listSource}
+              onChange={(e) => setListSource(e.target.value)}
+              className={inputClass}
+              placeholder="Sheet2!A1:A10"
+            />
           </label>
         )}
 
         {conditionKind === 'checkbox' && (
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-xs text-text-primary">
-              <input type="checkbox" checked={customChecked} onChange={(e) => setCustomChecked(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={customChecked}
+                onChange={(e) => setCustomChecked(e.target.checked)}
+              />
               <span>カスタムのセル値を使用</span>
             </label>
             {customChecked && (
               <div className="flex gap-2">
                 <label className={`${labelClass} flex-1`}>
                   <span>オンの値</span>
-                  <input type="text" value={checkedValue} onChange={(e) => setCheckedValue(e.target.value)} className={inputClass} />
+                  <input
+                    type="text"
+                    value={checkedValue}
+                    onChange={(e) => setCheckedValue(e.target.value)}
+                    className={inputClass}
+                  />
                 </label>
                 <label className={`${labelClass} flex-1`}>
                   <span>オフの値</span>
-                  <input type="text" value={uncheckedValue} onChange={(e) => setUncheckedValue(e.target.value)} className={inputClass} />
+                  <input
+                    type="text"
+                    value={uncheckedValue}
+                    onChange={(e) => setUncheckedValue(e.target.value)}
+                    className={inputClass}
+                  />
                 </label>
               </div>
             )}
           </div>
         )}
 
-        {(conditionKind === 'number' || conditionKind === 'textLength' || conditionKind === 'date') && (
+        {(conditionKind === 'number' ||
+          conditionKind === 'textLength' ||
+          conditionKind === 'date') && (
           <div className="space-y-2">
             <label className={labelClass}>
               <span>条件</span>
-              <select value={operator} onChange={(e) => setOperator(e.target.value as ValidationOperator)} className={inputClass}>
-                {OPERATOR_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              <select
+                value={operator}
+                onChange={(e) => setOperator(e.target.value as ValidationOperator)}
+                className={inputClass}
+              >
+                {OPERATOR_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
               </select>
             </label>
             {conditionKind === 'date' ? (
               <div className="flex gap-2">
                 <label className={`${labelClass} flex-1`}>
                   <span>{needsMax(operator) ? '開始日' : '日付'}</span>
-                  <input type="date" value={dateMinStr} onChange={(e) => setDateMinStr(e.target.value)} className={inputClass} />
+                  <input
+                    type="date"
+                    value={dateMinStr}
+                    onChange={(e) => setDateMinStr(e.target.value)}
+                    className={inputClass}
+                  />
                 </label>
                 {needsMax(operator) && (
                   <label className={`${labelClass} flex-1`}>
                     <span>終了日</span>
-                    <input type="date" value={dateMaxStr} onChange={(e) => setDateMaxStr(e.target.value)} className={inputClass} />
+                    <input
+                      type="date"
+                      value={dateMaxStr}
+                      onChange={(e) => setDateMaxStr(e.target.value)}
+                      className={inputClass}
+                    />
                   </label>
                 )}
               </div>
@@ -407,12 +545,22 @@ export const DataValidationPanel = memo(function DataValidationPanel({
               <div className="flex gap-2">
                 <label className={`${labelClass} flex-1`}>
                   <span>{needsMax(operator) ? '値1' : '値'}</span>
-                  <input type="number" value={minStr} onChange={(e) => setMinStr(e.target.value)} className={inputClass} />
+                  <input
+                    type="number"
+                    value={minStr}
+                    onChange={(e) => setMinStr(e.target.value)}
+                    className={inputClass}
+                  />
                 </label>
                 {needsMax(operator) && (
                   <label className={`${labelClass} flex-1`}>
                     <span>値2</span>
-                    <input type="number" value={maxStr} onChange={(e) => setMaxStr(e.target.value)} className={inputClass} />
+                    <input
+                      type="number"
+                      value={maxStr}
+                      onChange={(e) => setMaxStr(e.target.value)}
+                      className={inputClass}
+                    />
                   </label>
                 )}
               </div>
@@ -423,20 +571,34 @@ export const DataValidationPanel = memo(function DataValidationPanel({
         {conditionKind === 'customFormula' && (
           <label className={labelClass}>
             <span>カスタム数式</span>
-            <input type="text" value={formula} onChange={(e) => setFormula(e.target.value)} className={inputClass} placeholder="=A1>10" />
+            <input
+              type="text"
+              value={formula}
+              onChange={(e) => setFormula(e.target.value)}
+              className={inputClass}
+              placeholder="=A1>10"
+            />
           </label>
         )}
 
         {showDropdownStyleOption && (
           <label className="flex items-center gap-2 text-xs text-text-primary">
-            <input type="checkbox" checked={showDropdown} onChange={(e) => setShowDropdown(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={showDropdown}
+              onChange={(e) => setShowDropdown(e.target.checked)}
+            />
             <span>ドロップダウンを表示</span>
           </label>
         )}
         {showDropdownStyleOption && showDropdown && (
           <label className={labelClass}>
             <span>プルダウンの表示スタイル</span>
-            <select value={dropdownStyle} onChange={(e) => setDropdownStyle(e.target.value as 'chip' | 'arrow')} className={inputClass}>
+            <select
+              value={dropdownStyle}
+              onChange={(e) => setDropdownStyle(e.target.value as 'chip' | 'arrow')}
+              className={inputClass}
+            >
               <option value="chip">チップ</option>
               <option value="arrow">矢印</option>
             </select>
@@ -446,37 +608,73 @@ export const DataValidationPanel = memo(function DataValidationPanel({
         <div className="border-t border-grid-line pt-2 space-y-2">
           <div className="text-xs text-text-primary/60">詳細オプション</div>
           <label className="flex items-center gap-2 text-xs text-text-primary">
-            <input type="checkbox" checked={showHelpText} onChange={(e) => setShowHelpText(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={showHelpText}
+              onChange={(e) => setShowHelpText(e.target.checked)}
+            />
             <span>入力内容のヘルプテキストを表示</span>
           </label>
           {showHelpText && (
-            <input type="text" value={helpText} onChange={(e) => setHelpText(e.target.value)} className={`${inputClass} w-full`} />
+            <input
+              type="text"
+              value={helpText}
+              onChange={(e) => setHelpText(e.target.value)}
+              className={`${inputClass} w-full`}
+            />
           )}
 
           <div className="text-xs text-text-primary">データが無効な場合</div>
           <label className="flex items-center gap-2 text-xs text-text-primary">
-            <input type="radio" name="dv-invalid-mode" checked={!rejectInvalid} onChange={() => setRejectInvalid(false)} />
+            <input
+              type="radio"
+              name="dv-invalid-mode"
+              checked={!rejectInvalid}
+              onChange={() => setRejectInvalid(false)}
+            />
             <span>警告を表示</span>
           </label>
           <label className="flex items-center gap-2 text-xs text-text-primary">
-            <input type="radio" name="dv-invalid-mode" checked={rejectInvalid} onChange={() => setRejectInvalid(true)} />
+            <input
+              type="radio"
+              name="dv-invalid-mode"
+              checked={rejectInvalid}
+              onChange={() => setRejectInvalid(true)}
+            />
             <span>入力を拒否</span>
           </label>
 
           <label className={labelClass}>
             <span>エラーメッセージ（任意）</span>
-            <input type="text" value={errorMessage} onChange={(e) => setErrorMessage(e.target.value)} className={inputClass} />
+            <input
+              type="text"
+              value={errorMessage}
+              onChange={(e) => setErrorMessage(e.target.value)}
+              className={inputClass}
+            />
           </label>
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
           {editingPositions && (
-            <button type="button" className="h-7 px-3 text-xs text-error bg-ui-bg border border-grid-line rounded hover:bg-error/10 mr-auto" onClick={handleDelete}>
+            <button
+              type="button"
+              className="h-7 px-3 text-xs text-error bg-ui-bg border border-grid-line rounded hover:bg-error/10 mr-auto"
+              onClick={handleDelete}
+            >
               ルールを削除
             </button>
           )}
-          <button type="button" className={btnClass} onClick={handleCancel}>キャンセル</button>
-          <button type="button" data-btn-primary className={primaryBtnClass} onClick={handleSave} data-testid="dv-panel-save">
+          <button type="button" className={btnClass} onClick={handleCancel}>
+            キャンセル
+          </button>
+          <button
+            type="button"
+            data-btn-primary
+            className={primaryBtnClass}
+            onClick={handleSave}
+            data-testid="dv-panel-save"
+          >
             完了
           </button>
         </div>
@@ -490,7 +688,11 @@ export const DataValidationPanel = memo(function DataValidationPanel({
         <p className="text-xs text-text-primary/40">入力規則がありません</p>
       ) : (
         groups.map((group) => (
-          <div key={group.key} className="flex items-center gap-2 px-2 py-1.5 rounded border border-grid-line text-xs cursor-pointer hover:border-accent-selection" onClick={() => handleEditGroup(group)}>
+          <div
+            key={group.key}
+            className="flex items-center gap-2 px-2 py-1.5 rounded border border-grid-line text-xs cursor-pointer hover:border-accent-selection"
+            onClick={() => handleEditGroup(group)}
+          >
             <div className="flex-1 min-w-0">
               <div className="text-text-primary/60 truncate">{group.rangeLabel}</div>
               <div className="text-text-primary truncate">{describeRuleForList(group.rule)}</div>
@@ -498,14 +700,23 @@ export const DataValidationPanel = memo(function DataValidationPanel({
             <button
               type="button"
               className="text-error text-[10px] hover:underline shrink-0"
-              onClick={(e) => { e.stopPropagation(); onSetRule(group.positions, undefined); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSetRule(group.positions, undefined);
+              }}
             >
               削除
             </button>
           </div>
         ))
       )}
-      <button type="button" data-btn-primary className={`${primaryBtnClass} w-full`} onClick={handleNewRule} data-testid="dv-panel-add">
+      <button
+        type="button"
+        data-btn-primary
+        className={`${primaryBtnClass} w-full`}
+        onClick={handleNewRule}
+        data-testid="dv-panel-add"
+      >
         + ルールを追加
       </button>
     </div>

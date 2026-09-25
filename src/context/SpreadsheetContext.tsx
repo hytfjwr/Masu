@@ -1,5 +1,16 @@
 import { createContext, useContext } from 'react';
-import type { CellPosition, CellStyle, ConditionalFormatRule, FilterRange, GroupRange, MergeInfo, NamedRange, PivotTableConfig, SheetData, ValidationRule } from '../types/grid';
+import type {
+  CellPosition,
+  CellStyle,
+  ConditionalFormatRule,
+  FilterRange,
+  GroupRange,
+  MergeInfo,
+  NamedRange,
+  PivotTableConfig,
+  SheetData,
+  ValidationRule,
+} from '../types/grid';
 import type { SparklineConfig } from '../types/sparkline';
 import type { ChartData } from '../types/chart';
 import type { PrintSettings } from '../types/print';
@@ -84,7 +95,12 @@ export interface SpreadsheetActions {
   // Named ranges
   namedRanges: NamedRange[];
   addNamedRange: (name: string, range: string, refSheetId?: string) => boolean;
-  updateNamedRange: (oldName: string, newName: string, range: string, refSheetId?: string) => boolean;
+  updateNamedRange: (
+    oldName: string,
+    newName: string,
+    range: string,
+    refSheetId?: string,
+  ) => boolean;
   deleteNamedRange: (name: string) => boolean;
   openNamedRangeDialog: () => void;
   // スパークライン

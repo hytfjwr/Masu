@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { act, renderHook } from '@testing-library/react';
 import { useGridData } from './useGridData';
 import { parseCellKey } from '../utils/coordinates';
@@ -63,7 +63,11 @@ describe('useGridData integration', () => {
     const { set, cell, show } = setup();
     set('A1', '=SUM(B1:B3');
     expect(show('A1')).toBe('#ERROR!');
-    expect(cell('A1')?.parseError).toEqual({ message: "式が途中で終わっています（')' が必要です）", start: 9, end: 9 });
+    expect(cell('A1')?.parseError).toEqual({
+      message: "式が途中で終わっています（')' が必要です）",
+      start: 9,
+      end: 9,
+    });
     set('A1', '=SUM(B1:B3)');
     expect(show('A1')).toBe('0');
     expect(cell('A1')?.parseError).toBeUndefined();
@@ -186,7 +190,7 @@ describe('useGridData integration', () => {
 
     expect(newId).not.toBeNull();
     expect(result.current.activeSheetId).toBe(newId);
-    const newSheet = result.current.sheets.find(s => s.id === newId);
+    const newSheet = result.current.sheets.find((s) => s.id === newId);
     expect(newSheet?.name).toBe(`${original.name} のコピー`);
     // Values/formulas were copied and are evaluated on the new (now active) sheet
     expect(show('A1')).toBe('5');
@@ -201,7 +205,7 @@ describe('useGridData integration', () => {
 
     act(() => result.current.moveSheet(s1.id, 2));
 
-    expect(result.current.sheets.map(s => s.id)).toEqual([s2.id, s3.id, s1.id]);
+    expect(result.current.sheets.map((s) => s.id)).toEqual([s2.id, s3.id, s1.id]);
   });
 
   it('setSheetHidden refuses to hide the last visible sheet, and hiding the active sheet activates another', () => {
@@ -342,10 +346,12 @@ describe('useGridData transactions', () => {
   it('groups several mutations into one undo step', () => {
     const { result } = renderHook(() => useGridData());
     act(() => result.current.setCellValue(0, 0, 'a'));
-    act(() => result.current.transact(() => {
-      result.current.setCellValue(0, 0, 'b');
-      result.current.setCellStyle([{ col: 0, row: 0 }], { bold: true });
-    }));
+    act(() =>
+      result.current.transact(() => {
+        result.current.setCellValue(0, 0, 'b');
+        result.current.setCellStyle([{ col: 0, row: 0 }], { bold: true });
+      }),
+    );
     act(() => result.current.undo());
     expect(result.current.getCellData(0, 0)?.rawValue).toBe('a');
     expect(result.current.getCellData(0, 0)?.style?.bold).toBeUndefined();
@@ -409,14 +415,16 @@ describe('useGridData document title', () => {
     expect(result.current.title).toBeUndefined();
   });
 
-  it('replaceWorkbook carries over the incoming workbook\'s title', () => {
+  it("replaceWorkbook carries over the incoming workbook's title", () => {
     const { result } = setup();
     act(() => result.current.setTitle('Old Title'));
-    act(() => result.current.replaceWorkbook({
-      sheets: result.current.sheets,
-      activeSheetId: result.current.activeSheetId,
-      title: 'Imported Title',
-    }));
+    act(() =>
+      result.current.replaceWorkbook({
+        sheets: result.current.sheets,
+        activeSheetId: result.current.activeSheetId,
+        title: 'Imported Title',
+      }),
+    );
     expect(result.current.title).toBe('Imported Title');
   });
 
@@ -460,7 +468,9 @@ describe('useGridData review fixes', () => {
     act(() => result.current.setCellValue(1, 0, `=${s1.name}!A1*10+A1`));
     // Insert a column before A on Sheet1
     act(() => result.current.setActiveSheet(s1.id));
-    act(() => { result.current.insertColumn(0, 'before', 26, 16384); });
+    act(() => {
+      result.current.insertColumn(0, 'before', 26, 16384);
+    });
     expect(result.current.getCellData(3, 0)?.rawValue).toBe('=SUM(B:B)');
     expect(result.current.getCellData(3, 0)?.displayValue).toBe('3');
     act(() => result.current.setActiveSheet(s2.id));
@@ -484,11 +494,14 @@ describe('useGridData import evaluates formulas', () => {
 
   it('evaluates formulas after replaceWorkbook (native file/xlsx/autosave path)', () => {
     const { result } = renderHook(() => useGridData());
-    const sheet = { ...result.current.sheets[0], cells: new Map([
-      ['E2', { rawValue: '10', displayValue: '10' }],
-      ['E3', { rawValue: '20', displayValue: '20' }],
-      ['E46', { rawValue: '=SUM(E2:E45)', displayValue: '=SUM(E2:E45)' }],
-    ]) };
+    const sheet = {
+      ...result.current.sheets[0],
+      cells: new Map([
+        ['E2', { rawValue: '10', displayValue: '10' }],
+        ['E3', { rawValue: '20', displayValue: '20' }],
+        ['E46', { rawValue: '=SUM(E2:E45)', displayValue: '=SUM(E2:E45)' }],
+      ]),
+    };
     act(() => result.current.replaceWorkbook({ sheets: [sheet], activeSheetId: sheet.id }));
     expect(result.current.getCellData(4, 45)?.displayValue).toBe('30');
   });
@@ -500,25 +513,33 @@ describe('useGridData recalculation caches', () => {
     act(() => result.current.addSheet());
     const [s1, s2] = result.current.sheets;
     act(() => result.current.setActiveSheet(s2.id));
-    act(() => result.current.batchSetCellValues(Array.from({ length: 20 }, (_, i) => ({ col: 0, row: i, value: '100' }))));
+    act(() =>
+      result.current.batchSetCellValues(
+        Array.from({ length: 20 }, (_, i) => ({ col: 0, row: i, value: '100' })),
+      ),
+    );
     act(() => result.current.setActiveSheet(s1.id));
-    act(() => result.current.batchSetCellValues([
-      ...Array.from({ length: 20 }, (_, i) => ({ col: 0, row: i, value: '1' })),
-      { col: 1, row: 0, value: '=SUM(A:A)' },
-      { col: 1, row: 1, value: `=SUM(${s2.name}!A:A)` },
-    ]));
+    act(() =>
+      result.current.batchSetCellValues([
+        ...Array.from({ length: 20 }, (_, i) => ({ col: 0, row: i, value: '1' })),
+        { col: 1, row: 0, value: '=SUM(A:A)' },
+        { col: 1, row: 1, value: `=SUM(${s2.name}!A:A)` },
+      ]),
+    );
     expect(result.current.getCellData(1, 0)?.displayValue).toBe('20');
     expect(result.current.getCellData(1, 1)?.displayValue).toBe('2000');
   });
 
   it('evaluates formulas of one batch in dependency order (deferred batch evaluation)', () => {
     const { result } = renderHook(() => useGridData());
-    act(() => result.current.batchSetCellValues([
-      { col: 2, row: 0, value: '=B1*2' },
-      { col: 1, row: 0, value: '=A1+1' },
-      { col: 0, row: 0, value: '5' },
-      { col: 3, row: 0, value: '=SUM(A1:C1)' },
-    ]));
+    act(() =>
+      result.current.batchSetCellValues([
+        { col: 2, row: 0, value: '=B1*2' },
+        { col: 1, row: 0, value: '=A1+1' },
+        { col: 0, row: 0, value: '5' },
+        { col: 3, row: 0, value: '=SUM(A1:C1)' },
+      ]),
+    );
     expect(result.current.getCellData(1, 0)?.displayValue).toBe('6');
     expect(result.current.getCellData(2, 0)?.displayValue).toBe('12');
     expect(result.current.getCellData(3, 0)?.displayValue).toBe('23');
@@ -526,10 +547,12 @@ describe('useGridData recalculation caches', () => {
 
   it('flags a cycle created inside one batch', () => {
     const { result } = renderHook(() => useGridData());
-    act(() => result.current.batchSetCellValues([
-      { col: 0, row: 0, value: '=B1' },
-      { col: 1, row: 0, value: '=A1' },
-    ]));
+    act(() =>
+      result.current.batchSetCellValues([
+        { col: 0, row: 0, value: '=B1' },
+        { col: 1, row: 0, value: '=A1' },
+      ]),
+    );
     expect(result.current.getCellData(1, 0)?.displayValue).toBe('#REF!');
   });
 });

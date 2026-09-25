@@ -10,7 +10,9 @@ interface HoverGliderProps {
  * marked `data-hover-glide` (see index.css), it slides and resizes to whichever matching control
  * the pointer is over, instead of each control flashing its own hover background.
  */
-export const HoverGlider = memo(function HoverGlider({ selector = 'button:not(:disabled)' }: HoverGliderProps) {
+export const HoverGlider = memo(function HoverGlider({
+  selector = 'button:not(:disabled)',
+}: HoverGliderProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   // useEffect required: pointer listeners + DOM measurement on the host container
@@ -23,7 +25,11 @@ export const HoverGlider = memo(function HoverGlider({ selector = 'button:not(:d
     const handleOver = (e: PointerEvent) => {
       const target = (e.target as Element | null)?.closest<HTMLElement>(selector);
       // Popovers opened from the row (color picker, menus…) have their own hover styling
-      if (!target || !host.contains(target) || target.closest('[data-dropdown], [data-context-menu]')) {
+      if (
+        !target ||
+        !host.contains(target) ||
+        target.closest('[data-dropdown], [data-context-menu]')
+      ) {
         hide();
         return;
       }

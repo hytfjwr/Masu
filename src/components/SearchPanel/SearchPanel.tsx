@@ -90,15 +90,20 @@ export const SearchPanel = memo(function SearchPanel({
   const deferredSearchText = useDeferredValue(searchText);
   const matches = useMemo((): FindMatch[] => {
     if (!deferredSearchText) return [];
-    const targetSheets = allSheets ? sheets : sheets.filter(s => s.id === activeSheetId);
-    const cells = targetSheets.flatMap(s => collectSheetCells(s, s.id === activeSheetId ? hiddenRows : undefined));
+    const targetSheets = allSheets ? sheets : sheets.filter((s) => s.id === activeSheetId);
+    const cells = targetSheets.flatMap((s) =>
+      collectSheetCells(s, s.id === activeSheetId ? hiddenRows : undefined),
+    );
     return findMatches(cells, deferredSearchText, options);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [sheets, activeSheetId, allSheets, hiddenRows, deferredSearchText, options, dataVersion]);
 
   // Identity of the result set by content: re-renders elsewhere (e.g. moving the active cell) can rebuild
   // `matches` with identical contents, which must not reset the current position.
-  const matchesSignature = useMemo(() => matches.map((m) => `${m.sheetId}:${m.cellKey}`).join('|'), [matches]);
+  const matchesSignature = useMemo(
+    () => matches.map((m) => `${m.sheetId}:${m.cellKey}`).join('|'),
+    [matches],
+  );
   const querySignature = `${deferredSearchText}\u0000${JSON.stringify(options)}\u0000${allSheets}`;
   const lastQueryRef = useRef<string | null>(null);
 
@@ -117,29 +122,40 @@ export const SearchPanel = memo(function SearchPanel({
     } else {
       setCurrentIndex((prev) => Math.min(Math.max(prev, 0), matches.length - 1));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [matchesSignature, querySignature]);
 
   const goNext = useCallback(() => {
     if (matches.length === 0) return;
     const nextIdx = (currentIndex + 1) % matches.length;
     setCurrentIndex(nextIdx);
-    onNavigateToCell(matches[nextIdx].sheetId, { col: matches[nextIdx].col, row: matches[nextIdx].row });
+    onNavigateToCell(matches[nextIdx].sheetId, {
+      col: matches[nextIdx].col,
+      row: matches[nextIdx].row,
+    });
   }, [matches, currentIndex, onNavigateToCell]);
 
   const goPrev = useCallback(() => {
     if (matches.length === 0) return;
     const prevIdx = (currentIndex - 1 + matches.length) % matches.length;
     setCurrentIndex(prevIdx);
-    onNavigateToCell(matches[prevIdx].sheetId, { col: matches[prevIdx].col, row: matches[prevIdx].row });
+    onNavigateToCell(matches[prevIdx].sheetId, {
+      col: matches[prevIdx].col,
+      row: matches[prevIdx].row,
+    });
   }, [matches, currentIndex, onNavigateToCell]);
 
-  const findCell = useCallback((sheetId: string, key: string) => {
-    return sheets.find(s => s.id === sheetId)?.cells.get(key);
-  }, [sheets]);
+  const findCell = useCallback(
+    (sheetId: string, key: string) => {
+      return sheets.find((s) => s.id === sheetId)?.cells.get(key);
+    },
+    [sheets],
+  );
 
-  const currentMatch = currentIndex >= 0 && currentIndex < matches.length ? matches[currentIndex] : undefined;
-  const currentIsReplaceable = !!currentMatch && !(currentMatch.isFormula && !options.searchFormulas);
+  const currentMatch =
+    currentIndex >= 0 && currentIndex < matches.length ? matches[currentIndex] : undefined;
+  const currentIsReplaceable =
+    !!currentMatch && !(currentMatch.isFormula && !options.searchFormulas);
 
   const handleReplace = useCallback(() => {
     if (!currentMatch || !currentIsReplaceable) return;
@@ -147,7 +163,15 @@ export const SearchPanel = memo(function SearchPanel({
     if (!cell) return;
     const newValue = replaceInText(cell.rawValue, searchText, replaceText, options);
     onReplaceOne(currentMatch.sheetId, currentMatch.col, currentMatch.row, newValue);
-  }, [currentMatch, currentIsReplaceable, findCell, searchText, replaceText, options, onReplaceOne]);
+  }, [
+    currentMatch,
+    currentIsReplaceable,
+    findCell,
+    searchText,
+    replaceText,
+    options,
+    onReplaceOne,
+  ]);
 
   const handleReplaceAll = useCallback(() => {
     if (matches.length === 0 || !searchText) return;
@@ -165,18 +189,22 @@ export const SearchPanel = memo(function SearchPanel({
     if (bySheet.size > 0) onReplaceAll(bySheet);
   }, [matches, searchText, replaceText, options, findCell, onReplaceAll]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      onClose();
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (e.shiftKey) goPrev(); else goNext();
-    }
-  }, [onClose, goNext, goPrev]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (e.shiftKey) goPrev();
+        else goNext();
+      }
+    },
+    [onClose, goNext, goPrev],
+  );
 
   const toggleOption = (key: keyof FindReplaceOptions) => {
-    setOptions(prev => ({ ...prev, [key]: !prev[key] }));
+    setOptions((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   if (!visible) return null;
@@ -200,11 +228,38 @@ export const SearchPanel = memo(function SearchPanel({
             data-testid="search-input"
           />
           <span className="text-[10px] text-text-primary/50 min-w-[60px] text-right whitespace-nowrap">
-            {matches.length > 0 ? `${currentIndex + 1} / ${matches.length}` : searchText ? '0 件' : ''}
+            {matches.length > 0
+              ? `${currentIndex + 1} / ${matches.length}`
+              : searchText
+                ? '0 件'
+                : ''}
           </span>
-          <button type="button" className="h-7 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40 disabled:opacity-30" onClick={goPrev} disabled={matches.length === 0} title="前を検索 (Shift+Enter)">▲</button>
-          <button type="button" className="h-7 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40 disabled:opacity-30" onClick={goNext} disabled={matches.length === 0} title="次を検索 (Enter)">▼</button>
-          <button type="button" className="h-7 px-2 text-xs text-text-primary/60 hover:text-text-primary" onClick={onClose} title="閉じる (Esc)">✕</button>
+          <button
+            type="button"
+            className="h-7 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40 disabled:opacity-30"
+            onClick={goPrev}
+            disabled={matches.length === 0}
+            title="前を検索 (Shift+Enter)"
+          >
+            ▲
+          </button>
+          <button
+            type="button"
+            className="h-7 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40 disabled:opacity-30"
+            onClick={goNext}
+            disabled={matches.length === 0}
+            title="次を検索 (Enter)"
+          >
+            ▼
+          </button>
+          <button
+            type="button"
+            className="h-7 px-2 text-xs text-text-primary/60 hover:text-text-primary"
+            onClick={onClose}
+            title="閉じる (Esc)"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Replace row */}
@@ -218,21 +273,53 @@ export const SearchPanel = memo(function SearchPanel({
             className="flex-1 h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none focus:border-accent-selection"
             data-testid="replace-input"
           />
-          <button type="button" className="h-7 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40 disabled:opacity-30" onClick={handleReplace} disabled={!currentIsReplaceable} data-testid="replace-button">置換</button>
-          <button type="button" className="h-7 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40 disabled:opacity-30" onClick={handleReplaceAll} disabled={matches.length === 0} data-testid="replace-all-button">すべて置換</button>
+          <button
+            type="button"
+            className="h-7 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40 disabled:opacity-30"
+            onClick={handleReplace}
+            disabled={!currentIsReplaceable}
+            data-testid="replace-button"
+          >
+            置換
+          </button>
+          <button
+            type="button"
+            className="h-7 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40 disabled:opacity-30"
+            onClick={handleReplaceAll}
+            disabled={matches.length === 0}
+            data-testid="replace-all-button"
+          >
+            すべて置換
+          </button>
         </div>
 
         {/* Search scope */}
         <div className="flex items-center gap-3 text-[10px] text-text-primary/70">
           <label className="flex items-center gap-1 cursor-pointer">
-            <input type="radio" name="search-scope" checked={!allSheets} onChange={() => setAllSheets(false)} className="w-3 h-3" />
+            <input
+              type="radio"
+              name="search-scope"
+              checked={!allSheets}
+              onChange={() => setAllSheets(false)}
+              className="w-3 h-3"
+            />
             このシート
           </label>
           <label className="flex items-center gap-1 cursor-pointer">
-            <input type="radio" name="search-scope" checked={allSheets} onChange={() => setAllSheets(true)} className="w-3 h-3" />
+            <input
+              type="radio"
+              name="search-scope"
+              checked={allSheets}
+              onChange={() => setAllSheets(true)}
+              className="w-3 h-3"
+            />
             すべてのシート
           </label>
-          <button type="button" className="ml-auto text-accent-selection hover:underline" onClick={() => setShowOptions(o => !o)}>
+          <button
+            type="button"
+            className="ml-auto text-accent-selection hover:underline"
+            onClick={() => setShowOptions((o) => !o)}
+          >
             {showOptions ? 'オプションを隠す ▾' : 'オプション ▸'}
           </button>
         </div>
@@ -241,19 +328,39 @@ export const SearchPanel = memo(function SearchPanel({
         {showOptions && (
           <div className="flex flex-col gap-1 text-[10px] text-text-primary/80 border-t border-grid-line pt-2">
             <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" checked={options.caseSensitive} onChange={() => toggleOption('caseSensitive')} className="w-3 h-3" />
+              <input
+                type="checkbox"
+                checked={options.caseSensitive}
+                onChange={() => toggleOption('caseSensitive')}
+                className="w-3 h-3"
+              />
               大文字と小文字を区別する
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" checked={options.wholeCell} onChange={() => toggleOption('wholeCell')} className="w-3 h-3" />
+              <input
+                type="checkbox"
+                checked={options.wholeCell}
+                onChange={() => toggleOption('wholeCell')}
+                className="w-3 h-3"
+              />
               セルの内容全体が一致
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" checked={options.useRegex} onChange={() => toggleOption('useRegex')} className="w-3 h-3" />
+              <input
+                type="checkbox"
+                checked={options.useRegex}
+                onChange={() => toggleOption('useRegex')}
+                className="w-3 h-3"
+              />
               正規表現を使用した検索
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" checked={options.searchFormulas} onChange={() => toggleOption('searchFormulas')} className="w-3 h-3" />
+              <input
+                type="checkbox"
+                checked={options.searchFormulas}
+                onChange={() => toggleOption('searchFormulas')}
+                className="w-3 h-3"
+              />
               数式内も検索
             </label>
           </div>

@@ -141,7 +141,19 @@ export interface OpenRangeNode {
   endRow: number | null;
 }
 
-export type BinaryOperator = '+' | '-' | '*' | '/' | '&' | '^' | '>' | '<' | '>=' | '<=' | '=' | '<>';
+export type BinaryOperator =
+  | '+'
+  | '-'
+  | '*'
+  | '/'
+  | '&'
+  | '^'
+  | '>'
+  | '<'
+  | '>='
+  | '<='
+  | '='
+  | '<>';
 
 export interface BinaryOpNode {
   kind: 'BinaryOp';

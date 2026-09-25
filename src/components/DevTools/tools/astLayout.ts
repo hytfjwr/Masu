@@ -3,7 +3,15 @@ import type { TokenSpan } from '../../../engine/tokenizer';
 import type { ASTNode } from '../../../engine/types';
 import { parseCellKey } from '../../../utils/coordinates';
 
-export type VizCategory = 'function' | 'operator' | 'reference' | 'literal' | 'error' | 'array' | 'empty' | 'named';
+export type VizCategory =
+  | 'function'
+  | 'operator'
+  | 'reference'
+  | 'literal'
+  | 'error'
+  | 'array'
+  | 'empty'
+  | 'named';
 
 /** A display node: one AST node (or an array-literal row) with its label and source range. */
 export interface VizNode {
@@ -49,7 +57,10 @@ function textWidth(text: string, charWidth: number): number {
 }
 
 export function nodeWidth(node: Pick<VizNode, 'label' | 'kind'>): number {
-  return Math.max(40, Math.ceil(Math.max(textWidth(node.label, 7.3), textWidth(node.kind, 5.6)) + 24));
+  return Math.max(
+    40,
+    Math.ceil(Math.max(textWidth(node.label, 7.3), textWidth(node.kind, 5.6)) + 24),
+  );
 }
 
 function rangeOf(start: string, end: string): VizNode['ref'] {
@@ -77,7 +88,12 @@ export function buildVizTree(ast: ASTNode, source: string): VizNode {
       case 'NumberLiteral':
         return { ...base, label: String(node.value), category: 'literal', children: [] };
       case 'StringLiteral':
-        return { ...base, label: `"${truncate(node.value, 18)}"`, category: 'literal', children: [] };
+        return {
+          ...base,
+          label: `"${truncate(node.value, 18)}"`,
+          category: 'literal',
+          children: [],
+        };
       case 'BooleanLiteral':
         return { ...base, label: node.value ? 'TRUE' : 'FALSE', category: 'literal', children: [] };
       case 'ErrorLiteral':
@@ -87,21 +103,58 @@ export function buildVizTree(ast: ASTNode, source: string): VizNode {
       case 'NamedRef':
         return { ...base, label: node.name, category: 'named', children: [] };
       case 'CellRef':
-        return { ...base, label: sliceOf(node, node.key), category: 'reference', ref: rangeOf(node.key, node.key), children: [] };
+        return {
+          ...base,
+          label: sliceOf(node, node.key),
+          category: 'reference',
+          ref: rangeOf(node.key, node.key),
+          children: [],
+        };
       case 'RangeRef':
-        return { ...base, label: sliceOf(node, `${node.start}:${node.end}`), category: 'reference', ref: rangeOf(node.start, node.end), children: [] };
+        return {
+          ...base,
+          label: sliceOf(node, `${node.start}:${node.end}`),
+          category: 'reference',
+          ref: rangeOf(node.start, node.end),
+          children: [],
+        };
       case 'SheetCellRef':
-        return { ...base, label: sliceOf(node, `${node.sheetName}!${node.key}`), category: 'reference', children: [] };
+        return {
+          ...base,
+          label: sliceOf(node, `${node.sheetName}!${node.key}`),
+          category: 'reference',
+          children: [],
+        };
       case 'SheetRangeRef':
-        return { ...base, label: sliceOf(node, `${node.sheetName}!${node.start}:${node.end}`), category: 'reference', children: [] };
+        return {
+          ...base,
+          label: sliceOf(node, `${node.sheetName}!${node.start}:${node.end}`),
+          category: 'reference',
+          children: [],
+        };
       case 'OpenRange':
         return { ...base, label: sliceOf(node, 'range'), category: 'reference', children: [] };
       case 'BinaryOp':
-        return { ...base, label: node.op, category: 'operator', children: [visit(node.left, depth + 1), visit(node.right, depth + 1)] };
+        return {
+          ...base,
+          label: node.op,
+          category: 'operator',
+          children: [visit(node.left, depth + 1), visit(node.right, depth + 1)],
+        };
       case 'UnaryOp':
-        return { ...base, label: node.op, category: 'operator', children: [visit(node.operand, depth + 1)] };
+        return {
+          ...base,
+          label: node.op,
+          category: 'operator',
+          children: [visit(node.operand, depth + 1)],
+        };
       case 'FunctionCall':
-        return { ...base, label: `${node.name}()`, category: 'function', children: node.args.map((a) => visit(a, depth + 1)) };
+        return {
+          ...base,
+          label: `${node.name}()`,
+          category: 'function',
+          children: node.args.map((a) => visit(a, depth + 1)),
+        };
       case 'ArrayLiteral': {
         const cols = node.rows[0]?.length ?? 0;
         return {
@@ -131,7 +184,9 @@ export function layoutTree(root: VizNode): TreeLayout {
   const subtreeWidth = new Map<string, number>();
   const measure = (node: VizNode): number => {
     const own = nodeWidth(node);
-    const kids = node.children.reduce((sum, c) => sum + measure(c), 0) + SIBLING_GAP * Math.max(0, node.children.length - 1);
+    const kids =
+      node.children.reduce((sum, c) => sum + measure(c), 0) +
+      SIBLING_GAP * Math.max(0, node.children.length - 1);
     const w = Math.max(own, kids);
     subtreeWidth.set(node.id, w);
     return w;
@@ -153,8 +208,9 @@ export function layoutTree(root: VizNode): TreeLayout {
     nodes.push(placed);
     if (parent) edges.push({ from: parent, to: placed });
     maxDepth = Math.max(maxDepth, node.depth);
-    const kidsWidth = node.children.reduce((sum, c) => sum + subtreeWidth.get(c.id)!, 0)
-      + SIBLING_GAP * Math.max(0, node.children.length - 1);
+    const kidsWidth =
+      node.children.reduce((sum, c) => sum + subtreeWidth.get(c.id)!, 0) +
+      SIBLING_GAP * Math.max(0, node.children.length - 1);
     let cursor = left + (w - kidsWidth) / 2;
     const kids: PlacedNode[] = [];
     for (const child of node.children) {

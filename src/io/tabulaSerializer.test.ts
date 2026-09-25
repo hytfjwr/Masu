@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { serialize, deserialize } from './tabulaSerializer';
 import type { SheetData } from '../types/grid';
 
@@ -44,14 +44,29 @@ describe('tabulaSerializer', () => {
         activeSheetId: 'sheet1',
         colWidths: new Map(),
         rowHeights: new Map(),
-        sizesBySheet: new Map([['sheet1', { colWidths: new Map([[1, 140]]), rowHeights: new Map(), defaultColWidth: 64, defaultRowHeight: 20 }]]),
+        sizesBySheet: new Map([
+          [
+            'sheet1',
+            {
+              colWidths: new Map([[1, 140]]),
+              rowHeights: new Map(),
+              defaultColWidth: 64,
+              defaultRowHeight: 20,
+            },
+          ],
+        ]),
       });
       const sizes = deserialize(json).sizesBySheet.get('sheet1');
       expect(sizes?.defaultColWidth).toBe(64);
       expect(sizes?.defaultRowHeight).toBe(20);
       expect(sizes?.colWidths.get(1)).toBe(140);
 
-      const plain = serialize({ sheets: [createTestSheet()], activeSheetId: 'sheet1', colWidths: new Map(), rowHeights: new Map() });
+      const plain = serialize({
+        sheets: [createTestSheet()],
+        activeSheetId: 'sheet1',
+        colWidths: new Map(),
+        rowHeights: new Map(),
+      });
       expect(JSON.parse(plain).workbook.sheets[0].defaultColWidth).toBeUndefined();
       expect(deserialize(plain).sizesBySheet.get('sheet1')?.defaultColWidth).toBeUndefined();
     });
@@ -81,7 +96,10 @@ describe('tabulaSerializer', () => {
     });
 
     it('serializes column widths and row heights', () => {
-      const colWidths = new Map([[0, 150], [2, 200]]);
+      const colWidths = new Map([
+        [0, 150],
+        [2, 200],
+      ]);
       const rowHeights = new Map([[5, 40]]);
       const json = serialize({
         sheets: [createTestSheet()],
@@ -96,15 +114,17 @@ describe('tabulaSerializer', () => {
     });
 
     it('serializes conditional format rules', () => {
-      const rules = [{
-        id: 'r1',
-        range: { startCol: 0, startRow: 0, endCol: 5, endRow: 10 },
-        operator: 'greaterThan' as const,
-        value1: '100',
-        style: { backgroundColor: '#ff0000' },
-        priority: 1,
-        enabled: true,
-      }];
+      const rules = [
+        {
+          id: 'r1',
+          range: { startCol: 0, startRow: 0, endCol: 5, endRow: 10 },
+          operator: 'greaterThan' as const,
+          value1: '100',
+          style: { backgroundColor: '#ff0000' },
+          priority: 1,
+          enabled: true,
+        },
+      ];
       const json = serialize({
         sheets: [createTestSheet({ conditionalFormatRules: rules })],
         activeSheetId: 'sheet1',
@@ -194,15 +214,17 @@ describe('tabulaSerializer', () => {
     });
 
     it('restores conditional format rules', () => {
-      const rules = [{
-        id: 'r1',
-        range: { startCol: 0, startRow: 0, endCol: 5, endRow: 10 },
-        operator: 'greaterThan' as const,
-        value1: '100',
-        style: { backgroundColor: '#ff0000' },
-        priority: 1,
-        enabled: true,
-      }];
+      const rules = [
+        {
+          id: 'r1',
+          range: { startCol: 0, startRow: 0, endCol: 5, endRow: 10 },
+          operator: 'greaterThan' as const,
+          value1: '100',
+          style: { backgroundColor: '#ff0000' },
+          priority: 1,
+          enabled: true,
+        },
+      ];
 
       const json = serialize({
         sheets: [createTestSheet({ conditionalFormatRules: rules })],
@@ -255,26 +277,28 @@ describe('tabulaSerializer', () => {
     });
 
     it('round-trips new chart fields (type, orientation, customization)', () => {
-      const charts = [{
-        id: 'chart1',
-        type: 'donut' as const,
-        title: '売上構成',
-        sourceRange: { startCol: 0, startRow: 0, endCol: 2, endRow: 3 },
-        x: 10,
-        y: 20,
-        width: 400,
-        height: 300,
-        useFirstColumnAsLabels: false,
-        useFirstRowAsHeaders: false,
-        seriesIn: 'rows' as const,
-        seriesColors: ['#111111', '#222222'],
-        showLegend: false,
-        legendPosition: 'right' as const,
-        xAxisTitle: 'X軸',
-        yAxisTitle: 'Y軸',
-        showGridlines: false,
-        backgroundColor: '#ffffff',
-      }];
+      const charts = [
+        {
+          id: 'chart1',
+          type: 'donut' as const,
+          title: '売上構成',
+          sourceRange: { startCol: 0, startRow: 0, endCol: 2, endRow: 3 },
+          x: 10,
+          y: 20,
+          width: 400,
+          height: 300,
+          useFirstColumnAsLabels: false,
+          useFirstRowAsHeaders: false,
+          seriesIn: 'rows' as const,
+          seriesColors: ['#111111', '#222222'],
+          showLegend: false,
+          legendPosition: 'right' as const,
+          xAxisTitle: 'X軸',
+          yAxisTitle: 'Y軸',
+          showGridlines: false,
+          backgroundColor: '#ffffff',
+        },
+      ];
 
       const json = serialize({
         sheets: [createTestSheet({ charts })],
@@ -416,18 +440,20 @@ describe('tabulaSerializer', () => {
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01',
         workbook: {
-          sheets: [{
-            id: 'sheet1',
-            name: 'Sheet1',
-            cells: { A1: { rawValue: 'hello' } },
-            colCount: 26,
-            rowCount: 100,
-            colWidths: {},
-            rowHeights: {},
-            frozenRows: 0,
-            frozenCols: 0,
-            conditionalFormatRules: [],
-          }],
+          sheets: [
+            {
+              id: 'sheet1',
+              name: 'Sheet1',
+              cells: { A1: { rawValue: 'hello' } },
+              colCount: 26,
+              rowCount: 100,
+              colWidths: {},
+              rowHeights: {},
+              frozenRows: 0,
+              frozenCols: 0,
+              conditionalFormatRules: [],
+            },
+          ],
           activeSheetId: 'sheet1',
           // No namedRanges field
         },
@@ -439,14 +465,16 @@ describe('tabulaSerializer', () => {
     });
 
     it('restores sparkline settings (round-trip)', () => {
-      const sparklines = [{
-        id: 'sp1',
-        type: 'line' as const,
-        dataRange: 'B2:L2',
-        locationCell: 'M2',
-        colors: { primary: '#3B82F6', highPoint: '#FF0000' },
-        groupId: 'group1',
-      }];
+      const sparklines = [
+        {
+          id: 'sp1',
+          type: 'line' as const,
+          dataRange: 'B2:L2',
+          locationCell: 'M2',
+          colors: { primary: '#3B82F6', highPoint: '#FF0000' },
+          groupId: 'group1',
+        },
+      ];
 
       const json = serialize({
         sheets: [createTestSheet({ sparklines })],
@@ -464,20 +492,24 @@ describe('tabulaSerializer', () => {
     });
 
     it('restores row/col group definitions (round-trip)', () => {
-      const rowGroups = [{
-        id: 'rg1',
-        start: 2,
-        end: 5,
-        level: 1,
-        collapsed: true,
-      }];
-      const colGroups = [{
-        id: 'cg1',
-        start: 1,
-        end: 3,
-        level: 1,
-        collapsed: false,
-      }];
+      const rowGroups = [
+        {
+          id: 'rg1',
+          start: 2,
+          end: 5,
+          level: 1,
+          collapsed: true,
+        },
+      ];
+      const colGroups = [
+        {
+          id: 'cg1',
+          start: 1,
+          end: 3,
+          level: 1,
+          collapsed: false,
+        },
+      ];
 
       const json = serialize({
         sheets: [createTestSheet({ rowGroups, colGroups })],
@@ -501,19 +533,21 @@ describe('tabulaSerializer', () => {
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01',
         workbook: {
-          sheets: [{
-            id: 'sheet1',
-            name: 'Sheet1',
-            cells: { A1: { rawValue: 'test' } },
-            colCount: 26,
-            rowCount: 100,
-            colWidths: {},
-            rowHeights: {},
-            frozenRows: 0,
-            frozenCols: 0,
-            conditionalFormatRules: [],
-            // No sparklines, rowGroups, colGroups fields
-          }],
+          sheets: [
+            {
+              id: 'sheet1',
+              name: 'Sheet1',
+              cells: { A1: { rawValue: 'test' } },
+              colCount: 26,
+              rowCount: 100,
+              colWidths: {},
+              rowHeights: {},
+              frozenRows: 0,
+              frozenCols: 0,
+              conditionalFormatRules: [],
+              // No sparklines, rowGroups, colGroups fields
+            },
+          ],
           activeSheetId: 'sheet1',
         },
       });
@@ -539,12 +573,14 @@ describe('tabulaSerializer', () => {
 
     it('restores tabColor, hidden, hiddenRows, hiddenCols (round-trip)', () => {
       const json = serialize({
-        sheets: [createTestSheet({
-          tabColor: '#FF0000',
-          hidden: true,
-          hiddenRows: [1, 3],
-          hiddenCols: [2],
-        })],
+        sheets: [
+          createTestSheet({
+            tabColor: '#FF0000',
+            hidden: true,
+            hiddenRows: [1, 3],
+            hiddenCols: [2],
+          }),
+        ],
         activeSheetId: 'sheet1',
         colWidths: new Map(),
         rowHeights: new Map(),
@@ -576,11 +612,13 @@ describe('tabulaSerializer', () => {
 
     it('restores filterRange, filterState, and filterConditions (round-trip)', () => {
       const json = serialize({
-        sheets: [createTestSheet({
-          filterRange: { startCol: 0, endCol: 2, startRow: 0, endRow: 9 },
-          filterState: new Map([[1, new Set(['Tokyo', 'Osaka'])]]),
-          filterConditions: { 2: { operator: 'greaterThan', value1: '10' } },
-        })],
+        sheets: [
+          createTestSheet({
+            filterRange: { startCol: 0, endCol: 2, startRow: 0, endRow: 9 },
+            filterState: new Map([[1, new Set(['Tokyo', 'Osaka'])]]),
+            filterConditions: { 2: { operator: 'greaterThan', value1: '10' } },
+          }),
+        ],
         activeSheetId: 'sheet1',
         colWidths: new Map(),
         rowHeights: new Map(),

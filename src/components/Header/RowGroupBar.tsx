@@ -23,9 +23,12 @@ export const RowGroupBar = memo(function RowGroupBar({
   onSetExpandLevel,
   totalHeight,
 }: RowGroupBarProps) {
-  const handleLevelClick = useCallback((level: number) => {
-    onSetExpandLevel(level);
-  }, [onSetExpandLevel]);
+  const handleLevelClick = useCallback(
+    (level: number) => {
+      onSetExpandLevel(level);
+    },
+    [onSetExpandLevel],
+  );
 
   if (maxLevel === 0) return null;
 
@@ -39,10 +42,7 @@ export const RowGroupBar = memo(function RowGroupBar({
   }
 
   return (
-    <div
-      className="relative"
-      style={{ width, height: totalHeight }}
-    >
+    <div className="relative" style={{ width, height: totalHeight }}>
       {/* Level buttons at the top */}
       <div
         className="sticky top-0 flex flex-col items-center gap-0 bg-header-bg z-10 border-b border-grid-line"

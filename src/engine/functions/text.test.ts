@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { evaluate } from '../evaluator';
 import { parse } from '../parser';
 import type { FormulaResult, RangeExpander, SpillResult } from '../types';
@@ -21,14 +21,22 @@ function evalFormula(formula: string, cellValues: Record<string, FormulaResult>)
   const resolve = (key: string): FormulaResult => cellValues[key] ?? '';
   const ast = parse(formula);
   const result = evaluate(ast, resolve, expandRange);
-  if (typeof result === 'object' && result !== null && 'type' in result && result.type === 'spill') {
+  if (
+    typeof result === 'object' &&
+    result !== null &&
+    'type' in result &&
+    result.type === 'spill'
+  ) {
     return { type: 'error', code: '#VALUE!' };
   }
   return result as FormulaResult;
 }
 
 /** Like evalFormula, but preserves spill results (for SPLIT/TEXTSPLIT/REGEXEXTRACT). */
-function evalToSpill(formula: string, cellValues: Record<string, FormulaResult> = {}): FormulaResult | SpillResult {
+function evalToSpill(
+  formula: string,
+  cellValues: Record<string, FormulaResult> = {},
+): FormulaResult | SpillResult {
   const resolve = (key: string): FormulaResult => cellValues[key] ?? '';
   const ast = parse(formula);
   return evaluate(ast, resolve, expandRange);
@@ -37,14 +45,17 @@ function evalToSpill(formula: string, cellValues: Record<string, FormulaResult> 
 describe('TEXTJOIN', () => {
   it('joins text with delimiter', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 'Hello', A2: 'World', A3: 'Test',
+      A1: 'Hello',
+      A2: 'World',
+      A3: 'Test',
     };
     expect(evalFormula('TEXTJOIN(",",TRUE,A1:A3)', vals)).toBe('Hello,World,Test');
   });
 
   it('ignores empty cells when ignore_empty is TRUE', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 'Hello', A3: 'Test',
+      A1: 'Hello',
+      A3: 'Test',
       // A2 is empty
     };
     expect(evalFormula('TEXTJOIN(",",TRUE,A1:A3)', vals)).toBe('Hello,Test');
@@ -52,14 +63,17 @@ describe('TEXTJOIN', () => {
 
   it('includes empty cells when ignore_empty is FALSE', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 'Hello', A3: 'Test',
+      A1: 'Hello',
+      A3: 'Test',
     };
     expect(evalFormula('TEXTJOIN(",",FALSE,A1:A3)', vals)).toBe('Hello,,Test');
   });
 
   it('works with range arguments', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 'A', A2: 'B', A3: 'C',
+      A1: 'A',
+      A2: 'B',
+      A3: 'C',
     };
     expect(evalFormula('TEXTJOIN("-",TRUE,A1:A3)', vals)).toBe('A-B-C');
   });
@@ -132,7 +146,10 @@ describe('SEARCH', () => {
   });
 
   it('returns #VALUE! when not found', () => {
-    expect(evalFormula('SEARCH("xyz","hello world")', {})).toEqual({ type: 'error', code: '#VALUE!' });
+    expect(evalFormula('SEARCH("xyz","hello world")', {})).toEqual({
+      type: 'error',
+      code: '#VALUE!',
+    });
   });
 });
 
@@ -278,11 +295,17 @@ describe('SPLIT', () => {
   });
 
   it('splits on each character of the delimiter when split_by_each is TRUE', () => {
-    expect(evalToSpill('SPLIT("a,b;c",",;")')).toEqual({ type: 'spill', values: [['a', 'b', 'c']] });
+    expect(evalToSpill('SPLIT("a,b;c",",;")')).toEqual({
+      type: 'spill',
+      values: [['a', 'b', 'c']],
+    });
   });
 
   it('keeps empty segments when remove_empty_text is FALSE', () => {
-    expect(evalToSpill('SPLIT("a,,b",",",TRUE,FALSE)')).toEqual({ type: 'spill', values: [['a', '', 'b']] });
+    expect(evalToSpill('SPLIT("a,,b",",",TRUE,FALSE)')).toEqual({
+      type: 'spill',
+      values: [['a', '', 'b']],
+    });
   });
 });
 
@@ -290,14 +313,20 @@ describe('TEXTSPLIT', () => {
   it('splits into a 2D array using row and column delimiters', () => {
     expect(evalToSpill('TEXTSPLIT("a,b;c,d",",",";")')).toEqual({
       type: 'spill',
-      values: [['a', 'b'], ['c', 'd']],
+      values: [
+        ['a', 'b'],
+        ['c', 'd'],
+      ],
     });
   });
 
   it('pads ragged rows with pad_with', () => {
     expect(evalToSpill('TEXTSPLIT("a,b;c",",",";",FALSE,0,"-")')).toEqual({
       type: 'spill',
-      values: [['a', 'b'], ['c', '-']],
+      values: [
+        ['a', 'b'],
+        ['c', '-'],
+      ],
     });
   });
 });
@@ -324,7 +353,10 @@ describe('REGEXMATCH / REGEXEXTRACT / REGEXREPLACE', () => {
   });
 
   it('REGEXEXTRACT returns #N/A when there is no match', () => {
-    expect(evalFormula('REGEXEXTRACT("abc","[0-9]+")', {})).toEqual({ type: 'error', code: '#N/A' });
+    expect(evalFormula('REGEXEXTRACT("abc","[0-9]+")', {})).toEqual({
+      type: 'error',
+      code: '#N/A',
+    });
   });
 
   it('REGEXREPLACE replaces every match', () => {

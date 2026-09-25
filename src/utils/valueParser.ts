@@ -39,7 +39,7 @@ const CURRENCY_SYMBOLS = ['¥', '￥', '$', '€', '£'];
 function tryCurrency(trimmed: string): ParsedInput | undefined {
   for (const sym of CURRENCY_SYMBOLS) {
     const re = new RegExp(
-      `^([+-]?)${escapeRegExp(sym)}\\s*([+-]?)(\\d{1,3}(?:,\\d{3})+|\\d+)(\\.(\\d+))?$`
+      `^([+-]?)${escapeRegExp(sym)}\\s*([+-]?)(\\d{1,3}(?:,\\d{3})+|\\d+)(\\.(\\d+))?$`,
     );
     const m = trimmed.match(re);
     if (!m) continue;
@@ -85,7 +85,10 @@ function tryDate(trimmed: string): ParsedInput | undefined {
       const mo = Number(dateOnlyMatch[2]);
       const d = Number(dateOnlyMatch[3]);
       if (!isValidYmd(y, mo, d)) return undefined;
-      return { value: ymdToSerial(y, mo, d), formatHint: { numberFormat: 'date', pattern: variant.hint } };
+      return {
+        value: ymdToSerial(y, mo, d),
+        formatHint: { numberFormat: 'date', pattern: variant.hint },
+      };
     }
     const withTimeMatch = trimmed.match(new RegExp('^' + dateOnlySource + '\\s+(.+)$'));
     if (withTimeMatch) {
@@ -101,7 +104,10 @@ function tryDate(trimmed: string): ParsedInput | undefined {
       if (h < 0 || h > 23 || mi < 0 || mi > 59 || s < 0 || s > 59) return undefined;
       const serial = ymdToSerial(y, mo, d) + timeToFraction(h, mi, s);
       const timeHint = timeMatch[3] !== undefined ? 'h:mm:ss' : 'h:mm';
-      return { value: serial, formatHint: { numberFormat: 'datetime', pattern: variant.hint + ' ' + timeHint } };
+      return {
+        value: serial,
+        formatHint: { numberFormat: 'datetime', pattern: variant.hint + ' ' + timeHint },
+      };
     }
   }
 
@@ -112,7 +118,10 @@ function tryDate(trimmed: string): ParsedInput | undefined {
     if (mo < 1 || mo > 12 || d < 1 || d > 31) return undefined;
     const year = new Date().getFullYear();
     if (!isValidYmd(year, mo, d)) return undefined;
-    return { value: ymdToSerial(year, mo, d), formatHint: { numberFormat: 'date', pattern: 'm/d' } };
+    return {
+      value: ymdToSerial(year, mo, d),
+      formatHint: { numberFormat: 'date', pattern: 'm/d' },
+    };
   }
 
   return undefined;

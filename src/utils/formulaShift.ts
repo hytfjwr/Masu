@@ -69,13 +69,30 @@ function matchRefAt(
     if (m[5] !== undefined) {
       const c2 = { col: colLetterToIndex(m[6].toUpperCase()), colAbs: m[5] === '$' };
       const r2 = { row: parseInt(m[8], 10) - 1, rowAbs: m[7] === '$' };
-      tokens.push({ start: tokenStart, end: refPos + matchLen, sheetPrefix, kind: 'range', c1, r1, c2, r2 });
+      tokens.push({
+        start: tokenStart,
+        end: refPos + matchLen,
+        sheetPrefix,
+        kind: 'range',
+        c1,
+        r1,
+        c2,
+        r2,
+      });
     } else {
       const tail = OPEN_RANGE_TAIL_RE.exec(rest.slice(matchLen));
       if (tail && !isWordChar(rest[matchLen + tail[0].length])) {
         const c2 = { col: colLetterToIndex(tail[2].toUpperCase()), colAbs: tail[1] === '$' };
         const fullLen = matchLen + tail[0].length;
-        tokens.push({ start: tokenStart, end: refPos + fullLen, sheetPrefix, kind: 'openRange', c1, r1, c2 });
+        tokens.push({
+          start: tokenStart,
+          end: refPos + fullLen,
+          sheetPrefix,
+          kind: 'openRange',
+          c1,
+          r1,
+          c2,
+        });
         return fullLen;
       }
       tokens.push({ start: tokenStart, end: refPos + matchLen, sheetPrefix, kind: 'cell', c1, r1 });
@@ -288,7 +305,12 @@ function prefixSheetName(prefix: string): string {
  * insert at/before the span moves it, inside it grows it; deleting inside shrinks it,
  * deleting the only row/column makes it null (#REF!). `b` may be null (open-ended).
  */
-function shiftSpan(a: number, b: number | null, index: number, op: 'insert' | 'delete'): [number, number | null] | null {
+function shiftSpan(
+  a: number,
+  b: number | null,
+  index: number,
+  op: 'insert' | 'delete',
+): [number, number | null] | null {
   if (op === 'insert') {
     const na = a >= index ? a + 1 : a;
     const nb = b === null ? null : b >= index ? b + 1 : b;
@@ -324,9 +346,11 @@ export function updateRefsForStructureChange(
     lastEnd = token.end;
     const original = formula.slice(token.start, token.end);
 
-    const applies = token.sheetPrefix === ''
-      ? appliesToUnqualified
-      : targetSheetName !== undefined && prefixSheetName(token.sheetPrefix).toLowerCase() === targetSheetName.toLowerCase();
+    const applies =
+      token.sheetPrefix === ''
+        ? appliesToUnqualified
+        : targetSheetName !== undefined &&
+          prefixSheetName(token.sheetPrefix).toLowerCase() === targetSheetName.toLowerCase();
     if (!applies) {
       result += original;
       continue;

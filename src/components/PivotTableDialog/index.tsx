@@ -12,7 +12,11 @@ interface PivotTableDialogProps {
   sheets: SheetData[];
   activeSheetId: string;
   getCellData: (col: number, row: number) => CellData | undefined;
-  onCreatePivot: (config: PivotTableConfig, outputSheet: SheetData, outputCells: Array<{ col: number; row: number; value: string }>) => void;
+  onCreatePivot: (
+    config: PivotTableConfig,
+    outputSheet: SheetData,
+    outputCells: Array<{ col: number; row: number; value: string }>,
+  ) => void;
 }
 
 const AGG_OPTIONS: { value: AggregationType; label: string }[] = [
@@ -103,9 +107,7 @@ export const PivotTableDialog = memo(function PivotTableDialog({
     (e: React.DragEvent, targetArea: FieldArea) => {
       e.preventDefault();
       if (dragItem === null) return;
-      setFields((prev) =>
-        prev.map((f) => (f.index === dragItem ? { ...f, area: targetArea } : f)),
-      );
+      setFields((prev) => prev.map((f) => (f.index === dragItem ? { ...f, area: targetArea } : f)));
       setDragItem(null);
     },
     [dragItem],
@@ -116,21 +118,15 @@ export const PivotTableDialog = memo(function PivotTableDialog({
   }, []);
 
   const handleRemoveFromArea = useCallback((index: number) => {
-    setFields((prev) =>
-      prev.map((f) => (f.index === index ? { ...f, area: 'available' } : f)),
-    );
+    setFields((prev) => prev.map((f) => (f.index === index ? { ...f, area: 'available' } : f)));
   }, []);
 
   const handleAggChange = useCallback((index: number, agg: AggregationType) => {
-    setFields((prev) =>
-      prev.map((f) => (f.index === index ? { ...f, aggregation: agg } : f)),
-    );
+    setFields((prev) => prev.map((f) => (f.index === index ? { ...f, aggregation: agg } : f)));
   }, []);
 
   const handleFormatChange = useCallback((index: number, fmt: NumberFormat) => {
-    setFields((prev) =>
-      prev.map((f) => (f.index === index ? { ...f, numberFormat: fmt } : f)),
-    );
+    setFields((prev) => prev.map((f) => (f.index === index ? { ...f, numberFormat: fmt } : f)));
   }, []);
 
   const handleConfirm = useCallback(() => {
@@ -217,7 +213,16 @@ export const PivotTableDialog = memo(function PivotTableDialog({
 
     onCreatePivot(pivotConfig, outputSheet, outputCells);
     onClose();
-  }, [activeSheet, fields, sourceRange, getCellData, sheets, activeSheetId, onCreatePivot, onClose]);
+  }, [
+    activeSheet,
+    fields,
+    sourceRange,
+    getCellData,
+    sheets,
+    activeSheetId,
+    onCreatePivot,
+    onClose,
+  ]);
 
   const handleBackdropMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -276,7 +281,9 @@ export const PivotTableDialog = memo(function PivotTableDialog({
               <div className="grid grid-cols-2 gap-3">
                 {/* Available fields */}
                 <div>
-                  <div className="text-xs text-text-primary/70 mb-1 font-medium">フィールド一覧</div>
+                  <div className="text-xs text-text-primary/70 mb-1 font-medium">
+                    フィールド一覧
+                  </div>
                   <div
                     className="min-h-[80px] bg-ui-bg border border-grid-line rounded p-1 space-y-0.5"
                     onDragOver={handleDragOver}
@@ -360,7 +367,9 @@ export const PivotTableDialog = memo(function PivotTableDialog({
                       <span className="flex-1 truncate">{f.name}</span>
                       <select
                         value={f.aggregation}
-                        onChange={(e) => handleAggChange(f.index, e.target.value as AggregationType)}
+                        onChange={(e) =>
+                          handleAggChange(f.index, e.target.value as AggregationType)
+                        }
                         className="h-5 px-1 text-[10px] bg-ui-bg text-text-primary border border-grid-line rounded outline-none"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -372,7 +381,9 @@ export const PivotTableDialog = memo(function PivotTableDialog({
                       </select>
                       <select
                         value={f.numberFormat}
-                        onChange={(e) => handleFormatChange(f.index, e.target.value as NumberFormat)}
+                        onChange={(e) =>
+                          handleFormatChange(f.index, e.target.value as NumberFormat)
+                        }
                         className="h-5 px-1 text-[10px] bg-ui-bg text-text-primary border border-grid-line rounded outline-none"
                         onClick={(e) => e.stopPropagation()}
                       >

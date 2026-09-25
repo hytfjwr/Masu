@@ -1,16 +1,24 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { detectDelimiter, findDuplicateRows, normalizeWhitespace, splitText } from './dataCleanup';
 
 describe('findDuplicateRows', () => {
   it('keeps the first occurrence and flags later duplicates', () => {
-    const rows = [['a', '1'], ['b', '2'], ['a', '1'], ['a', '3']];
+    const rows = [
+      ['a', '1'],
+      ['b', '2'],
+      ['a', '1'],
+      ['a', '3'],
+    ];
     const result = findDuplicateRows(rows, [0, 1]);
     expect(result.keptRowIndices).toEqual([0, 1, 3]);
     expect(result.duplicateCount).toBe(1);
   });
 
   it('only compares the given check columns', () => {
-    const rows = [['a', '1'], ['a', '2']];
+    const rows = [
+      ['a', '1'],
+      ['a', '2'],
+    ];
     const result = findDuplicateRows(rows, [0]);
     expect(result.keptRowIndices).toEqual([0]);
     expect(result.duplicateCount).toBe(1);

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { computeSparklineCommands } from './renderer';
 import type { DrawCommand, LineCommand, RectCommand, CircleCommand } from './renderer';
 import type { SparklineColors } from '../types/sparkline';
@@ -80,10 +80,10 @@ describe('computeSparklineCommands', () => {
       const circles = filterCircles(cmds);
       expect(circles).toHaveLength(2);
       // High point marker (value 10, index 1)
-      const highMarker = circles.find(c => c.color === '#FF0000');
+      const highMarker = circles.find((c) => c.color === '#FF0000');
       expect(highMarker).toBeDefined();
       // Low point marker (value 3, index 2)
-      const lowMarker = circles.find(c => c.color === '#00FF00');
+      const lowMarker = circles.find((c) => c.color === '#00FF00');
       expect(lowMarker).toBeDefined();
     });
 
@@ -107,7 +107,7 @@ describe('computeSparklineCommands', () => {
       const lines = filterLines(cmds);
       expect(lines).toHaveLength(1);
       // All y-coordinates should be the same (middle of chart)
-      const ys = lines[0].points.map(p => p.y);
+      const ys = lines[0].points.map((p) => p.y);
       const uniqueYs = [...new Set(ys)];
       expect(uniqueYs).toHaveLength(1);
     });
@@ -139,7 +139,7 @@ describe('computeSparklineCommands', () => {
       const values = [1, 2, 3];
       const cmds = computeSparklineCommands('bar', values, 100, 24, defaultColors);
       const rects = filterRects(cmds);
-      const widths = rects.map(r => r.width);
+      const widths = rects.map((r) => r.width);
       expect(new Set(widths).size).toBe(1);
     });
 
@@ -203,7 +203,14 @@ describe('computeSparklineCommands', () => {
     it('uses groupScale for bar type', () => {
       const values = [5];
       const groupScale = { min: 0, max: 100 };
-      const cmdsWithGroup = computeSparklineCommands('bar', values, 100, 24, defaultColors, groupScale);
+      const cmdsWithGroup = computeSparklineCommands(
+        'bar',
+        values,
+        100,
+        24,
+        defaultColors,
+        groupScale,
+      );
       const cmdsWithout = computeSparklineCommands('bar', values, 100, 24, defaultColors);
       const rectWith = filterRects(cmdsWithGroup)[0];
       const rectWithout = filterRects(cmdsWithout)[0];

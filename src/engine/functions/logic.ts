@@ -85,8 +85,10 @@ const IF: FunctionMeta = {
     const elseNode = argNodes[2];
 
     if (isSpillResult(condVal)) {
-      const thenVal: EvalValue = thenNode === undefined ? false : thenNode.kind === 'EmptyArg' ? 0 : ctx.evalNode!(thenNode);
-      const elseVal: EvalValue = elseNode === undefined ? false : elseNode.kind === 'EmptyArg' ? 0 : ctx.evalNode!(elseNode);
+      const thenVal: EvalValue =
+        thenNode === undefined ? false : thenNode.kind === 'EmptyArg' ? 0 : ctx.evalNode!(thenNode);
+      const elseVal: EvalValue =
+        elseNode === undefined ? false : elseNode.kind === 'EmptyArg' ? 0 : ctx.evalNode!(elseNode);
       if (isLambdaValue(thenVal) || isLambdaValue(elseVal)) return makeError('#VALUE!');
       return broadcastIf(condVal, thenVal, elseVal);
     }
@@ -118,9 +120,12 @@ const IFERROR: FunctionMeta = {
     const val = ctx.evalNode!(argNodes[0]);
     if (isLambdaValue(val)) return makeError('#VALUE!');
     if (isSpillResult(val)) {
-      if (!val.values.some(row => row.some(isFormulaError))) return val;
+      if (!val.values.some((row) => row.some(isFormulaError))) return val;
       const fallback = asScalar(ctx.evalNode!(argNodes[1]));
-      return { type: 'spill', values: val.values.map(row => row.map(v => (isFormulaError(v) ? fallback : v))) };
+      return {
+        type: 'spill',
+        values: val.values.map((row) => row.map((v) => (isFormulaError(v) ? fallback : v))),
+      };
     }
     if (isFormulaError(val)) return ctx.evalNode!(argNodes[1]);
     return val;
@@ -138,9 +143,12 @@ const IFNA: FunctionMeta = {
     if (isLambdaValue(val)) return makeError('#VALUE!');
     const isNA = (v: FormulaResult) => isFormulaError(v) && v.code === '#N/A';
     if (isSpillResult(val)) {
-      if (!val.values.some(row => row.some(isNA))) return val;
+      if (!val.values.some((row) => row.some(isNA))) return val;
       const fallback = asScalar(ctx.evalNode!(argNodes[1]));
-      return { type: 'spill', values: val.values.map(row => row.map(v => (isNA(v) ? fallback : v))) };
+      return {
+        type: 'spill',
+        values: val.values.map((row) => row.map((v) => (isNA(v) ? fallback : v))),
+      };
     }
     if (isNA(val as FormulaResult)) return ctx.evalNode!(argNodes[1]);
     return val;
@@ -273,18 +281,18 @@ const MAP: FunctionMeta = {
     const lambdaVal = ctx.evalNode!(argNodes[argNodes.length - 1]);
     if (!isLambdaValue(lambdaVal)) return makeError('#VALUE!');
 
-    const arrays = argNodes.slice(0, -1).map(n => ctx.evalNode!(n));
+    const arrays = argNodes.slice(0, -1).map((n) => ctx.evalNode!(n));
     if (arrays.some(isLambdaValue)) return makeError('#VALUE!');
     const shapes = arrays.map(shapeOf);
     const rows = shapes[0].rows;
     const cols = shapes[0].cols;
-    if (shapes.some(s => s.rows !== rows || s.cols !== cols)) return makeError('#VALUE!');
+    if (shapes.some((s) => s.rows !== rows || s.cols !== cols)) return makeError('#VALUE!');
 
     const values: FormulaResult[][] = [];
     for (let r = 0; r < rows; r++) {
       const row: FormulaResult[] = [];
       for (let c = 0; c < cols; c++) {
-        const callArgs = shapes.map(s => pick(s, r, c));
+        const callArgs = shapes.map((s) => pick(s, r, c));
         row.push(asScalar(ctx.callLambda!(lambdaVal, callArgs)));
       }
       values.push(row);
@@ -559,6 +567,24 @@ const FALSE_FN: FunctionMeta = {
 };
 
 export const logicFunctions: FunctionMeta[] = [
-  IF, IFERROR, IFNA, IFS, SWITCH, CHOOSE, LET, LAMBDA, MAP, REDUCE, SCAN, BYROW, BYCOL, MAKEARRAY,
-  AND, OR, NOT, XOR, TRUE_FN, FALSE_FN,
+  IF,
+  IFERROR,
+  IFNA,
+  IFS,
+  SWITCH,
+  CHOOSE,
+  LET,
+  LAMBDA,
+  MAP,
+  REDUCE,
+  SCAN,
+  BYROW,
+  BYCOL,
+  MAKEARRAY,
+  AND,
+  OR,
+  NOT,
+  XOR,
+  TRUE_FN,
+  FALSE_FN,
 ];

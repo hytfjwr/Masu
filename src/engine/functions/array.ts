@@ -12,7 +12,14 @@ import type {
   FunctionReturnValue,
 } from '../types';
 import { isFormulaError, makeError } from '../types';
-import { argToFlat, argToGrid, isMultiValued, makeSpill, resolveNumber, resolveScalar } from './helpers';
+import {
+  argToFlat,
+  argToGrid,
+  isMultiValued,
+  makeSpill,
+  resolveNumber,
+  resolveScalar,
+} from './helpers';
 import { compareValues, toBoolean, toNumber } from '../coerce';
 
 function transpose(grid: FormulaResult[][]): FormulaResult[][] {
@@ -36,7 +43,13 @@ function argToBoolean(arg: FunctionArgValue, ctx: FunctionContext) {
 /** Case-insensitive row/column key for uniqueness comparisons. */
 function lineKey(line: FormulaResult[]): string {
   return line
-    .map(v => (isFormulaError(v) ? `E:${v.code}` : typeof v === 'string' ? `S:${v.toLowerCase()}` : `V:${String(v)}`))
+    .map((v) =>
+      isFormulaError(v)
+        ? `E:${v.code}`
+        : typeof v === 'string'
+          ? `S:${v.toLowerCase()}`
+          : `V:${String(v)}`,
+    )
     .join('\u0000');
 }
 
@@ -285,7 +298,7 @@ const SORTBY: FunctionMeta = {
       const byRows = byGrid.length;
       const byCols = byGrid[0]?.length ?? 0;
       let flat: FormulaResult[];
-      if (byCols === 1) flat = byGrid.map(r => r[0]);
+      if (byCols === 1) flat = byGrid.map((r) => r[0]);
       else if (byRows === 1) flat = byGrid[0];
       else return makeError('#VALUE!');
       if (flat.length !== rows) return makeError('#VALUE!');
@@ -311,7 +324,7 @@ const SORTBY: FunctionMeta = {
       return 0; // Array.prototype.sort is stable (ES2019+)
     });
 
-    return makeSpill(indices.map(idx => grid[idx]));
+    return makeSpill(indices.map((idx) => grid[idx]));
   },
 };
 
@@ -347,7 +360,7 @@ function flattenGrid(grid: FormulaResult[][], byColumn: boolean): FormulaResult[
 
 /** Apply TOCOL/TOROW's `ignore` option: 0 none, 1 blanks, 2 errors, 3 both. */
 function applyIgnore(values: FormulaResult[], ignore: number): FormulaResult[] {
-  return values.filter(v => {
+  return values.filter((v) => {
     if ((ignore === 1 || ignore === 3) && v === '') return false;
     if ((ignore === 2 || ignore === 3) && isFormulaError(v)) return false;
     return true;
@@ -388,7 +401,7 @@ const TOCOL: FunctionMeta = {
     const grid = argToGrid(args[0], ctx);
     const filtered = applyIgnore(flattenGrid(grid, opts.byColumn), opts.ignore);
     if (filtered.length === 0) return makeError('#N/A');
-    return makeSpill(filtered.map(v => [v]));
+    return makeSpill(filtered.map((v) => [v]));
   },
 };
 
@@ -430,7 +443,7 @@ const CHOOSECOLS: FunctionMeta = {
       colIndices.push(idx - 1);
     }
 
-    return makeSpill(grid.map(row => colIndices.map(ci => row[ci])));
+    return makeSpill(grid.map((row) => colIndices.map((ci) => row[ci])));
   },
 };
 
@@ -453,7 +466,7 @@ const CHOOSEROWS: FunctionMeta = {
       rowIndices.push(idx - 1);
     }
 
-    return makeSpill(rowIndices.map(ri => grid[ri]));
+    return makeSpill(rowIndices.map((ri) => grid[ri]));
   },
 };
 
@@ -461,7 +474,10 @@ const CHOOSEROWS: FunctionMeta = {
 // TAKE / DROP
 // ============================================================
 /** Resolve a TAKE/DROP rows/columns count argument; `null` means "omitted" (keep everything). */
-function resolveTakeCount(arg: FunctionArgValue, ctx: FunctionContext): number | FormulaError | null {
+function resolveTakeCount(
+  arg: FunctionArgValue,
+  ctx: FunctionContext,
+): number | FormulaError | null {
   if (arg.kind === 'omitted') return null;
   const n = resolveNumber(arg, ctx);
   if (isFormulaError(n)) return n;
@@ -487,17 +503,29 @@ const TAKE: FunctionMeta = {
     let rowEnd = totalRows;
     if (rowsCount !== null) {
       const n = Math.min(Math.abs(rowsCount), totalRows);
-      if (rowsCount >= 0) { rowStart = 0; rowEnd = n; } else { rowStart = totalRows - n; rowEnd = totalRows; }
+      if (rowsCount >= 0) {
+        rowStart = 0;
+        rowEnd = n;
+      } else {
+        rowStart = totalRows - n;
+        rowEnd = totalRows;
+      }
     }
     let colStart = 0;
     let colEnd = totalCols;
     if (colsCount !== null) {
       const n = Math.min(Math.abs(colsCount), totalCols);
-      if (colsCount >= 0) { colStart = 0; colEnd = n; } else { colStart = totalCols - n; colEnd = totalCols; }
+      if (colsCount >= 0) {
+        colStart = 0;
+        colEnd = n;
+      } else {
+        colStart = totalCols - n;
+        colEnd = totalCols;
+      }
     }
 
     if (rowStart >= rowEnd || colStart >= colEnd) return makeError('#N/A');
-    return makeSpill(grid.slice(rowStart, rowEnd).map(row => row.slice(colStart, colEnd)));
+    return makeSpill(grid.slice(rowStart, rowEnd).map((row) => row.slice(colStart, colEnd)));
   },
 };
 
@@ -520,17 +548,19 @@ const DROP: FunctionMeta = {
     let rowEnd = totalRows;
     if (rowsCount !== null) {
       const n = Math.min(Math.abs(rowsCount), totalRows);
-      if (rowsCount >= 0) rowStart = n; else rowEnd = totalRows - n;
+      if (rowsCount >= 0) rowStart = n;
+      else rowEnd = totalRows - n;
     }
     let colStart = 0;
     let colEnd = totalCols;
     if (colsCount !== null) {
       const n = Math.min(Math.abs(colsCount), totalCols);
-      if (colsCount >= 0) colStart = n; else colEnd = totalCols - n;
+      if (colsCount >= 0) colStart = n;
+      else colEnd = totalCols - n;
     }
 
     if (rowStart >= rowEnd || colStart >= colEnd) return makeError('#N/A');
-    return makeSpill(grid.slice(rowStart, rowEnd).map(row => row.slice(colStart, colEnd)));
+    return makeSpill(grid.slice(rowStart, rowEnd).map((row) => row.slice(colStart, colEnd)));
   },
 };
 
@@ -543,8 +573,8 @@ const HSTACK: FunctionMeta = {
   description: '複数の配列を左右に連結します',
   impl(args: FunctionArgValue[], ctx: FunctionContext): FunctionReturnValue {
     if (args.length < 1) return makeError('#VALUE!');
-    const grids = args.map(a => argToGrid(a, ctx));
-    const maxRows = Math.max(...grids.map(g => g.length));
+    const grids = args.map((a) => argToGrid(a, ctx));
+    const maxRows = Math.max(...grids.map((g) => g.length));
 
     const result: FormulaResult[][] = [];
     for (let r = 0; r < maxRows; r++) {
@@ -569,8 +599,8 @@ const VSTACK: FunctionMeta = {
   description: '複数の配列を上下に連結します',
   impl(args: FunctionArgValue[], ctx: FunctionContext): FunctionReturnValue {
     if (args.length < 1) return makeError('#VALUE!');
-    const grids = args.map(a => argToGrid(a, ctx));
-    const maxCols = Math.max(...grids.map(g => g[0]?.length ?? 0));
+    const grids = args.map((a) => argToGrid(a, ctx));
+    const maxCols = Math.max(...grids.map((g) => g[0]?.length ?? 0));
 
     const result: FormulaResult[][] = [];
     for (const g of grids) {
@@ -713,7 +743,7 @@ const ARRAY_CONSTRAIN: FunctionMeta = {
     if (isFormulaError(cv)) return cv;
     const numRows = Math.max(1, Math.trunc(rv));
     const numCols = Math.max(1, Math.trunc(cv));
-    return makeSpill(grid.slice(0, numRows).map(row => row.slice(0, numCols)));
+    return makeSpill(grid.slice(0, numRows).map((row) => row.slice(0, numCols)));
   },
 };
 
@@ -864,13 +894,32 @@ const FREQUENCY: FunctionMeta = {
       }
       if (!placed) counts[counts.length - 1]++;
     }
-    return makeSpill(counts.map(c => [c]));
+    return makeSpill(counts.map((c) => [c]));
   },
 };
 
 export const arrayFunctions: FunctionMeta[] = [
-  UNIQUE, SORT_FN, FILTER_FN, SEQUENCE,
-  TRANSPOSE_FN, SORTBY, FLATTEN, TOCOL, TOROW, CHOOSECOLS, CHOOSEROWS, TAKE, DROP,
-  HSTACK, VSTACK, WRAPROWS, WRAPCOLS, EXPAND, ARRAYFORMULA, ARRAY_CONSTRAIN,
-  RANDARRAY, MMULT, FREQUENCY,
+  UNIQUE,
+  SORT_FN,
+  FILTER_FN,
+  SEQUENCE,
+  TRANSPOSE_FN,
+  SORTBY,
+  FLATTEN,
+  TOCOL,
+  TOROW,
+  CHOOSECOLS,
+  CHOOSEROWS,
+  TAKE,
+  DROP,
+  HSTACK,
+  VSTACK,
+  WRAPROWS,
+  WRAPCOLS,
+  EXPAND,
+  ARRAYFORMULA,
+  ARRAY_CONSTRAIN,
+  RANDARRAY,
+  MMULT,
+  FREQUENCY,
 ];

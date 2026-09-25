@@ -153,9 +153,10 @@ function computeBarCommands(
   const range = dataMax - dataMin;
 
   // Zero line position
-  const zeroY = range === 0
-    ? PADDING + drawHeight
-    : PADDING + drawHeight - ((0 - dataMin) / range) * drawHeight;
+  const zeroY =
+    range === 0
+      ? PADDING + drawHeight
+      : PADDING + drawHeight - ((0 - dataMin) / range) * drawHeight;
 
   for (let i = 0; i < values.length; i++) {
     const x = PADDING + i * (barWidth + gap);

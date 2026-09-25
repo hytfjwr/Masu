@@ -34,7 +34,12 @@ export interface DateParts {
 }
 
 /** Resolve the calendar y/m/d (+ weekday) for an integer day serial. */
-function datePartsForDaySerial(daySerial: number): { year: number; month: number; day: number; weekday: number } {
+function datePartsForDaySerial(daySerial: number): {
+  year: number;
+  month: number;
+  day: number;
+  weekday: number;
+} {
   if (daySerial === 60) {
     // Phantom 1900-02-29: no real UTC date exists for this serial.
     return { year: 1900, month: 2, day: 29, weekday: 3 };

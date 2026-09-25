@@ -1,5 +1,11 @@
 import { memo, useCallback } from 'react';
-import type { CellBorders, CellStyle, NumberFormat, TextAlign, VerticalAlign } from '../../types/grid';
+import type {
+  CellBorders,
+  CellStyle,
+  NumberFormat,
+  TextAlign,
+  VerticalAlign,
+} from '../../types/grid';
 import { FONT_SIZES, FONT_FAMILIES } from '../../types/grid';
 import { ColorPicker } from './ColorPicker';
 import { BorderPicker } from './BorderPicker';
@@ -139,7 +145,8 @@ export const Toolbar = memo(function Toolbar({
     [onSetStyle],
   );
 
-  const btnBase = 'flex items-center justify-center w-7 h-7 rounded transition-all duration-100 text-text-primary text-xs active:scale-90 shrink-0';
+  const btnBase =
+    'flex items-center justify-center w-7 h-7 rounded transition-all duration-100 text-text-primary text-xs active:scale-90 shrink-0';
   const btnActive = 'bg-accent-selection/20 text-accent-selection';
   const btnInactive = ''; // hover feedback comes from the shared HoverGlider
   const separator = <div className="w-px h-5 bg-grid-line mx-1 shrink-0" />;
@@ -164,7 +171,16 @@ export const Toolbar = memo(function Toolbar({
           disabled={!canUndo}
           data-testid="toolbar-undo"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M3 7v6h6" />
             <path d="M3 13a9 9 0 1 0 3-7.7L3 7" />
           </svg>
@@ -182,7 +198,16 @@ export const Toolbar = memo(function Toolbar({
           disabled={!canRedo}
           data-testid="toolbar-redo"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M21 7v6h-6" />
             <path d="M21 13a9 9 0 1 1-3-7.7L21 7" />
           </svg>
@@ -201,7 +226,16 @@ export const Toolbar = memo(function Toolbar({
           }}
           data-testid="toolbar-format-painter"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M16 3H8a1 1 0 0 0-1 1v4h10V4a1 1 0 0 0-1-1z" />
             <path d="M7 8h10v4a1 1 0 0 1-1 1h-2v8H10v-8H8a1 1 0 0 1-1-1z" />
           </svg>
@@ -390,7 +424,7 @@ export const Toolbar = memo(function Toolbar({
         label="文字色"
         icon={
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M11 2L5.5 16h2.25l1.12-3h6.25l1.12 3h2.25L13 2h-2zm-1.38 9L12 4.67 14.38 11H9.62z"/>
+            <path d="M11 2L5.5 16h2.25l1.12-3h6.25l1.12 3h2.25L13 2h-2zm-1.38 9L12 4.67 14.38 11H9.62z" />
           </svg>
         }
       />
@@ -404,8 +438,8 @@ export const Toolbar = memo(function Toolbar({
         label="背景色"
         icon={
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15a1.49 1.49 0 000 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z"/>
-            <path d="M2 20h20v4H2z" fill="currentColor" opacity="0.3"/>
+            <path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15a1.49 1.49 0 000 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z" />
+            <path d="M2 20h20v4H2z" fill="currentColor" opacity="0.3" />
           </svg>
         }
       />
@@ -424,7 +458,14 @@ export const Toolbar = memo(function Toolbar({
             onUnmerge?.();
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <rect x="3" y="3" width="18" height="18" rx="1" />
             <line x1="8" y1="12" x2="16" y2="12" />
           </svg>
@@ -440,7 +481,14 @@ export const Toolbar = memo(function Toolbar({
           }}
           disabled={!canMerge}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <rect x="3" y="3" width="18" height="18" rx="1" />
             <line x1="8" y1="8" x2="16" y2="16" />
             <line x1="16" y1="8" x2="8" y2="16" />
@@ -461,8 +509,18 @@ export const Toolbar = memo(function Toolbar({
         }}
         data-testid="toolbar-align-left"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="15" y2="12" /><line x1="3" y1="18" x2="18" y2="18" />
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="15" y2="12" />
+          <line x1="3" y1="18" x2="18" y2="18" />
         </svg>
       </button>
       <button
@@ -475,8 +533,18 @@ export const Toolbar = memo(function Toolbar({
         }}
         data-testid="toolbar-align-center"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <line x1="3" y1="6" x2="21" y2="6" /><line x1="6" y1="12" x2="18" y2="12" /><line x1="4" y1="18" x2="20" y2="18" />
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="6" y1="12" x2="18" y2="12" />
+          <line x1="4" y1="18" x2="20" y2="18" />
         </svg>
       </button>
       <button
@@ -489,8 +557,18 @@ export const Toolbar = memo(function Toolbar({
         }}
         data-testid="toolbar-align-right"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <line x1="3" y1="6" x2="21" y2="6" /><line x1="9" y1="12" x2="21" y2="12" /><line x1="6" y1="18" x2="21" y2="18" />
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="9" y1="12" x2="21" y2="12" />
+          <line x1="6" y1="18" x2="21" y2="18" />
         </svg>
       </button>
 
@@ -505,8 +583,18 @@ export const Toolbar = memo(function Toolbar({
         }}
         data-testid="toolbar-valign-top"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <line x1="3" y1="3" x2="21" y2="3" /><line x1="7" y1="9" x2="17" y2="9" /><line x1="7" y1="14" x2="17" y2="14" />
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <line x1="3" y1="3" x2="21" y2="3" />
+          <line x1="7" y1="9" x2="17" y2="9" />
+          <line x1="7" y1="14" x2="17" y2="14" />
         </svg>
       </button>
       <button
@@ -519,8 +607,18 @@ export const Toolbar = memo(function Toolbar({
         }}
         data-testid="toolbar-valign-middle"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <line x1="3" y1="12" x2="21" y2="12" /><line x1="7" y1="7" x2="17" y2="7" /><line x1="7" y1="17" x2="17" y2="17" />
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="7" y1="7" x2="17" y2="7" />
+          <line x1="7" y1="17" x2="17" y2="17" />
         </svg>
       </button>
       <button
@@ -533,8 +631,18 @@ export const Toolbar = memo(function Toolbar({
         }}
         data-testid="toolbar-valign-bottom"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <line x1="3" y1="21" x2="21" y2="21" /><line x1="7" y1="10" x2="17" y2="10" /><line x1="7" y1="15" x2="17" y2="15" />
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <line x1="3" y1="21" x2="21" y2="21" />
+          <line x1="7" y1="10" x2="17" y2="10" />
+          <line x1="7" y1="15" x2="17" y2="15" />
         </svg>
       </button>
 
@@ -549,7 +657,16 @@ export const Toolbar = memo(function Toolbar({
         }}
         data-testid="toolbar-wrap-text"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <line x1="3" y1="6" x2="21" y2="6" />
           <path d="M3 12h15a3 3 0 1 1 0 6h-4" />
           <polyline points="13 15 11 18 13 21" />

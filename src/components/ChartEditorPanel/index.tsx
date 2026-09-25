@@ -31,26 +31,40 @@ function ChartTypeIcon({ type }: { type: ChartType }) {
     case 'bar':
       return (
         <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
-          <rect x="2" y="10" width="3" height="8" /><rect x="8.5" y="4" width="3" height="14" /><rect x="15" y="7" width="3" height="11" />
+          <rect x="2" y="10" width="3" height="8" />
+          <rect x="8.5" y="4" width="3" height="14" />
+          <rect x="15" y="7" width="3" height="11" />
         </svg>
       );
     case 'horizontalBar':
       return (
         <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
-          <rect x="2" y="2" width="14" height="3" /><rect x="2" y="8.5" width="9" height="3" /><rect x="2" y="15" width="16" height="3" />
+          <rect x="2" y="2" width="14" height="3" />
+          <rect x="2" y="8.5" width="9" height="3" />
+          <rect x="2" y="15" width="16" height="3" />
         </svg>
       );
     case 'stackedBar':
       return (
         <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
-          <rect x="2" y="12" width="4" height="6" /><rect x="2" y="6" width="4" height="5" opacity="0.5" />
-          <rect x="8" y="8" width="4" height="10" /><rect x="8" y="2" width="4" height="5" opacity="0.5" />
-          <rect x="14" y="10" width="4" height="8" /><rect x="14" y="4" width="4" height="5" opacity="0.5" />
+          <rect x="2" y="12" width="4" height="6" />
+          <rect x="2" y="6" width="4" height="5" opacity="0.5" />
+          <rect x="8" y="8" width="4" height="10" />
+          <rect x="8" y="2" width="4" height="5" opacity="0.5" />
+          <rect x="14" y="10" width="4" height="8" />
+          <rect x="14" y="4" width="4" height="5" opacity="0.5" />
         </svg>
       );
     case 'line':
       return (
-        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          viewBox="0 0 20 20"
+          width="20"
+          height="20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <polyline points="2,15 7,7 12,12 18,3" />
         </svg>
       );
@@ -70,14 +84,26 @@ function ChartTypeIcon({ type }: { type: ChartType }) {
     case 'donut':
       return (
         <svg viewBox="0 0 20 20" width="20" height="20">
-          <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.3" />
+          <circle
+            cx="10"
+            cy="10"
+            r="8"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="4"
+            opacity="0.3"
+          />
           <path d="M10,2 A8,8 0 0,1 17,13" fill="none" stroke="currentColor" strokeWidth="4" />
         </svg>
       );
     case 'scatter':
       return (
         <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
-          <circle cx="4" cy="15" r="1.6" /><circle cx="9" cy="6" r="1.6" /><circle cx="13" cy="11" r="1.6" /><circle cx="17" cy="4" r="1.6" /><circle cx="7" cy="16" r="1.6" />
+          <circle cx="4" cy="15" r="1.6" />
+          <circle cx="9" cy="6" r="1.6" />
+          <circle cx="13" cy="11" r="1.6" />
+          <circle cx="17" cy="4" r="1.6" />
+          <circle cx="7" cy="16" r="1.6" />
         </svg>
       );
   }
@@ -109,7 +135,8 @@ function parseRangeString(input: string): ChartDataRange | null {
   };
 }
 
-const inputClass = 'h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none w-full';
+const inputClass =
+  'h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none w-full';
 const labelClass = 'flex flex-col gap-1 text-xs text-text-primary';
 const tabBtnClass = (active: boolean) =>
   `flex-1 h-7 text-xs rounded transition-colors ${active ? 'bg-accent-selection text-white' : 'text-text-primary bg-ui-bg hover:bg-grid-line/40'}`;
@@ -135,7 +162,7 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
 
   const model = useMemo(
     () => buildChartModel(chart, cellGetter, DEFAULT_PALETTE),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [chart, cellGetter, version],
   );
 
@@ -168,8 +195,20 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
   return (
     <div className="space-y-3">
       <div className="flex gap-1">
-        <button type="button" className={tabBtnClass(tab === 'settings')} onClick={() => setTab('settings')}>設定</button>
-        <button type="button" className={tabBtnClass(tab === 'customize')} onClick={() => setTab('customize')}>カスタマイズ</button>
+        <button
+          type="button"
+          className={tabBtnClass(tab === 'settings')}
+          onClick={() => setTab('settings')}
+        >
+          設定
+        </button>
+        <button
+          type="button"
+          className={tabBtnClass(tab === 'customize')}
+          onClick={() => setTab('customize')}
+        >
+          カスタマイズ
+        </button>
       </div>
 
       {tab === 'settings' && (
@@ -203,7 +242,12 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
               value={rangeInput}
               onChange={(e) => setRangeInput(e.target.value)}
               onBlur={commitRange}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitRange(); } }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  commitRange();
+                }
+              }}
               className={inputClass}
               placeholder="A1:C10"
             />
@@ -214,22 +258,40 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
             <span>系列の向き</span>
             <div className="flex gap-3">
               <label className="flex items-center gap-1.5 text-xs text-text-primary">
-                <input type="radio" name="chart-series-in" checked={seriesIn === 'columns'} onChange={() => onUpdate({ seriesIn: 'columns' })} />
+                <input
+                  type="radio"
+                  name="chart-series-in"
+                  checked={seriesIn === 'columns'}
+                  onChange={() => onUpdate({ seriesIn: 'columns' })}
+                />
                 <span>列</span>
               </label>
               <label className="flex items-center gap-1.5 text-xs text-text-primary">
-                <input type="radio" name="chart-series-in" checked={seriesIn === 'rows'} onChange={() => onUpdate({ seriesIn: 'rows' })} />
+                <input
+                  type="radio"
+                  name="chart-series-in"
+                  checked={seriesIn === 'rows'}
+                  onChange={() => onUpdate({ seriesIn: 'rows' })}
+                />
                 <span>行</span>
               </label>
             </div>
           </label>
 
           <label className="flex items-center gap-2 text-xs text-text-primary">
-            <input type="checkbox" checked={useFirstRowAsHeaders} onChange={(e) => onUpdate({ useFirstRowAsHeaders: e.target.checked })} />
+            <input
+              type="checkbox"
+              checked={useFirstRowAsHeaders}
+              onChange={(e) => onUpdate({ useFirstRowAsHeaders: e.target.checked })}
+            />
             <span>1 行目を見出しとして使用</span>
           </label>
           <label className="flex items-center gap-2 text-xs text-text-primary">
-            <input type="checkbox" checked={useFirstColumnAsLabels} onChange={(e) => onUpdate({ useFirstColumnAsLabels: e.target.checked })} />
+            <input
+              type="checkbox"
+              checked={useFirstColumnAsLabels}
+              onChange={(e) => onUpdate({ useFirstColumnAsLabels: e.target.checked })}
+            />
             <span>1 列目をラベルとして使用</span>
           </label>
         </div>
@@ -239,19 +301,38 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
         <div className="space-y-3">
           <label className={labelClass}>
             <span>タイトル</span>
-            <input type="text" value={chart.title} onChange={(e) => onUpdate({ title: e.target.value })} className={inputClass} />
+            <input
+              type="text"
+              value={chart.title}
+              onChange={(e) => onUpdate({ title: e.target.value })}
+              className={inputClass}
+            />
           </label>
           <label className={labelClass}>
             <span>X 軸タイトル</span>
-            <input type="text" value={chart.xAxisTitle ?? ''} onChange={(e) => onUpdate({ xAxisTitle: e.target.value })} className={inputClass} />
+            <input
+              type="text"
+              value={chart.xAxisTitle ?? ''}
+              onChange={(e) => onUpdate({ xAxisTitle: e.target.value })}
+              className={inputClass}
+            />
           </label>
           <label className={labelClass}>
             <span>Y 軸タイトル</span>
-            <input type="text" value={chart.yAxisTitle ?? ''} onChange={(e) => onUpdate({ yAxisTitle: e.target.value })} className={inputClass} />
+            <input
+              type="text"
+              value={chart.yAxisTitle ?? ''}
+              onChange={(e) => onUpdate({ yAxisTitle: e.target.value })}
+              className={inputClass}
+            />
           </label>
 
           <label className="flex items-center gap-2 text-xs text-text-primary">
-            <input type="checkbox" checked={showLegend} onChange={(e) => onUpdate({ showLegend: e.target.checked })} />
+            <input
+              type="checkbox"
+              checked={showLegend}
+              onChange={(e) => onUpdate({ showLegend: e.target.checked })}
+            />
             <span>凡例を表示</span>
           </label>
           {showLegend && (
@@ -259,7 +340,9 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
               <span>凡例の位置</span>
               <select
                 value={legendPosition}
-                onChange={(e) => onUpdate({ legendPosition: e.target.value as 'top' | 'bottom' | 'right' })}
+                onChange={(e) =>
+                  onUpdate({ legendPosition: e.target.value as 'top' | 'bottom' | 'right' })
+                }
                 className={inputClass}
               >
                 <option value="top">上</option>
@@ -270,7 +353,11 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
           )}
 
           <label className="flex items-center gap-2 text-xs text-text-primary">
-            <input type="checkbox" checked={showGridlines} onChange={(e) => onUpdate({ showGridlines: e.target.checked })} />
+            <input
+              type="checkbox"
+              checked={showGridlines}
+              onChange={(e) => onUpdate({ showGridlines: e.target.checked })}
+            />
             <span>グリッド線を表示</span>
           </label>
 
@@ -287,7 +374,10 @@ export const ChartEditorPanel = memo(function ChartEditorPanel({
           <div className="border-t border-grid-line pt-2 space-y-2">
             <span className="text-xs text-text-primary/60">系列の色</span>
             {model.series.map((s, i) => (
-              <div key={`${s.name}-${i}`} className="flex items-center justify-between text-xs text-text-primary">
+              <div
+                key={`${s.name}-${i}`}
+                className="flex items-center justify-between text-xs text-text-primary"
+              >
                 <span className="truncate">{s.name}</span>
                 <ColorPicker
                   currentColor={chart.seriesColors?.[i] ?? s.color}

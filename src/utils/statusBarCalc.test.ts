@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { calcAggregates } from './statusBarCalc';
 import type { CellData, SelectionRange } from '../types/grid';
 
@@ -9,7 +9,12 @@ function makeCellGetter(data: Record<string, CellData>) {
   };
 }
 
-function makeRange(startCol: number, startRow: number, endCol: number, endRow: number): SelectionRange {
+function makeRange(
+  startCol: number,
+  startRow: number,
+  endCol: number,
+  endRow: number,
+): SelectionRange {
   return { start: { col: startCol, row: startRow }, end: { col: endCol, row: endRow } };
 }
 

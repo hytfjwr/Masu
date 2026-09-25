@@ -237,7 +237,8 @@ const REPLACE: FunctionMeta = {
 const MID: FunctionMeta = {
   name: 'MID',
   signature: 'MID(text, start_num, num_chars)',
-  description: 'Returns a specific number of characters from a text string, starting at the position you specify',
+  description:
+    'Returns a specific number of characters from a text string, starting at the position you specify',
   lift: true,
   impl(args: FunctionArgValue[], ctx: FunctionContext): FormulaResult {
     if (args.length !== 3) return makeError('#VALUE!');
@@ -293,13 +294,23 @@ function buildSearchRegex(pattern: string): RegExp {
   let out = '';
   for (let i = 0; i < pattern.length; i++) {
     const c = pattern[i];
-    if (c === '~' && i + 1 < pattern.length && (pattern[i + 1] === '*' || pattern[i + 1] === '?' || pattern[i + 1] === '~')) {
+    if (
+      c === '~' &&
+      i + 1 < pattern.length &&
+      (pattern[i + 1] === '*' || pattern[i + 1] === '?' || pattern[i + 1] === '~')
+    ) {
       out += escapeRegExp(pattern[i + 1]);
       i++;
       continue;
     }
-    if (c === '*') { out += '.*'; continue; }
-    if (c === '?') { out += '.'; continue; }
+    if (c === '*') {
+      out += '.*';
+      continue;
+    }
+    if (c === '?') {
+      out += '.';
+      continue;
+    }
     out += escapeRegExp(c);
   }
   return new RegExp(out, 'i');
@@ -311,7 +322,8 @@ function buildSearchRegex(pattern: string): RegExp {
 const SEARCH: FunctionMeta = {
   name: 'SEARCH',
   signature: 'SEARCH(find_text, within_text, [start_num])',
-  description: '指定した文字列を検索して位置を返します(大文字小文字を区別せず、ワイルドカードに対応)',
+  description:
+    '指定した文字列を検索して位置を返します(大文字小文字を区別せず、ワイルドカードに対応)',
   lift: true,
   impl(args: FunctionArgValue[], ctx: FunctionContext): FormulaResult {
     if (args.length < 2 || args.length > 3) return makeError('#VALUE!');
@@ -630,7 +642,11 @@ const TEXT_FN: FunctionMeta = {
 // FIXED / DOLLAR
 // ============================================================
 /** Round `number` to `decimals` places (half-away-from-zero) and format the magnitude as a string. */
-function fixedParts(number: number, decimals: number, noCommas: boolean): { negative: boolean; digits: string } {
+function fixedParts(
+  number: number,
+  decimals: number,
+  noCommas: boolean,
+): { negative: boolean; digits: string } {
   const factor = Math.pow(10, decimals);
   const scaled = number * factor;
   const roundedScaled = scaled >= 0 ? Math.round(scaled + 1e-9) : -Math.round(-scaled + 1e-9);
@@ -703,7 +719,11 @@ const DOLLAR: FunctionMeta = {
 // ============================================================
 // TEXTBEFORE / TEXTAFTER
 // ============================================================
-function textBeforeAfter(args: FunctionArgValue[], ctx: FunctionContext, mode: 'before' | 'after'): FormulaResult {
+function textBeforeAfter(
+  args: FunctionArgValue[],
+  ctx: FunctionContext,
+  mode: 'before' | 'after',
+): FormulaResult {
   if (args.length < 2 || args.length > 6) return makeError('#VALUE!');
   const text = resolveString(args[0], ctx);
   if (isFormulaError(text)) return text;
@@ -764,7 +784,8 @@ function textBeforeAfter(args: FunctionArgValue[], ctx: FunctionContext, mode: '
 
 const TEXTBEFORE: FunctionMeta = {
   name: 'TEXTBEFORE',
-  signature: 'TEXTBEFORE(text, delimiter, [instance_num], [match_mode], [match_end], [if_not_found])',
+  signature:
+    'TEXTBEFORE(text, delimiter, [instance_num], [match_mode], [match_end], [if_not_found])',
   description: '区切り文字より前の部分文字列を返します',
   lift: true,
   impl(args: FunctionArgValue[], ctx: FunctionContext): FormulaResult {
@@ -774,7 +795,8 @@ const TEXTBEFORE: FunctionMeta = {
 
 const TEXTAFTER: FunctionMeta = {
   name: 'TEXTAFTER',
-  signature: 'TEXTAFTER(text, delimiter, [instance_num], [match_mode], [match_end], [if_not_found])',
+  signature:
+    'TEXTAFTER(text, delimiter, [instance_num], [match_mode], [match_end], [if_not_found])',
   description: '区切り文字より後の部分文字列を返します',
   lift: true,
   impl(args: FunctionArgValue[], ctx: FunctionContext): FormulaResult {
@@ -835,7 +857,8 @@ const SPLIT: FunctionMeta = {
 // ============================================================
 const TEXTSPLIT: FunctionMeta = {
   name: 'TEXTSPLIT',
-  signature: 'TEXTSPLIT(text, col_delimiter, [row_delimiter], [ignore_empty], [match_mode], [pad_with])',
+  signature:
+    'TEXTSPLIT(text, col_delimiter, [row_delimiter], [ignore_empty], [match_mode], [pad_with])',
   description: '指定した区切り文字でテキストを行と列に分割します',
   impl(args: FunctionArgValue[], ctx: FunctionContext): FunctionReturnValue {
     if (args.length < 2 || args.length > 6) return makeError('#VALUE!');
@@ -973,33 +996,108 @@ const REGEXREPLACE: FunctionMeta = {
 // ASC / JIS (full-width <-> half-width conversion)
 // ============================================================
 const FULLWIDTH_TO_HALFWIDTH_KATAKANA: [string, string][] = [
-  ['。', '｡'], ['「', '｢'], ['」', '｣'], ['、', '､'], ['・', '･'],
-  ['ヲ', 'ｦ'], ['ァ', 'ｧ'], ['ィ', 'ｨ'], ['ゥ', 'ｩ'], ['ェ', 'ｪ'], ['ォ', 'ｫ'],
-  ['ャ', 'ｬ'], ['ュ', 'ｭ'], ['ョ', 'ｮ'], ['ッ', 'ｯ'], ['ー', 'ｰ'],
-  ['ア', 'ｱ'], ['イ', 'ｲ'], ['ウ', 'ｳ'], ['エ', 'ｴ'], ['オ', 'ｵ'],
-  ['カ', 'ｶ'], ['キ', 'ｷ'], ['ク', 'ｸ'], ['ケ', 'ｹ'], ['コ', 'ｺ'],
-  ['サ', 'ｻ'], ['シ', 'ｼ'], ['ス', 'ｽ'], ['セ', 'ｾ'], ['ソ', 'ｿ'],
-  ['タ', 'ﾀ'], ['チ', 'ﾁ'], ['ツ', 'ﾂ'], ['テ', 'ﾃ'], ['ト', 'ﾄ'],
-  ['ナ', 'ﾅ'], ['ニ', 'ﾆ'], ['ヌ', 'ﾇ'], ['ネ', 'ﾈ'], ['ノ', 'ﾉ'],
-  ['ハ', 'ﾊ'], ['ヒ', 'ﾋ'], ['フ', 'ﾌ'], ['ヘ', 'ﾍ'], ['ホ', 'ﾎ'],
-  ['マ', 'ﾏ'], ['ミ', 'ﾐ'], ['ム', 'ﾑ'], ['メ', 'ﾒ'], ['モ', 'ﾓ'],
-  ['ヤ', 'ﾔ'], ['ユ', 'ﾕ'], ['ヨ', 'ﾖ'],
-  ['ラ', 'ﾗ'], ['リ', 'ﾘ'], ['ル', 'ﾙ'], ['レ', 'ﾚ'], ['ロ', 'ﾛ'],
-  ['ワ', 'ﾜ'], ['ン', 'ﾝ'],
+  ['。', '｡'],
+  ['「', '｢'],
+  ['」', '｣'],
+  ['、', '､'],
+  ['・', '･'],
+  ['ヲ', 'ｦ'],
+  ['ァ', 'ｧ'],
+  ['ィ', 'ｨ'],
+  ['ゥ', 'ｩ'],
+  ['ェ', 'ｪ'],
+  ['ォ', 'ｫ'],
+  ['ャ', 'ｬ'],
+  ['ュ', 'ｭ'],
+  ['ョ', 'ｮ'],
+  ['ッ', 'ｯ'],
+  ['ー', 'ｰ'],
+  ['ア', 'ｱ'],
+  ['イ', 'ｲ'],
+  ['ウ', 'ｳ'],
+  ['エ', 'ｴ'],
+  ['オ', 'ｵ'],
+  ['カ', 'ｶ'],
+  ['キ', 'ｷ'],
+  ['ク', 'ｸ'],
+  ['ケ', 'ｹ'],
+  ['コ', 'ｺ'],
+  ['サ', 'ｻ'],
+  ['シ', 'ｼ'],
+  ['ス', 'ｽ'],
+  ['セ', 'ｾ'],
+  ['ソ', 'ｿ'],
+  ['タ', 'ﾀ'],
+  ['チ', 'ﾁ'],
+  ['ツ', 'ﾂ'],
+  ['テ', 'ﾃ'],
+  ['ト', 'ﾄ'],
+  ['ナ', 'ﾅ'],
+  ['ニ', 'ﾆ'],
+  ['ヌ', 'ﾇ'],
+  ['ネ', 'ﾈ'],
+  ['ノ', 'ﾉ'],
+  ['ハ', 'ﾊ'],
+  ['ヒ', 'ﾋ'],
+  ['フ', 'ﾌ'],
+  ['ヘ', 'ﾍ'],
+  ['ホ', 'ﾎ'],
+  ['マ', 'ﾏ'],
+  ['ミ', 'ﾐ'],
+  ['ム', 'ﾑ'],
+  ['メ', 'ﾒ'],
+  ['モ', 'ﾓ'],
+  ['ヤ', 'ﾔ'],
+  ['ユ', 'ﾕ'],
+  ['ヨ', 'ﾖ'],
+  ['ラ', 'ﾗ'],
+  ['リ', 'ﾘ'],
+  ['ル', 'ﾙ'],
+  ['レ', 'ﾚ'],
+  ['ロ', 'ﾛ'],
+  ['ワ', 'ﾜ'],
+  ['ン', 'ﾝ'],
 ];
 
 const FULLWIDTH_TO_HALFWIDTH_VOICED: [string, string][] = [
-  ['ガ', 'ｶﾞ'], ['ギ', 'ｷﾞ'], ['グ', 'ｸﾞ'], ['ゲ', 'ｹﾞ'], ['ゴ', 'ｺﾞ'],
-  ['ザ', 'ｻﾞ'], ['ジ', 'ｼﾞ'], ['ズ', 'ｽﾞ'], ['ゼ', 'ｾﾞ'], ['ゾ', 'ｿﾞ'],
-  ['ダ', 'ﾀﾞ'], ['ヂ', 'ﾁﾞ'], ['ヅ', 'ﾂﾞ'], ['デ', 'ﾃﾞ'], ['ド', 'ﾄﾞ'],
-  ['バ', 'ﾊﾞ'], ['ビ', 'ﾋﾞ'], ['ブ', 'ﾌﾞ'], ['ベ', 'ﾍﾞ'], ['ボ', 'ﾎﾞ'],
+  ['ガ', 'ｶﾞ'],
+  ['ギ', 'ｷﾞ'],
+  ['グ', 'ｸﾞ'],
+  ['ゲ', 'ｹﾞ'],
+  ['ゴ', 'ｺﾞ'],
+  ['ザ', 'ｻﾞ'],
+  ['ジ', 'ｼﾞ'],
+  ['ズ', 'ｽﾞ'],
+  ['ゼ', 'ｾﾞ'],
+  ['ゾ', 'ｿﾞ'],
+  ['ダ', 'ﾀﾞ'],
+  ['ヂ', 'ﾁﾞ'],
+  ['ヅ', 'ﾂﾞ'],
+  ['デ', 'ﾃﾞ'],
+  ['ド', 'ﾄﾞ'],
+  ['バ', 'ﾊﾞ'],
+  ['ビ', 'ﾋﾞ'],
+  ['ブ', 'ﾌﾞ'],
+  ['ベ', 'ﾍﾞ'],
+  ['ボ', 'ﾎﾞ'],
   ['ヴ', 'ｳﾞ'],
-  ['パ', 'ﾊﾟ'], ['ピ', 'ﾋﾟ'], ['プ', 'ﾌﾟ'], ['ペ', 'ﾍﾟ'], ['ポ', 'ﾎﾟ'],
+  ['パ', 'ﾊﾟ'],
+  ['ピ', 'ﾋﾟ'],
+  ['プ', 'ﾌﾟ'],
+  ['ペ', 'ﾍﾟ'],
+  ['ポ', 'ﾎﾟ'],
 ];
 
-const FULL_TO_HALF_MAP = new Map<string, string>([...FULLWIDTH_TO_HALFWIDTH_KATAKANA, ...FULLWIDTH_TO_HALFWIDTH_VOICED]);
-const HALF_SINGLE_TO_FULL_MAP = new Map<string, string>(FULLWIDTH_TO_HALFWIDTH_KATAKANA.map(([f, h]) => [h, f]));
-const HALF_VOICED_TO_FULL_MAP = new Map<string, string>(FULLWIDTH_TO_HALFWIDTH_VOICED.map(([f, h]) => [h, f]));
+const FULL_TO_HALF_MAP = new Map<string, string>([
+  ...FULLWIDTH_TO_HALFWIDTH_KATAKANA,
+  ...FULLWIDTH_TO_HALFWIDTH_VOICED,
+]);
+const HALF_SINGLE_TO_FULL_MAP = new Map<string, string>(
+  FULLWIDTH_TO_HALFWIDTH_KATAKANA.map(([f, h]) => [h, f]),
+);
+const HALF_VOICED_TO_FULL_MAP = new Map<string, string>(
+  FULLWIDTH_TO_HALFWIDTH_VOICED.map(([f, h]) => [h, f]),
+);
 
 function toHalfWidth(text: string): string {
   let out = '';
@@ -1009,7 +1107,10 @@ function toHalfWidth(text: string): string {
       out += String.fromCharCode(code - 0xfee0);
       continue;
     }
-    if (ch === '　') { out += ' '; continue; }
+    if (ch === '　') {
+      out += ' ';
+      continue;
+    }
     out += FULL_TO_HALF_MAP.get(ch) ?? ch;
   }
   return out;
@@ -1023,13 +1124,26 @@ function toFullWidth(text: string): string {
     const next = chars[i + 1];
     if (next === 'ﾞ' || next === 'ﾟ') {
       const combo = HALF_VOICED_TO_FULL_MAP.get(ch + next);
-      if (combo) { out += combo; i++; continue; }
+      if (combo) {
+        out += combo;
+        i++;
+        continue;
+      }
     }
     const single = HALF_SINGLE_TO_FULL_MAP.get(ch);
-    if (single) { out += single; continue; }
+    if (single) {
+      out += single;
+      continue;
+    }
     const code = ch.codePointAt(0)!;
-    if (code >= 0x21 && code <= 0x7e) { out += String.fromCharCode(code + 0xfee0); continue; }
-    if (ch === ' ') { out += '　'; continue; }
+    if (code >= 0x21 && code <= 0x7e) {
+      out += String.fromCharCode(code + 0xfee0);
+      continue;
+    }
+    if (ch === ' ') {
+      out += '　';
+      continue;
+    }
     out += ch;
   }
   return out;
@@ -1062,9 +1176,42 @@ const JIS: FunctionMeta = {
 };
 
 export const textFunctions: FunctionMeta[] = [
-  CONCAT, CONCATENATE, LEN, UPPER, LOWER, PROPER, LEFT, RIGHT, TRIM, SUBSTITUTE, REPLACE, MID, FIND, SEARCH,
-  TEXTJOIN, JOIN, NUMBERVALUE,
-  REPT, CHAR_FN, CODE, UNICHAR, UNICODE, EXACT, CLEAN, T_FN, VALUE_FN, TEXT_FN, FIXED, DOLLAR,
-  TEXTBEFORE, TEXTAFTER, SPLIT, TEXTSPLIT,
-  REGEXMATCH, REGEXEXTRACT, REGEXREPLACE, ASC, JIS,
+  CONCAT,
+  CONCATENATE,
+  LEN,
+  UPPER,
+  LOWER,
+  PROPER,
+  LEFT,
+  RIGHT,
+  TRIM,
+  SUBSTITUTE,
+  REPLACE,
+  MID,
+  FIND,
+  SEARCH,
+  TEXTJOIN,
+  JOIN,
+  NUMBERVALUE,
+  REPT,
+  CHAR_FN,
+  CODE,
+  UNICHAR,
+  UNICODE,
+  EXACT,
+  CLEAN,
+  T_FN,
+  VALUE_FN,
+  TEXT_FN,
+  FIXED,
+  DOLLAR,
+  TEXTBEFORE,
+  TEXTAFTER,
+  SPLIT,
+  TEXTSPLIT,
+  REGEXMATCH,
+  REGEXEXTRACT,
+  REGEXREPLACE,
+  ASC,
+  JIS,
 ];

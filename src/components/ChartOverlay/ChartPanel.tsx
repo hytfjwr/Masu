@@ -39,7 +39,12 @@ type LegendPosition = 'top' | 'bottom' | 'right';
 
 function legendLayoutProps(position: LegendPosition) {
   if (position === 'right') {
-    return { layout: 'vertical' as const, verticalAlign: 'middle' as const, align: 'right' as const, wrapperStyle: { fontSize: 10 } };
+    return {
+      layout: 'vertical' as const,
+      verticalAlign: 'middle' as const,
+      align: 'right' as const,
+      wrapperStyle: { fontSize: 10 },
+    };
   }
   if (position === 'top') {
     return { verticalAlign: 'top' as const, wrapperStyle: { fontSize: 10 } };
@@ -64,8 +69,18 @@ export const ChartPanel = memo(function ChartPanel({
   onEdit,
 }: ChartPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const dragStartRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
-  const resizeStartRef = useRef<{ startX: number; startY: number; origW: number; origH: number } | null>(null);
+  const dragStartRef = useRef<{
+    startX: number;
+    startY: number;
+    origX: number;
+    origY: number;
+  } | null>(null);
+  const resizeStartRef = useRef<{
+    startX: number;
+    startY: number;
+    origW: number;
+    origH: number;
+  } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const cellGetter = useCallback(
@@ -79,7 +94,7 @@ export const ChartPanel = memo(function ChartPanel({
 
   const model = useMemo(
     () => buildChartModel(chart, cellGetter, DEFAULT_PALETTE),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [chart, cellGetter, version],
   );
 
@@ -229,7 +244,13 @@ export const ChartPanel = memo(function ChartPanel({
             <BarChart data={rows} layout="vertical">
               {showGridlines && <CartesianGrid strokeDasharray="3 3" />}
               <XAxis type="number" tick={{ fontSize: 10 }} label={xAxisLabel} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={60} label={yAxisLabel} />
+              <YAxis
+                type="category"
+                dataKey="name"
+                tick={{ fontSize: 10 }}
+                width={60}
+                label={yAxisLabel}
+              />
               <Tooltip />
               {showLegend && <Legend {...legendLayoutProps(legendPosition)} />}
               {model.series.map((s) => (
@@ -265,7 +286,13 @@ export const ChartPanel = memo(function ChartPanel({
               <Tooltip />
               {showLegend && <Legend {...legendLayoutProps(legendPosition)} />}
               {model.series.map((s) => (
-                <Line key={s.name} type="monotone" dataKey={s.name} stroke={s.color} connectNulls={false} />
+                <Line
+                  key={s.name}
+                  type="monotone"
+                  dataKey={s.name}
+                  stroke={s.color}
+                  connectNulls={false}
+                />
               ))}
             </LineChart>
           </ResponsiveContainer>
@@ -281,7 +308,15 @@ export const ChartPanel = memo(function ChartPanel({
               <Tooltip />
               {showLegend && <Legend {...legendLayoutProps(legendPosition)} />}
               {model.series.map((s) => (
-                <Area key={s.name} type="monotone" dataKey={s.name} stroke={s.color} fill={s.color} fillOpacity={0.4} connectNulls={false} />
+                <Area
+                  key={s.name}
+                  type="monotone"
+                  dataKey={s.name}
+                  stroke={s.color}
+                  fill={s.color}
+                  fillOpacity={0.4}
+                  connectNulls={false}
+                />
               ))}
             </AreaChart>
           </ResponsiveContainer>
@@ -292,7 +327,11 @@ export const ChartPanel = memo(function ChartPanel({
         const valueSeries = model.series[0];
         const pieData = model.labels.map((label, i) => ({
           name: label,
-          value: valueSeries ? (Number.isNaN(valueSeries.values[i]) ? 0 : valueSeries.values[i]) : 0,
+          value: valueSeries
+            ? Number.isNaN(valueSeries.values[i])
+              ? 0
+              : valueSeries.values[i]
+            : 0,
         }));
         return (
           <ResponsiveContainer width="100%" height="100%">
@@ -308,7 +347,10 @@ export const ChartPanel = memo(function ChartPanel({
                 label
               >
                 {pieData.map((_, i) => (
-                  <RechartsCell key={i} fill={chart.seriesColors?.[i] ?? DEFAULT_PALETTE[i % DEFAULT_PALETTE.length]} />
+                  <RechartsCell
+                    key={i}
+                    fill={chart.seriesColors?.[i] ?? DEFAULT_PALETTE[i % DEFAULT_PALETTE.length]}
+                  />
                 ))}
               </Pie>
               <Tooltip />
@@ -324,7 +366,13 @@ export const ChartPanel = memo(function ChartPanel({
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart>
               {showGridlines && <CartesianGrid strokeDasharray="3 3" />}
-              <XAxis type="number" dataKey="x" tick={{ fontSize: 10 }} name={xSeries?.name} label={xAxisLabel} />
+              <XAxis
+                type="number"
+                dataKey="x"
+                tick={{ fontSize: 10 }}
+                name={xSeries?.name}
+                label={xAxisLabel}
+              />
               <YAxis type="number" dataKey="y" tick={{ fontSize: 10 }} label={yAxisLabel} />
               <Tooltip cursor={{ strokeDasharray: '3 3' }} />
               {showLegend && <Legend {...legendLayoutProps(legendPosition)} />}
@@ -332,7 +380,9 @@ export const ChartPanel = memo(function ChartPanel({
                 <Scatter
                   key={s.name}
                   name={s.name}
-                  data={(xSeries?.values ?? []).map((x, i) => ({ x, y: s.values[i] })).filter((p) => !Number.isNaN(p.x) && !Number.isNaN(p.y))}
+                  data={(xSeries?.values ?? [])
+                    .map((x, i) => ({ x, y: s.values[i] }))
+                    .filter((p) => !Number.isNaN(p.x) && !Number.isNaN(p.y))}
                   fill={s.color}
                 />
               ))}

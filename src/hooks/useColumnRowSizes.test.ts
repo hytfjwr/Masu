@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { act, renderHook } from '@testing-library/react';
 import { useColumnRowSizes } from './useColumnRowSizes';
 import { GRID_CONSTANTS } from '../types/grid';
@@ -70,7 +70,7 @@ describe('useColumnRowSizes', () => {
     expect(restored.current.getColWidth(0)).toBe(120);
   });
 
-  it('copySheetSizes clones one sheet\'s sizes onto another', () => {
+  it("copySheetSizes clones one sheet's sizes onto another", () => {
     const { result, rerender } = renderHook(
       ({ activeSheetId }) => useColumnRowSizes(activeSheetId),
       { initialProps: { activeSheetId: 'sheet1' } },
@@ -88,7 +88,7 @@ describe('useColumnRowSizes', () => {
     expect(result.current.getColWidth(0)).toBe(250);
   });
 
-  it('getColOffset/getRowOffset reflect the active sheet\'s custom sizes', () => {
+  it("getColOffset/getRowOffset reflect the active sheet's custom sizes", () => {
     const { result, rerender } = renderHook(
       ({ activeSheetId }) => useColumnRowSizes(activeSheetId),
       { initialProps: { activeSheetId: 'sheet1' } },
@@ -100,11 +100,25 @@ describe('useColumnRowSizes', () => {
     rerender({ activeSheetId: 'sheet2' });
     expect(result.current.getColOffset(1)).toBe(GRID_CONSTANTS.DEFAULT_COL_WIDTH);
   });
-  it('uses a sheet\'s own default sizes for widths, heights and offsets', () => {
-    const { result } = renderHook(({ activeSheetId }) => useColumnRowSizes(activeSheetId), { initialProps: { activeSheetId: 's1' } });
-    act(() => result.current.restoreAllSizes(new Map([
-      ['s1', { colWidths: new Map([[1, 140]]), rowHeights: new Map(), defaultColWidth: 64, defaultRowHeight: 20 }],
-    ])));
+  it("uses a sheet's own default sizes for widths, heights and offsets", () => {
+    const { result } = renderHook(({ activeSheetId }) => useColumnRowSizes(activeSheetId), {
+      initialProps: { activeSheetId: 's1' },
+    });
+    act(() =>
+      result.current.restoreAllSizes(
+        new Map([
+          [
+            's1',
+            {
+              colWidths: new Map([[1, 140]]),
+              rowHeights: new Map(),
+              defaultColWidth: 64,
+              defaultRowHeight: 20,
+            },
+          ],
+        ]),
+      ),
+    );
     expect(result.current.getColWidth(0)).toBe(64);
     expect(result.current.getColWidth(1)).toBe(140);
     expect(result.current.getRowHeight(5)).toBe(20);

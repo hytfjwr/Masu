@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   generateSheetId,
   createEmptySheet,
@@ -84,7 +84,9 @@ describe('generateCopyName', () => {
   });
 
   it('skips existing numbered copies to find the next available', () => {
-    expect(generateCopyName('Sheet1', ['Sheet1 のコピー', 'Sheet1 のコピー (2)'])).toBe('Sheet1 のコピー (3)');
+    expect(generateCopyName('Sheet1', ['Sheet1 のコピー', 'Sheet1 のコピー (2)'])).toBe(
+      'Sheet1 のコピー (3)',
+    );
   });
 });
 
@@ -238,10 +240,7 @@ describe('deepCloneSheet', () => {
 
 describe('deepCloneSheets', () => {
   it('clones an array of sheets independently', () => {
-    const sheets: SheetData[] = [
-      createEmptySheet('Sheet1'),
-      createEmptySheet('Sheet2'),
-    ];
+    const sheets: SheetData[] = [createEmptySheet('Sheet1'), createEmptySheet('Sheet2')];
     sheets[0].cells.set('A1', { rawValue: 'test', displayValue: 'test' });
 
     const cloned = deepCloneSheets(sheets);

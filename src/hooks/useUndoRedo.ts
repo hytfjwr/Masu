@@ -72,7 +72,10 @@ export interface UseUndoRedoReturn {
    * snapshot to restore, or undefined if `index` is the current state. States in between stay
    * reachable (the stacks are rearranged, nothing is dropped).
    */
-  jumpTo: (index: number, currentData: CellDataMap | WorkbookSnapshot) => CellDataMap | WorkbookSnapshot | undefined;
+  jumpTo: (
+    index: number,
+    currentData: CellDataMap | WorkbookSnapshot,
+  ) => CellDataMap | WorkbookSnapshot | undefined;
 }
 
 interface StackEntry {
@@ -107,7 +110,10 @@ export function useUndoRedo(): UseUndoRedoReturn {
     setTimeline([
       ...undoStackRef.current.map((e) => ({ time: e.time, current: false })),
       { time: currentTimeRef.current, current: true },
-      ...redoStackRef.current.slice().reverse().map((e) => ({ time: e.time, current: false })),
+      ...redoStackRef.current
+        .slice()
+        .reverse()
+        .map((e) => ({ time: e.time, current: false })),
     ]);
   }, []);
 
@@ -166,7 +172,10 @@ export function useUndoRedo(): UseUndoRedoReturn {
   }, []);
 
   const jumpTo = useCallback(
-    (index: number, currentData: CellDataMap | WorkbookSnapshot): CellDataMap | WorkbookSnapshot | undefined => {
+    (
+      index: number,
+      currentData: CellDataMap | WorkbookSnapshot,
+    ): CellDataMap | WorkbookSnapshot | undefined => {
       const states: StackEntry[] = [
         ...undoStackRef.current,
         { data: cloneData(currentData), time: currentTimeRef.current },
@@ -184,5 +193,15 @@ export function useUndoRedo(): UseUndoRedoReturn {
     [updateFlags],
   );
 
-  return { pushSnapshot, undo, redo, canUndo, canRedo, clearHistory, timeline, getTimelineSnapshot, jumpTo };
+  return {
+    pushSnapshot,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    clearHistory,
+    timeline,
+    getTimelineSnapshot,
+    jumpTo,
+  };
 }

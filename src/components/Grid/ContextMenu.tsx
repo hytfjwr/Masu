@@ -86,19 +86,32 @@ export const ContextMenu = memo(function ContextMenu({
   );
 
   const isColumn = menu.type === 'column';
-  const itemClass = 'w-full text-left px-3 py-1.5 text-xs text-text-primary hover:bg-accent-selection/10 transition-colors duration-75';
+  const itemClass =
+    'w-full text-left px-3 py-1.5 text-xs text-text-primary hover:bg-accent-selection/10 transition-colors duration-75';
   const disabledClass = 'w-full text-left px-3 py-1.5 text-xs text-text-primary/30 cursor-default';
 
   const count = menu.rangeEnd - menu.rangeStart + 1;
   const insertBeforeLabel = isColumn
-    ? (count > 1 ? `左に ${count} 列挿入` : '左に列を挿入')
-    : (count > 1 ? `上に ${count} 行挿入` : '上に行を挿入');
+    ? count > 1
+      ? `左に ${count} 列挿入`
+      : '左に列を挿入'
+    : count > 1
+      ? `上に ${count} 行挿入`
+      : '上に行を挿入';
   const insertAfterLabel = isColumn
-    ? (count > 1 ? `右に ${count} 列挿入` : '右に列を挿入')
-    : (count > 1 ? `下に ${count} 行挿入` : '下に行を挿入');
+    ? count > 1
+      ? `右に ${count} 列挿入`
+      : '右に列を挿入'
+    : count > 1
+      ? `下に ${count} 行挿入`
+      : '下に行を挿入';
   const deleteLabel = isColumn
-    ? (count > 1 ? `${colRangeLabel(menu.rangeStart, menu.rangeEnd)}を削除` : '列を削除')
-    : (count > 1 ? `${rowRangeLabel(menu.rangeStart, menu.rangeEnd)}を削除` : '行を削除');
+    ? count > 1
+      ? `${colRangeLabel(menu.rangeStart, menu.rangeEnd)}を削除`
+      : '列を削除'
+    : count > 1
+      ? `${rowRangeLabel(menu.rangeStart, menu.rangeEnd)}を削除`
+      : '行を削除';
   const hideLabel = isColumn
     ? `${colRangeLabel(menu.rangeStart, menu.rangeEnd)}を非表示`
     : `${rowRangeLabel(menu.rangeStart, menu.rangeEnd)}を非表示`;

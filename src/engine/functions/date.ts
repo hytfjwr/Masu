@@ -1,8 +1,20 @@
-import type { FormulaError, FormulaResult, FunctionArgValue, FunctionContext, FunctionMeta } from '../types';
+import type {
+  FormulaError,
+  FormulaResult,
+  FunctionArgValue,
+  FunctionContext,
+  FunctionMeta,
+} from '../types';
 import { isFormulaError, makeError } from '../types';
 import { resolveNumber, resolveScalar, resolveString, argToFlat } from './helpers';
 import { toBoolean } from '../coerce';
-import { ymdToSerial, serialToParts, timeToFraction, todaySerial, nowSerial } from '../../utils/dateSerial';
+import {
+  ymdToSerial,
+  serialToParts,
+  timeToFraction,
+  todaySerial,
+  nowSerial,
+} from '../../utils/dateSerial';
 import { parseUserInput } from '../../utils/valueParser';
 
 // ============================================================
@@ -170,7 +182,10 @@ const TIME: FunctionMeta = {
   },
 };
 
-function partsOfSerialArg(arg: FunctionArgValue, ctx: FunctionContext): ReturnType<typeof serialToParts> | FormulaError {
+function partsOfSerialArg(
+  arg: FunctionArgValue,
+  ctx: FunctionContext,
+): ReturnType<typeof serialToParts> | FormulaError {
   const serial = resolveSerial(arg, ctx);
   if (isFormulaError(serial)) return serial;
   if (serial < 0) return makeError('#NUM!');
@@ -219,7 +234,17 @@ const SECOND: FunctionMeta = {
 // ============================================================
 // WEEKDAY / WEEKNUM / ISOWEEKNUM
 // ============================================================
-const WEEKDAY_START_DAY: Record<number, number> = { 1: 0, 17: 0, 2: 1, 11: 1, 12: 2, 13: 3, 14: 4, 15: 5, 16: 6 };
+const WEEKDAY_START_DAY: Record<number, number> = {
+  1: 0,
+  17: 0,
+  2: 1,
+  11: 1,
+  12: 2,
+  13: 3,
+  14: 4,
+  15: 5,
+  16: 6,
+};
 
 const WEEKDAY: FunctionMeta = {
   name: 'WEEKDAY',
@@ -585,7 +610,10 @@ const TIMEVALUE: FunctionMeta = {
 // NETWORKDAYS / NETWORKDAYS.INTL / WORKDAY / WORKDAY.INTL
 // (holidays is a range/array argument, read directly — not scalar-lifted)
 // ============================================================
-function collectHolidays(arg: FunctionArgValue | undefined, ctx: FunctionContext): Set<number> | FormulaError {
+function collectHolidays(
+  arg: FunctionArgValue | undefined,
+  ctx: FunctionContext,
+): Set<number> | FormulaError {
   const set = new Set<number>();
   if (!arg || arg.kind === 'omitted') return set;
   for (const v of argToFlat(arg, ctx)) {
@@ -603,8 +631,20 @@ function isWeekendDefault(weekday: number): boolean {
 }
 
 const WEEKEND_CODE_DAYS: Record<number, number[]> = {
-  1: [6, 0], 2: [0, 1], 3: [1, 2], 4: [2, 3], 5: [3, 4], 6: [4, 5], 7: [5, 6],
-  11: [0], 12: [1], 13: [2], 14: [3], 15: [4], 16: [5], 17: [6],
+  1: [6, 0],
+  2: [0, 1],
+  3: [1, 2],
+  4: [2, 3],
+  5: [3, 4],
+  6: [4, 5],
+  7: [5, 6],
+  11: [0],
+  12: [1],
+  13: [2],
+  14: [3],
+  15: [4],
+  16: [5],
+  17: [6],
 };
 
 function isWeekendFromString(s: string): ((weekday: number) => boolean) | null {
@@ -616,7 +656,10 @@ function isWeekendFromString(s: string): ((weekday: number) => boolean) | null {
 }
 
 /** Resolve the optional `weekend` argument (numeric code or a 7-char '0'/'1' string) into a predicate. */
-function resolveWeekend(arg: FunctionArgValue | undefined, ctx: FunctionContext): ((weekday: number) => boolean) | FormulaError {
+function resolveWeekend(
+  arg: FunctionArgValue | undefined,
+  ctx: FunctionContext,
+): ((weekday: number) => boolean) | FormulaError {
   if (!arg || arg.kind === 'omitted') return isWeekendDefault;
   const val = resolveScalar(arg, ctx);
   if (isFormulaError(val)) return val;
@@ -631,7 +674,12 @@ function resolveWeekend(arg: FunctionArgValue | undefined, ctx: FunctionContext)
   return (weekday: number) => days.includes(weekday);
 }
 
-function networkdays(start: number, end: number, holidays: Set<number>, isWeekend: (weekday: number) => boolean): number {
+function networkdays(
+  start: number,
+  end: number,
+  holidays: Set<number>,
+  isWeekend: (weekday: number) => boolean,
+): number {
   const lo = Math.min(start, end);
   const hi = Math.max(start, end);
   let count = 0;
@@ -644,7 +692,12 @@ function networkdays(start: number, end: number, holidays: Set<number>, isWeeken
   return start <= end ? count : -count;
 }
 
-function workday(start: number, days: number, holidays: Set<number>, isWeekend: (weekday: number) => boolean): number {
+function workday(
+  start: number,
+  days: number,
+  holidays: Set<number>,
+  isWeekend: (weekday: number) => boolean,
+): number {
   let remaining = Math.abs(Math.trunc(days));
   let current = start;
   const step = days >= 0 ? 1 : -1;
@@ -731,10 +784,29 @@ const WORKDAY_INTL: FunctionMeta = {
 };
 
 export const dateFunctions: FunctionMeta[] = [
-  TODAY, NOW, DATE, YEAR, MONTH, DAY,
-  TIME, HOUR, MINUTE, SECOND,
-  WEEKDAY, WEEKNUM, ISOWEEKNUM,
-  EDATE, EOMONTH, DATEDIF, DAYS, DAYS360, YEARFRAC,
-  DATEVALUE, TIMEVALUE,
-  NETWORKDAYS, NETWORKDAYS_INTL, WORKDAY, WORKDAY_INTL,
+  TODAY,
+  NOW,
+  DATE,
+  YEAR,
+  MONTH,
+  DAY,
+  TIME,
+  HOUR,
+  MINUTE,
+  SECOND,
+  WEEKDAY,
+  WEEKNUM,
+  ISOWEEKNUM,
+  EDATE,
+  EOMONTH,
+  DATEDIF,
+  DAYS,
+  DAYS360,
+  YEARFRAC,
+  DATEVALUE,
+  TIMEVALUE,
+  NETWORKDAYS,
+  NETWORKDAYS_INTL,
+  WORKDAY,
+  WORKDAY_INTL,
 ];

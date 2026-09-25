@@ -1,10 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { aggregate, buildPivotTable, extractFieldNames } from './pivotEngine';
 import type { PivotComputeConfig } from './pivotEngine';
 
 describe('extractFieldNames', () => {
   it('extracts trimmed field names from first row', () => {
-    const data = [['商品名 ', ' 地域', '売上 '], ['A', '東京', '100']];
+    const data = [
+      ['商品名 ', ' 地域', '売上 '],
+      ['A', '東京', '100'],
+    ];
     expect(extractFieldNames(data)).toEqual(['商品名', '地域', '売上']);
   });
 
@@ -116,8 +119,8 @@ describe('buildPivotTable', () => {
 
     // 大阪: 4 rows, 東京: 4 rows
     const dataRows = result.slice(1, -1); // exclude header and total
-    const osaka = dataRows.find(r => r[0].value === '大阪');
-    const tokyo = dataRows.find(r => r[0].value === '東京');
+    const osaka = dataRows.find((r) => r[0].value === '大阪');
+    const tokyo = dataRows.find((r) => r[0].value === '東京');
     expect(osaka?.[1].value).toBe(4);
     expect(tokyo?.[1].value).toBe(4);
   });
@@ -228,17 +231,17 @@ describe('buildPivotTable', () => {
       colFields: [],
       valueFields: [{ fieldIndex: 2, fieldName: '値', aggregation: 'sum' }],
       filterFields: [],
-      collapsedRows: { '食品': true }, // 食品を折りたたみ
+      collapsedRows: { 食品: true }, // 食品を折りたたみ
     };
     const result = buildPivotTable(data, config);
 
     // Header + 飲料\0ジュース + 総計 = 3 rows (食品の子行はスキップ)
     // 食品\0フルーツ and 食品\0野菜 are skipped because parent '食品' is collapsed
-    const dataRowValues = result.slice(1, -1).map(r => r[0].value);
+    const dataRowValues = result.slice(1, -1).map((r) => r[0].value);
     expect(dataRowValues).not.toContain('フルーツ');
     expect(dataRowValues).not.toContain('野菜');
     // 飲料\0ジュース should still be there
-    const juiceRow = result.slice(1, -1).find(r => r[1].value === 'ジュース');
+    const juiceRow = result.slice(1, -1).find((r) => r[1].value === 'ジュース');
     expect(juiceRow).toBeDefined();
   });
 

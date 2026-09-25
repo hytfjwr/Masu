@@ -42,12 +42,17 @@ export interface PastePlan {
   pastedRange: { start: CellPosition; end: CellPosition };
 }
 
-export type GetCell = (col: number, row: number) => {
-  rawValue: string;
-  displayText: string;
-  valueText: string;
-  style?: CellStyle;
-} | undefined;
+export type GetCell = (
+  col: number,
+  row: number,
+) =>
+  | {
+      rawValue: string;
+      displayText: string;
+      valueText: string;
+      style?: CellStyle;
+    }
+  | undefined;
 
 export interface UseClipboardReturn {
   /** Copy (or cut) the selected range. Writes to e.clipboardData if given, else navigator.clipboard. */
@@ -122,7 +127,9 @@ function writeClipboard(text: string, html: string, e?: ClipboardEvent): void {
 }
 
 /** Read text/plain + text/html from the system clipboard. `ok` is false only when every read attempt failed. */
-async function readClipboard(e?: ClipboardEvent): Promise<{ text: string; html: string; ok: boolean }> {
+async function readClipboard(
+  e?: ClipboardEvent,
+): Promise<{ text: string; html: string; ok: boolean }> {
   if (e) {
     return {
       text: e.clipboardData?.getData('text/plain') ?? '',
@@ -165,12 +172,18 @@ function getNormalizedRange(start: CellPosition, end: CellPosition) {
 /** Compute tile counts for a target range vs. a source size. Tiling only kicks in when the
  * target isn't a single cell and both dimensions are exact multiples of the source size. */
 function computeTiles(
-  targetRows: number, targetCols: number,
-  srcRows: number, srcCols: number,
+  targetRows: number,
+  targetCols: number,
+  srcRows: number,
+  srcCols: number,
 ): { tileRows: number; tileCols: number } {
   const isSingle = targetRows === 1 && targetCols === 1;
-  const exactMultiple = !isSingle && srcRows > 0 && srcCols > 0 &&
-    targetRows % srcRows === 0 && targetCols % srcCols === 0;
+  const exactMultiple =
+    !isSingle &&
+    srcRows > 0 &&
+    srcCols > 0 &&
+    targetRows % srcRows === 0 &&
+    targetCols % srcCols === 0;
   return {
     tileRows: exactMultiple ? targetRows / srcRows : 1,
     tileCols: exactMultiple ? targetCols / srcCols : 1,
@@ -181,7 +194,10 @@ export function useClipboard(): UseClipboardReturn {
   const clipboardRef = useRef<InternalClipboard | null>(null);
   // The copied range drives the marching-ants marquee. Kept as state (not derived from a boolean)
   // so that copying a second range while one is already copied moves the marquee.
-  const [clipboardRange, setClipboardRange] = useState<{ start: CellPosition; end: CellPosition } | null>(null);
+  const [clipboardRange, setClipboardRange] = useState<{
+    start: CellPosition;
+    end: CellPosition;
+  } | null>(null);
   const hasClipboard = clipboardRange !== null;
 
   const copy = useCallback(
@@ -209,7 +225,9 @@ export function useClipboard(): UseClipboardReturn {
       }
 
       const text = toTSV(cells.map((row) => row.map((c) => c.displayText)));
-      const html = toHTMLTable(cells.map((row) => row.map((c) => ({ value: c.displayText, style: c.style }))));
+      const html = toHTMLTable(
+        cells.map((row) => row.map((c) => ({ value: c.displayText, style: c.style }))),
+      );
 
       clipboardRef.current = { cells, sourceRange: { start, end }, isCut, sourceSheetId, text };
       setClipboardRange({ start, end });
@@ -261,17 +279,42 @@ export function useClipboard(): UseClipboardReturn {
                   entries.push({ col: targetCol, row: targetRow, value: cellData.valueText });
                 } else if (mode === 'transpose') {
                   const shifted = cellData.rawValue.startsWith('=')
-                    ? '=' + shiftFormula(cellData.rawValue.slice(1), targetCol - originalCol, targetRow - originalRow)
+                    ? '=' +
+                      shiftFormula(
+                        cellData.rawValue.slice(1),
+                        targetCol - originalCol,
+                        targetRow - originalRow,
+                      )
                     : cellData.rawValue;
-                  entries.push({ col: targetCol, row: targetRow, value: shifted, style: cellData.style ?? null });
+                  entries.push({
+                    col: targetCol,
+                    row: targetRow,
+                    value: shifted,
+                    style: cellData.style ?? null,
+                  });
                 } else if (internal.isCut) {
                   // normal + cut: move as-is, no formula shift
-                  entries.push({ col: targetCol, row: targetRow, value: cellData.rawValue, style: cellData.style ?? null });
+                  entries.push({
+                    col: targetCol,
+                    row: targetRow,
+                    value: cellData.rawValue,
+                    style: cellData.style ?? null,
+                  });
                 } else {
                   const shifted = cellData.rawValue.startsWith('=')
-                    ? '=' + shiftFormula(cellData.rawValue.slice(1), targetCol - originalCol, targetRow - originalRow)
+                    ? '=' +
+                      shiftFormula(
+                        cellData.rawValue.slice(1),
+                        targetCol - originalCol,
+                        targetRow - originalRow,
+                      )
                     : cellData.rawValue;
-                  entries.push({ col: targetCol, row: targetRow, value: shifted, style: cellData.style ?? null });
+                  entries.push({
+                    col: targetCol,
+                    row: targetRow,
+                    value: shifted,
+                    style: cellData.style ?? null,
+                  });
                 }
               }
             }
@@ -311,7 +354,8 @@ export function useClipboard(): UseClipboardReturn {
       // External source (clipboard content that didn't match our internal copy)
       const fromHtml = html ? parseHTMLTable(html) : null;
       const extHasStyle = fromHtml !== null;
-      const ext: ClipCell[][] = fromHtml ?? parseTSV(text).map((row) => row.map((value) => ({ value })));
+      const ext: ClipCell[][] =
+        fromHtml ?? parseTSV(text).map((row) => row.map((value) => ({ value })));
 
       if (mode === 'format' && !extHasStyle) return null;
 
@@ -373,7 +417,10 @@ export function useClipboard(): UseClipboardReturn {
   const isCellInClipboard = useCallback(
     (col: number, row: number): boolean => {
       if (!clipboardRange) return false;
-      const { minCol, maxCol, minRow, maxRow } = getNormalizedRange(clipboardRange.start, clipboardRange.end);
+      const { minCol, maxCol, minRow, maxRow } = getNormalizedRange(
+        clipboardRange.start,
+        clipboardRange.end,
+      );
       return col >= minCol && col <= maxCol && row >= minRow && row <= maxRow;
     },
     [clipboardRange],

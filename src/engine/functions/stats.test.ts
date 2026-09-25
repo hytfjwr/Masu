@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { evaluate } from '../evaluator';
 import { parse } from '../parser';
 import type { FormulaResult, RangeExpander } from '../types';
@@ -21,7 +21,12 @@ function evalFormula(formula: string, cellValues: Record<string, FormulaResult>)
   const resolve = (key: string): FormulaResult => cellValues[key] ?? '';
   const ast = parse(formula);
   const result = evaluate(ast, resolve, expandRange);
-  if (typeof result === 'object' && result !== null && 'type' in result && result.type === 'spill') {
+  if (
+    typeof result === 'object' &&
+    result !== null &&
+    'type' in result &&
+    result.type === 'spill'
+  ) {
     return { type: 'error', code: '#VALUE!' };
   }
   return result as FormulaResult;
@@ -56,7 +61,16 @@ describe('MODE', () => {
 });
 
 describe('STDEVP / VARP', () => {
-  const vals: Record<string, FormulaResult> = { A1: 2, A2: 4, A3: 4, A4: 4, A5: 5, A6: 5, A7: 7, A8: 9 };
+  const vals: Record<string, FormulaResult> = {
+    A1: 2,
+    A2: 4,
+    A3: 4,
+    A4: 4,
+    A5: 5,
+    A6: 5,
+    A7: 7,
+    A8: 9,
+  };
 
   it('computes population standard deviation', () => {
     expect(evalFormula('STDEVP(A1:A8)', vals) as number).toBeCloseTo(2.0, 1);
@@ -122,7 +136,16 @@ describe('PERCENTILE / QUARTILE', () => {
 describe('PERCENTRANK', () => {
   it('matches a known example (ranked data, default significance)', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 13, A2: 12, A3: 11, A4: 8, A5: 4, A6: 3, A7: 2, A8: 1, A9: 1, A10: 1,
+      A1: 13,
+      A2: 12,
+      A3: 11,
+      A4: 8,
+      A5: 4,
+      A6: 3,
+      A7: 2,
+      A8: 1,
+      A9: 1,
+      A10: 1,
     };
     expect(evalFormula('PERCENTRANK(A1:A10,2)', vals)).toBeCloseTo(0.333, 9);
   });
@@ -135,8 +158,16 @@ describe('PERCENTRANK', () => {
 
 describe('CORREL / PEARSON', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: 6, A2: 5, A3: 11, A4: 7, A5: 5,
-    B1: 2, B2: 3, B3: 9, B4: 1, B5: 8,
+    A1: 6,
+    A2: 5,
+    A3: 11,
+    A4: 7,
+    A5: 5,
+    B1: 2,
+    B2: 3,
+    B3: 9,
+    B4: 1,
+    B5: 8,
   };
 
   it('CORREL computes the Pearson correlation coefficient', () => {
@@ -167,8 +198,16 @@ describe('COVAR', () => {
 
 describe('SLOPE / INTERCEPT / RSQ', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: 2, A2: 3, A3: 9, A4: 1, A5: 8,
-    B1: 6, B2: 5, B3: 11, B4: 7, B5: 5,
+    A1: 2,
+    A2: 3,
+    A3: 9,
+    A4: 1,
+    A5: 8,
+    B1: 6,
+    B2: 5,
+    B3: 11,
+    B4: 7,
+    B5: 5,
   };
 
   it('SLOPE returns the regression slope', () => {
@@ -176,7 +215,10 @@ describe('SLOPE / INTERCEPT / RSQ', () => {
   });
 
   it('INTERCEPT returns the regression intercept', () => {
-    expect(evalFormula('INTERCEPT(A1:A5,B1:B5)', vals) as number).toBeCloseTo(0.04838709677419217, 9);
+    expect(evalFormula('INTERCEPT(A1:A5,B1:B5)', vals) as number).toBeCloseTo(
+      0.04838709677419217,
+      9,
+    );
   });
 
   it('RSQ returns the coefficient of determination', () => {
@@ -191,8 +233,16 @@ describe('SLOPE / INTERCEPT / RSQ', () => {
 
 describe('STEYX / FORECAST', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: 2, A2: 3, A3: 9, A4: 1, A5: 8,
-    B1: 6, B2: 5, B3: 11, B4: 7, B5: 5,
+    A1: 2,
+    A2: 3,
+    A3: 9,
+    A4: 1,
+    A5: 8,
+    B1: 6,
+    B2: 5,
+    B3: 11,
+    B4: 7,
+    B5: 5,
   };
 
   it('STEYX returns the standard error of the estimate', () => {
@@ -200,7 +250,10 @@ describe('STEYX / FORECAST', () => {
   });
 
   it('FORECAST predicts a value along the regression line', () => {
-    expect(evalFormula('FORECAST(10,A1:A5,B1:B5)', vals) as number).toBeCloseTo(6.741935483870968, 9);
+    expect(evalFormula('FORECAST(10,A1:A5,B1:B5)', vals) as number).toBeCloseTo(
+      6.741935483870968,
+      9,
+    );
   });
 
   it('STEYX returns #DIV/0! with fewer than 3 points', () => {
@@ -237,7 +290,16 @@ describe('AVEDEV / DEVSQ', () => {
 
 describe('KURT / SKEW', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: 3, A2: 4, A3: 5, A4: 2, A5: 3, A6: 4, A7: 5, A8: 6, A9: 4, A10: 7,
+    A1: 3,
+    A2: 4,
+    A3: 5,
+    A4: 2,
+    A5: 3,
+    A6: 4,
+    A7: 5,
+    A8: 6,
+    A9: 4,
+    A10: 7,
   };
 
   it('SKEW returns the dataset skewness', () => {
@@ -259,7 +321,10 @@ describe('NORMDIST / NORMINV', () => {
   });
 
   it('NORMDIST computes the density (non-cumulative)', () => {
-    expect(evalFormula('NORMDIST(0,0,1,FALSE)', {}) as number).toBeCloseTo(1 / Math.sqrt(2 * Math.PI), 9);
+    expect(evalFormula('NORMDIST(0,0,1,FALSE)', {}) as number).toBeCloseTo(
+      1 / Math.sqrt(2 * Math.PI),
+      9,
+    );
   });
 
   it('NORMINV inverts NORMDIST', () => {
@@ -308,7 +373,15 @@ describe('CONFIDENCE', () => {
 describe('COUNTUNIQUE', () => {
   it('counts unique values, case-sensitively, excluding blanks', () => {
     const vals: Record<string, FormulaResult> = {
-      A1: 1, A2: 1, A3: 2, A4: 'a', A5: 'A', A6: true, A7: true, A8: '', A9: 5,
+      A1: 1,
+      A2: 1,
+      A3: 2,
+      A4: 'a',
+      A5: 'A',
+      A6: true,
+      A7: true,
+      A8: '',
+      A9: 5,
     };
     expect(evalFormula('COUNTUNIQUE(A1:A9)', vals)).toBe(6);
   });
@@ -321,8 +394,14 @@ describe('COUNTUNIQUE', () => {
 
 describe('MINIFS / MAXIFS', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: 10, A2: 20, A3: 5, A4: 8,
-    B1: 'A', B2: 'B', B3: 'A', B4: 'B',
+    A1: 10,
+    A2: 20,
+    A3: 5,
+    A4: 8,
+    B1: 'A',
+    B2: 'B',
+    B3: 'A',
+    B4: 'B',
   };
 
   it('MINIFS finds the minimum among matching rows', () => {
@@ -363,7 +442,10 @@ describe('PERCENTILE.EXC', () => {
   });
 
   it('returns #NUM! when k is too close to the boundary for the sample size', () => {
-    expect(evalFormula('PERCENTILE.EXC(A1:A4,0.05)', vals)).toEqual({ type: 'error', code: '#NUM!' });
+    expect(evalFormula('PERCENTILE.EXC(A1:A4,0.05)', vals)).toEqual({
+      type: 'error',
+      code: '#NUM!',
+    });
   });
 });
 
@@ -404,7 +486,10 @@ describe('COVARIANCE.S', () => {
 
   it('returns #DIV/0! with a single pair', () => {
     const vals: Record<string, FormulaResult> = { A1: 5, B1: 5 };
-    expect(evalFormula('COVARIANCE.S(A1:A1,B1:B1)', vals)).toEqual({ type: 'error', code: '#DIV/0!' });
+    expect(evalFormula('COVARIANCE.S(A1:A1,B1:B1)', vals)).toEqual({
+      type: 'error',
+      code: '#DIV/0!',
+    });
   });
 });
 
@@ -414,7 +499,10 @@ describe('NORM.S.DIST', () => {
   });
 
   it('returns the density when cumulative is FALSE', () => {
-    expect(evalFormula('NORM.S.DIST(0,FALSE)', {}) as number).toBeCloseTo(1 / Math.sqrt(2 * Math.PI), 9);
+    expect(evalFormula('NORM.S.DIST(0,FALSE)', {}) as number).toBeCloseTo(
+      1 / Math.sqrt(2 * Math.PI),
+      9,
+    );
   });
 });
 
@@ -424,7 +512,16 @@ describe('NORM.S.DIST', () => {
 // against both a known value and its non-dotted counterpart.
 // ============================================================
 describe('STDEV.S / VAR.S (aliases of math.ts STDEV / VAR)', () => {
-  const vals: Record<string, FormulaResult> = { A1: 2, A2: 4, A3: 4, A4: 4, A5: 5, A6: 5, A7: 7, A8: 9 };
+  const vals: Record<string, FormulaResult> = {
+    A1: 2,
+    A2: 4,
+    A3: 4,
+    A4: 4,
+    A5: 5,
+    A6: 5,
+    A7: 7,
+    A8: 9,
+  };
 
   it('STDEV.S matches STDEV', () => {
     expect(evalFormula('STDEV.S(A1:A8)', vals)).toEqual(evalFormula('STDEV(A1:A8)', vals));
@@ -436,7 +533,16 @@ describe('STDEV.S / VAR.S (aliases of math.ts STDEV / VAR)', () => {
 });
 
 describe('STDEV.P / VAR.P (aliases of STDEVP / VARP)', () => {
-  const vals: Record<string, FormulaResult> = { A1: 2, A2: 4, A3: 4, A4: 4, A5: 5, A6: 5, A7: 7, A8: 9 };
+  const vals: Record<string, FormulaResult> = {
+    A1: 2,
+    A2: 4,
+    A3: 4,
+    A4: 4,
+    A5: 5,
+    A6: 5,
+    A7: 7,
+    A8: 9,
+  };
 
   it('STDEV.P matches STDEVP', () => {
     expect(evalFormula('STDEV.P(A1:A8)', vals)).toEqual(evalFormula('STDEVP(A1:A8)', vals));
@@ -477,15 +583,21 @@ describe('PERCENTILE.INC / QUARTILE.INC / PERCENTRANK.INC (aliases)', () => {
   const vals: Record<string, FormulaResult> = { A1: 1, A2: 2, A3: 3, A4: 4 };
 
   it('PERCENTILE.INC matches PERCENTILE', () => {
-    expect(evalFormula('PERCENTILE.INC(A1:A4,0.75)', vals)).toEqual(evalFormula('PERCENTILE(A1:A4,0.75)', vals));
+    expect(evalFormula('PERCENTILE.INC(A1:A4,0.75)', vals)).toEqual(
+      evalFormula('PERCENTILE(A1:A4,0.75)', vals),
+    );
   });
 
   it('QUARTILE.INC matches QUARTILE', () => {
-    expect(evalFormula('QUARTILE.INC(A1:A4,1)', vals)).toEqual(evalFormula('QUARTILE(A1:A4,1)', vals));
+    expect(evalFormula('QUARTILE.INC(A1:A4,1)', vals)).toEqual(
+      evalFormula('QUARTILE(A1:A4,1)', vals),
+    );
   });
 
   it('PERCENTRANK.INC matches PERCENTRANK', () => {
-    expect(evalFormula('PERCENTRANK.INC(A1:A4,3)', vals)).toEqual(evalFormula('PERCENTRANK(A1:A4,3)', vals));
+    expect(evalFormula('PERCENTRANK.INC(A1:A4,3)', vals)).toEqual(
+      evalFormula('PERCENTRANK(A1:A4,3)', vals),
+    );
   });
 });
 
@@ -493,7 +605,9 @@ describe('COVARIANCE.P (alias of COVAR)', () => {
   const vals: Record<string, FormulaResult> = { A1: 2, A2: 4, A3: 6, B1: 3, B2: 6, B3: 9 };
 
   it('matches COVAR', () => {
-    expect(evalFormula('COVARIANCE.P(A1:A3,B1:B3)', vals)).toEqual(evalFormula('COVAR(A1:A3,B1:B3)', vals));
+    expect(evalFormula('COVARIANCE.P(A1:A3,B1:B3)', vals)).toEqual(
+      evalFormula('COVAR(A1:A3,B1:B3)', vals),
+    );
   });
 
   it('computes the population covariance (n denominator)', () => {
@@ -503,22 +617,37 @@ describe('COVARIANCE.P (alias of COVAR)', () => {
 
 describe('FORECAST.LINEAR (alias of FORECAST)', () => {
   const vals: Record<string, FormulaResult> = {
-    A1: 2, A2: 3, A3: 9, A4: 1, A5: 8,
-    B1: 6, B2: 5, B3: 11, B4: 7, B5: 5,
+    A1: 2,
+    A2: 3,
+    A3: 9,
+    A4: 1,
+    A5: 8,
+    B1: 6,
+    B2: 5,
+    B3: 11,
+    B4: 7,
+    B5: 5,
   };
 
   it('matches FORECAST', () => {
-    expect(evalFormula('FORECAST.LINEAR(10,A1:A5,B1:B5)', vals)).toEqual(evalFormula('FORECAST(10,A1:A5,B1:B5)', vals));
+    expect(evalFormula('FORECAST.LINEAR(10,A1:A5,B1:B5)', vals)).toEqual(
+      evalFormula('FORECAST(10,A1:A5,B1:B5)', vals),
+    );
   });
 
   it('predicts a value along the regression line', () => {
-    expect(evalFormula('FORECAST.LINEAR(10,A1:A5,B1:B5)', vals) as number).toBeCloseTo(6.741935483870968, 9);
+    expect(evalFormula('FORECAST.LINEAR(10,A1:A5,B1:B5)', vals) as number).toBeCloseTo(
+      6.741935483870968,
+      9,
+    );
   });
 });
 
 describe('NORM.DIST / NORM.INV (aliases of NORMDIST / NORMINV)', () => {
   it('NORM.DIST matches NORMDIST', () => {
-    expect(evalFormula('NORM.DIST(1.96,0,1,TRUE)', {})).toEqual(evalFormula('NORMDIST(1.96,0,1,TRUE)', {}));
+    expect(evalFormula('NORM.DIST(1.96,0,1,TRUE)', {})).toEqual(
+      evalFormula('NORMDIST(1.96,0,1,TRUE)', {}),
+    );
   });
 
   it('NORM.INV matches NORMINV', () => {
@@ -528,7 +657,9 @@ describe('NORM.DIST / NORM.INV (aliases of NORMDIST / NORMINV)', () => {
 
 describe('CONFIDENCE.NORM (alias of CONFIDENCE)', () => {
   it('matches CONFIDENCE', () => {
-    expect(evalFormula('CONFIDENCE.NORM(0.05,2.5,50)', {})).toEqual(evalFormula('CONFIDENCE(0.05,2.5,50)', {}));
+    expect(evalFormula('CONFIDENCE.NORM(0.05,2.5,50)', {})).toEqual(
+      evalFormula('CONFIDENCE(0.05,2.5,50)', {}),
+    );
   });
 
   it('matches the documented Excel example', () => {

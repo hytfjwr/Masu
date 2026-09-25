@@ -106,7 +106,10 @@ const SUMIF: FunctionMeta = {
 
     if (rangeArg.kind === 'range' || rangeArg.kind === 'array') {
       const critFlat = argToFlat(rangeArg, ctx);
-      const sumFlat = sumRangeArg.kind === 'range' || sumRangeArg.kind === 'array' ? argToFlat(sumRangeArg, ctx) : [];
+      const sumFlat =
+        sumRangeArg.kind === 'range' || sumRangeArg.kind === 'array'
+          ? argToFlat(sumRangeArg, ctx)
+          : [];
       let sum = 0;
 
       for (let i = 0; i < critFlat.length; i++) {
@@ -142,7 +145,8 @@ const SUMIF: FunctionMeta = {
 const VLOOKUP: FunctionMeta = {
   name: 'VLOOKUP',
   signature: 'VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])',
-  description: 'Looks for a value in the leftmost column and returns a value in the same row from a specified column',
+  description:
+    'Looks for a value in the leftmost column and returns a value in the same row from a specified column',
   impl(args: FunctionArgValue[], ctx: FunctionContext): FormulaResult {
     if (args.length < 3 || args.length > 4) return makeError('#VALUE!');
 
@@ -373,7 +377,10 @@ const AVERAGEIF: FunctionMeta = {
 
     if (rangeArg.kind === 'range' || rangeArg.kind === 'array') {
       const critFlat = argToFlat(rangeArg, ctx);
-      const avgFlat = avgRangeArg.kind === 'range' || avgRangeArg.kind === 'array' ? argToFlat(avgRangeArg, ctx) : [];
+      const avgFlat =
+        avgRangeArg.kind === 'range' || avgRangeArg.kind === 'array'
+          ? argToFlat(avgRangeArg, ctx)
+          : [];
       let sum = 0;
       let count = 0;
 
@@ -501,7 +508,8 @@ const COUNTIFS: FunctionMeta = {
 // ============================================================
 const AVERAGEIFS: FunctionMeta = {
   name: 'AVERAGEIFS',
-  signature: 'AVERAGEIFS(average_range, criteria_range1, criteria1, [criteria_range2, criteria2], ...)',
+  signature:
+    'AVERAGEIFS(average_range, criteria_range1, criteria1, [criteria_range2, criteria2], ...)',
   description: '複数の条件を満たすセルの平均を求めます',
   impl(args: FunctionArgValue[], ctx: FunctionContext): FormulaResult {
     if (args.length < 3 || (args.length - 1) % 2 !== 0) return makeError('#VALUE!');
@@ -558,7 +566,8 @@ const AVERAGEIFS: FunctionMeta = {
 // ============================================================
 const XLOOKUP: FunctionMeta = {
   name: 'XLOOKUP',
-  signature: 'XLOOKUP(lookup_value, lookup_array, return_array, [if_not_found], [match_mode], [search_mode])',
+  signature:
+    'XLOOKUP(lookup_value, lookup_array, return_array, [if_not_found], [match_mode], [search_mode])',
   description: '検索値を検索範囲から探し、対応する値を返します',
   impl(args: FunctionArgValue[], ctx: FunctionContext): FormulaResult {
     if (args.length < 3 || args.length > 6) return makeError('#VALUE!');
@@ -879,8 +888,8 @@ const LOOKUP: FunctionMeta = {
       resultFlat = argToFlat(resultArg, ctx);
     } else if (rows >= cols) {
       // Array form, square or taller than wide: search the first column, return from the last column.
-      searchFlat = grid.map(r => r[0]);
-      resultFlat = grid.map(r => r[cols - 1]);
+      searchFlat = grid.map((r) => r[0]);
+      resultFlat = grid.map((r) => r[cols - 1]);
     } else {
       // Array form, wider than tall: search the first row, return from the last row.
       searchFlat = grid[0];
@@ -953,7 +962,10 @@ interface RefPosition {
   cols: number;
 }
 
-function refPositionFromNode(node: ASTNode, ctx: FunctionContext): RefPosition | FormulaError | null {
+function refPositionFromNode(
+  node: ASTNode,
+  ctx: FunctionContext,
+): RefPosition | FormulaError | null {
   switch (node.kind) {
     case 'CellRef': {
       const { col, row } = parseCellKey(node.key);
@@ -994,8 +1006,10 @@ function refPositionFromNode(node: ASTNode, ctx: FunctionContext): RefPosition |
         sheetId = resolved;
       }
       const bounds = ctx.getSheetBounds ? ctx.getSheetBounds(sheetId) : { rows: 1000, cols: 26 };
-      const endCol = node.endCol !== null ? node.endCol : bounds.cols > 0 ? bounds.cols - 1 : node.startCol;
-      const endRow = node.endRow !== null ? node.endRow : bounds.rows > 0 ? bounds.rows - 1 : node.startRow;
+      const endCol =
+        node.endCol !== null ? node.endCol : bounds.cols > 0 ? bounds.cols - 1 : node.startCol;
+      const endRow =
+        node.endRow !== null ? node.endRow : bounds.rows > 0 ? bounds.rows - 1 : node.startRow;
       return {
         startRow: node.startRow,
         startCol: node.startCol,
@@ -1124,10 +1138,18 @@ const ADDRESS: FunctionMeta = {
     const colLetter = colIndexToLetter(col - 1);
     let cellPart: string;
     switch (absNum) {
-      case 1: cellPart = `$${colLetter}$${row}`; break;
-      case 2: cellPart = `${colLetter}$${row}`; break;
-      case 3: cellPart = `$${colLetter}${row}`; break;
-      default: cellPart = `${colLetter}${row}`; break;
+      case 1:
+        cellPart = `$${colLetter}$${row}`;
+        break;
+      case 2:
+        cellPart = `${colLetter}$${row}`;
+        break;
+      case 3:
+        cellPart = `$${colLetter}${row}`;
+        break;
+      default:
+        cellPart = `${colLetter}${row}`;
+        break;
     }
     return `${sheetPart}${cellPart}`;
   },
@@ -1269,7 +1291,9 @@ const OFFSET: FunctionMeta = {
     for (let r = 0; r < height; r++) {
       const row: FormulaResult[] = [];
       for (let c = 0; c < width; c++) {
-        row.push(ctx.resolve(`${prefix}${colIndexToLetter(newStartCol + c)}${newStartRow + r + 1}`));
+        row.push(
+          ctx.resolve(`${prefix}${colIndexToLetter(newStartCol + c)}${newStartRow + r + 1}`),
+        );
       }
       values.push(row);
     }
@@ -1278,7 +1302,25 @@ const OFFSET: FunctionMeta = {
 };
 
 export const lookupFunctions: FunctionMeta[] = [
-  COUNTA, COUNTIF, SUMIF, VLOOKUP, INDEX, MATCH, AVERAGEIF,
-  SUMIFS, COUNTIFS, AVERAGEIFS, XLOOKUP, XMATCH,
-  HLOOKUP, LOOKUP, ROWS, COLUMNS, ROW, COLUMN, ADDRESS, INDIRECT, OFFSET,
+  COUNTA,
+  COUNTIF,
+  SUMIF,
+  VLOOKUP,
+  INDEX,
+  MATCH,
+  AVERAGEIF,
+  SUMIFS,
+  COUNTIFS,
+  AVERAGEIFS,
+  XLOOKUP,
+  XMATCH,
+  HLOOKUP,
+  LOOKUP,
+  ROWS,
+  COLUMNS,
+  ROW,
+  COLUMN,
+  ADDRESS,
+  INDIRECT,
+  OFFSET,
 ];

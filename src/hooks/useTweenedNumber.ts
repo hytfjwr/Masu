@@ -7,7 +7,10 @@ interface Tween {
 }
 
 function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined' && (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
+  return (
+    typeof window !== 'undefined' &&
+    (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
+  );
 }
 
 function isAnimatable(t: Tween): boolean {
@@ -23,7 +26,10 @@ function shownValue(t: Tween): number | null {
  * Animate a displayed number toward `target` (ease-out cubic). A change mid-tween continues from the
  * value on screen; null (no value) and reduced motion switch instantly.
  */
-export function useTweenedNumber(target: number | null, durationMs = 400): { value: number | null; tweening: boolean } {
+export function useTweenedNumber(
+  target: number | null,
+  durationMs = 400,
+): { value: number | null; tweening: boolean } {
   const [tween, setTween] = useState<Tween>({ from: target, to: target, value: target });
   // New target: restart from whatever is on screen right now (render-phase update, no flash of the target)
   if (tween.to !== target) {
@@ -42,7 +48,7 @@ export function useTweenedNumber(target: number | null, durationMs = 400): { val
     const tick = (now: number) => {
       const t = Math.min(1, (now - start) / durationMs);
       const eased = 1 - (1 - t) ** 3;
-      setTween(prev => (prev.to === to ? { ...prev, value: from + (to - from) * eased } : prev));
+      setTween((prev) => (prev.to === to ? { ...prev, value: from + (to - from) * eased } : prev));
       if (t < 1) frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);

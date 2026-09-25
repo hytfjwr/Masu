@@ -88,7 +88,11 @@ export const MenuBar = memo(function MenuBar() {
     (action: string) => {
       switch (action) {
         case 'newWorkbook':
-          if (window.confirm('現在のスプレッドシートを閉じて新規作成しますか？（内容は自動保存から削除されます）')) {
+          if (
+            window.confirm(
+              '現在のスプレッドシートを閉じて新規作成しますか？（内容は自動保存から削除されます）',
+            )
+          ) {
             actions.newWorkbook();
           }
           break;
@@ -298,7 +302,10 @@ export const MenuBar = memo(function MenuBar() {
           { label: 'シートを並べ替え (A→Z)', action: 'sortSheetAsc' },
           { label: 'シートを並べ替え (Z→A)', action: 'sortSheetDesc' },
           { label: '', separator: true, action: '' },
-          { label: actions.filterRange ? 'フィルタを削除' : 'フィルタを作成', action: 'toggleFilter' },
+          {
+            label: actions.filterRange ? 'フィルタを削除' : 'フィルタを作成',
+            action: 'toggleFilter',
+          },
           { label: '', separator: true, action: '' },
           { label: 'データの入力規則...', action: 'dataValidation' },
           { label: '名前付き範囲...', action: 'namedRanges' },
@@ -325,10 +332,7 @@ export const MenuBar = memo(function MenuBar() {
 
   return (
     <>
-      <div
-        className="flex items-center h-6 shrink-0 -ml-2"
-        data-menu-bar
-      >
+      <div className="flex items-center h-6 shrink-0 -ml-2" data-menu-bar>
         <nav className="relative flex items-center gap-0.5" data-hover-glide>
           <HoverGlider />
           {MENU_ITEMS.map((item) => (
@@ -342,7 +346,11 @@ export const MenuBar = memo(function MenuBar() {
                 {item.label}
               </button>
               {openMenu === item.id && (
-                <div ref={dropdownRef} data-context-menu className="absolute top-full left-0 mt-px min-w-[200px] glass-surface rounded-xl z-50 py-1 animate-slide-down">
+                <div
+                  ref={dropdownRef}
+                  data-context-menu
+                  className="absolute top-full left-0 mt-px min-w-[200px] glass-surface rounded-xl z-50 py-1 animate-slide-down"
+                >
                   {getMenuItems(item.id).map((menuItem, idx) =>
                     menuItem.separator ? (
                       <div key={idx} className="border-t border-grid-line my-1" />
@@ -361,7 +369,10 @@ export const MenuBar = memo(function MenuBar() {
                           <span className="text-text-primary/30 text-[10px]">▸</span>
                         </button>
                         {openSubmenu === idx && (
-                          <div data-context-menu className="absolute left-full top-0 ml-1 min-w-[160px] glass-surface rounded-xl z-50 py-1 animate-fade-in-scale">
+                          <div
+                            data-context-menu
+                            className="absolute left-full top-0 ml-1 min-w-[160px] glass-surface rounded-xl z-50 py-1 animate-fade-in-scale"
+                          >
                             {menuItem.submenu.map((subItem, subIdx) => (
                               <button
                                 key={subIdx}
@@ -423,7 +434,10 @@ export const MenuBar = memo(function MenuBar() {
       {/* Freeze Pane Dialog */}
       {freezeDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-backdrop-in">
-          <div className="glass-panel rounded-2xl p-4 min-w-[280px] animate-dialog-spring" data-testid="freeze-dialog">
+          <div
+            className="glass-panel rounded-2xl p-4 min-w-[280px] animate-dialog-spring"
+            data-testid="freeze-dialog"
+          >
             <h3 className="text-sm font-medium text-text-primary mb-3">行列の固定</h3>
             <div className="flex flex-col gap-2 mb-4">
               <label className="flex items-center gap-2 text-xs text-text-primary">

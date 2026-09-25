@@ -44,7 +44,10 @@ const contains = (r: CursorRect, p: Point) =>
  * the cell, then light pulses flow along it (index.css `.precedent-*`). Re-keyed per cell by Grid,
  * and its entrance is delayed so arrows only appear once the selection settles.
  */
-export const PrecedentArrows = memo(function PrecedentArrows({ sources, target }: PrecedentArrowsProps) {
+export const PrecedentArrows = memo(function PrecedentArrows({
+  sources,
+  target,
+}: PrecedentArrowsProps) {
   const geometry = useMemo(() => {
     const tc = center(target);
     const all = [target, ...sources.map((s) => s.rect)];
@@ -65,12 +68,20 @@ export const PrecedentArrows = memo(function PrecedentArrows({ sources, target }
       if (dist < 8) return { rect, color, arrow: null };
       // Arc sideways (alternating per reference so parallel arrows fan out)
       const bend = Math.min(80, Math.max(18, dist * 0.22)) * (i % 2 === 0 ? 1 : -1);
-      const ctrl = { x: (start.x + tip.x) / 2 - (dy / dist) * bend, y: (start.y + tip.y) / 2 + (dx / dist) * bend };
+      const ctrl = {
+        x: (start.x + tip.x) / 2 - (dy / dist) * bend,
+        y: (start.y + tip.y) / 2 + (dx / dist) * bend,
+      };
       const angle = (Math.atan2(tip.y - ctrl.y, tip.x - ctrl.x) * 180) / Math.PI;
       return { rect, color, arrow: { start, tip, ctrl, angle } };
     });
     return {
-      box: { left: minX - PAD, top: minY - PAD, width: maxX - minX + PAD * 2, height: maxY - minY + PAD * 2 },
+      box: {
+        left: minX - PAD,
+        top: minY - PAD,
+        width: maxX - minX + PAD * 2,
+        height: maxY - minY + PAD * 2,
+      },
       items,
     };
   }, [sources, target]);
@@ -108,7 +119,13 @@ export const PrecedentArrows = memo(function PrecedentArrows({ sources, target }
               <>
                 <path className="precedent-path" d={d} pathLength={1} stroke={color} />
                 <path className="precedent-flow" d={d} pathLength={1} />
-                <circle className="precedent-dot" cx={lx(arrow.start.x)} cy={ly(arrow.start.y)} r={3.5} fill={color} />
+                <circle
+                  className="precedent-dot"
+                  cx={lx(arrow.start.x)}
+                  cy={ly(arrow.start.y)}
+                  r={3.5}
+                  fill={color}
+                />
                 <path
                   className="precedent-head"
                   d="M -9 -5 L 1 0 L -9 5 Z"

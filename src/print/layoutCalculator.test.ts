@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   pxToMm,
   mmToPx,
@@ -57,35 +57,57 @@ describe('resolveMargins', () => {
 
   it('returns custom margins when specified', () => {
     const custom = { top: 15, right: 25, bottom: 15, left: 25 };
-    const margins = resolveMargins(defaultSettings({
-      marginPreset: 'custom',
-      customMargins: custom,
-    }));
+    const margins = resolveMargins(
+      defaultSettings({
+        marginPreset: 'custom',
+        customMargins: custom,
+      }),
+    );
     expect(margins).toEqual(custom);
   });
 });
 
 describe('computePrintableArea', () => {
   it('A4 portrait with normal margins', () => {
-    const area = computePrintableArea('A4', 'portrait', { top: 20, right: 20, bottom: 20, left: 20 });
+    const area = computePrintableArea('A4', 'portrait', {
+      top: 20,
+      right: 20,
+      bottom: 20,
+      left: 20,
+    });
     expect(area.width).toBeCloseTo(170, 0); // 210 - 20 - 20
     expect(area.height).toBeCloseTo(257, 0); // 297 - 20 - 20
   });
 
   it('A4 landscape with normal margins', () => {
-    const area = computePrintableArea('A4', 'landscape', { top: 20, right: 20, bottom: 20, left: 20 });
+    const area = computePrintableArea('A4', 'landscape', {
+      top: 20,
+      right: 20,
+      bottom: 20,
+      left: 20,
+    });
     expect(area.width).toBeCloseTo(257, 0); // 297 - 20 - 20
     expect(area.height).toBeCloseTo(170, 0); // 210 - 20 - 20
   });
 
   it('A3 portrait', () => {
-    const area = computePrintableArea('A3', 'portrait', { top: 20, right: 20, bottom: 20, left: 20 });
+    const area = computePrintableArea('A3', 'portrait', {
+      top: 20,
+      right: 20,
+      bottom: 20,
+      left: 20,
+    });
     expect(area.width).toBeCloseTo(257, 0); // 297 - 40
     expect(area.height).toBeCloseTo(380, 0); // 420 - 40
   });
 
   it('Letter portrait', () => {
-    const area = computePrintableArea('Letter', 'portrait', { top: 20, right: 20, bottom: 20, left: 20 });
+    const area = computePrintableArea('Letter', 'portrait', {
+      top: 20,
+      right: 20,
+      bottom: 20,
+      left: 20,
+    });
     expect(area.width).toBeCloseTo(175.9, 0); // 215.9 - 40
     expect(area.height).toBeCloseTo(239.4, 0); // 279.4 - 40
   });
@@ -94,42 +116,60 @@ describe('computePrintableArea', () => {
 describe('expandHeaderFooterTemplate', () => {
   it('expands {pageNumber}', () => {
     const result = expandHeaderFooterTemplate('{pageNumber}', {
-      pageNumber: 3, totalPages: 10, sheetName: 'Sheet1', date: '2024-01-01',
+      pageNumber: 3,
+      totalPages: 10,
+      sheetName: 'Sheet1',
+      date: '2024-01-01',
     });
     expect(result).toBe('3');
   });
 
   it('expands {totalPages}', () => {
     const result = expandHeaderFooterTemplate('{totalPages}', {
-      pageNumber: 1, totalPages: 5, sheetName: 'Sheet1', date: '2024-01-01',
+      pageNumber: 1,
+      totalPages: 5,
+      sheetName: 'Sheet1',
+      date: '2024-01-01',
     });
     expect(result).toBe('5');
   });
 
   it('expands {sheetName}', () => {
     const result = expandHeaderFooterTemplate('{sheetName}', {
-      pageNumber: 1, totalPages: 1, sheetName: 'MySheet', date: '2024-01-01',
+      pageNumber: 1,
+      totalPages: 1,
+      sheetName: 'MySheet',
+      date: '2024-01-01',
     });
     expect(result).toBe('MySheet');
   });
 
   it('expands {date}', () => {
     const result = expandHeaderFooterTemplate('{date}', {
-      pageNumber: 1, totalPages: 1, sheetName: 'Sheet1', date: '2024-06-15',
+      pageNumber: 1,
+      totalPages: 1,
+      sheetName: 'Sheet1',
+      date: '2024-06-15',
     });
     expect(result).toBe('2024-06-15');
   });
 
   it('returns template without variables as-is', () => {
     const result = expandHeaderFooterTemplate('No variables here', {
-      pageNumber: 1, totalPages: 1, sheetName: 'Sheet1', date: '2024-01-01',
+      pageNumber: 1,
+      totalPages: 1,
+      sheetName: 'Sheet1',
+      date: '2024-01-01',
     });
     expect(result).toBe('No variables here');
   });
 
   it('expands multiple variables simultaneously', () => {
     const result = expandHeaderFooterTemplate('ページ {pageNumber}/{totalPages} - {sheetName}', {
-      pageNumber: 2, totalPages: 5, sheetName: '売上', date: '2024-01-01',
+      pageNumber: 2,
+      totalPages: 5,
+      sheetName: '売上',
+      date: '2024-01-01',
     });
     expect(result).toBe('ページ 2/5 - 売上');
   });
@@ -185,12 +225,12 @@ describe('computePageLayout', () => {
   });
 
   it('page breaks occur at cell boundaries', () => {
-    const layout = computePageLayout(
-      defaultSettings(),
-      constantWidth,
-      constantHeight,
-      { startCol: 0, endCol: 9, startRow: 0, endRow: 99 },
-    );
+    const layout = computePageLayout(defaultSettings(), constantWidth, constantHeight, {
+      startCol: 0,
+      endCol: 9,
+      startRow: 0,
+      endRow: 99,
+    });
     for (const page of layout.pages) {
       // Start/end should be integer indices
       expect(Number.isInteger(page.startCol)).toBe(true);
@@ -212,12 +252,12 @@ describe('computePageLayout', () => {
   });
 
   it('page numbers are sequential', () => {
-    const layout = computePageLayout(
-      defaultSettings(),
-      constantWidth,
-      constantHeight,
-      { startCol: 0, endCol: 9, startRow: 0, endRow: 99 },
-    );
+    const layout = computePageLayout(defaultSettings(), constantWidth, constantHeight, {
+      startCol: 0,
+      endCol: 9,
+      startRow: 0,
+      endRow: 99,
+    });
     for (let i = 0; i < layout.pages.length; i++) {
       expect(layout.pages[i].pageNumber).toBe(i + 1);
     }

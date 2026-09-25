@@ -54,7 +54,7 @@ export const StatusBar = memo(function StatusBar({
     const cellCount = (maxRow - minRow + 1) * (maxCol - minCol + 1);
     if (cellCount <= 1) return null;
     return calcAggregates(deferredRange, getCellData, getCells?.());
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [deferredRange, getCellData, getCells, deferredVersion]);
 
   // Aggregates count up/down to their new values when the selection changes
@@ -64,8 +64,15 @@ export const StatusBar = memo(function StatusBar({
   const tweening = sum.tweening || average.tweening || count.tweening;
 
   return (
-    <div className="flex items-center justify-between h-7 border-t border-grid-line bg-header-bg px-4 shrink-0" data-statusbar data-active-cell={`${activeCell.col},${activeCell.row}`} data-version={version}>
-      <span data-status-ready className="text-[11px] text-text-primary/50 select-none">Ready</span>
+    <div
+      className="flex items-center justify-between h-7 border-t border-grid-line bg-header-bg px-4 shrink-0"
+      data-statusbar
+      data-active-cell={`${activeCell.col},${activeCell.row}`}
+      data-version={version}
+    >
+      <span data-status-ready className="text-[11px] text-text-primary/50 select-none">
+        Ready
+      </span>
       <div className="flex items-center gap-4">
         {selectionInfo.cellCount > 1 && (
           <>
@@ -82,7 +89,8 @@ export const StatusBar = memo(function StatusBar({
             className={`text-[11px] text-text-primary/60 select-none tabular-nums${tweening ? ' statusbar-tweening' : ''}`}
             data-testid="statusbar-aggregates"
           >
-            合計: {formatAggregate(sum.value)} &nbsp; 平均: {formatAggregate(average.value)} &nbsp; 個数: {Math.round(count.value ?? aggregates.count)}
+            合計: {formatAggregate(sum.value)} &nbsp; 平均: {formatAggregate(average.value)} &nbsp;
+            個数: {Math.round(count.value ?? aggregates.count)}
           </span>
         ) : (
           <span className="text-[11px] text-text-primary/40 select-none">

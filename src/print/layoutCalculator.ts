@@ -29,7 +29,10 @@ export function resolveMargins(settings: PrintSettings): Margins {
   if (settings.marginPreset === 'custom' && settings.customMargins) {
     return settings.customMargins;
   }
-  return MARGIN_PRESETS[settings.marginPreset as Exclude<typeof settings.marginPreset, 'custom'>] ?? MARGIN_PRESETS.normal;
+  return (
+    MARGIN_PRESETS[settings.marginPreset as Exclude<typeof settings.marginPreset, 'custom'>] ??
+    MARGIN_PRESETS.normal
+  );
 }
 
 /**

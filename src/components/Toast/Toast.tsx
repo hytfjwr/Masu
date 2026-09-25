@@ -9,17 +9,26 @@ interface ToastContainerProps {
   onDismiss?: (id: number) => void;
 }
 
-export const ToastContainer = memo(function ToastContainer({ toasts, onDismiss = () => {} }: ToastContainerProps) {
+export const ToastContainer = memo(function ToastContainer({
+  toasts,
+  onDismiss = () => {},
+}: ToastContainerProps) {
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none">
-      {toasts.map(t => (
+      {toasts.map((t) => (
         <ToastRow key={t.id} toast={t} onDismiss={onDismiss} />
       ))}
     </div>
   );
 });
 
-const ToastRow = memo(function ToastRow({ toast, onDismiss }: { toast: ToastItem; onDismiss: (id: number) => void }) {
+const ToastRow = memo(function ToastRow({
+  toast,
+  onDismiss,
+}: {
+  toast: ToastItem;
+  onDismiss: (id: number) => void;
+}) {
   // useEffect required: auto-dismiss this toast after a fixed delay
   useEffect(() => {
     const timer = setTimeout(() => onDismiss(toast.id), AUTO_DISMISS_MS);

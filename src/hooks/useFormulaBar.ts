@@ -72,9 +72,7 @@ export function useFormulaBar(): UseFormulaBarReturn {
         return;
       }
 
-      const matches = allFunctions.filter((fn) =>
-        fn.name.startsWith(partial),
-      );
+      const matches = allFunctions.filter((fn) => fn.name.startsWith(partial));
       setSuggestions(matches);
       setSelectedIndex(0);
     },
@@ -86,40 +84,34 @@ export function useFormulaBar(): UseFormulaBarReturn {
     setSelectedIndex(0);
   }, []);
 
-  const moveSelection = useCallback(
-    (delta: number) => {
-      setSuggestions((current) => {
-        if (current.length === 0) return current;
-        setSelectedIndex((prev) => {
-          const next = prev + delta;
-          if (next < 0) return current.length - 1;
-          if (next >= current.length) return 0;
-          return next;
-        });
-        return current;
+  const moveSelection = useCallback((delta: number) => {
+    setSuggestions((current) => {
+      if (current.length === 0) return current;
+      setSelectedIndex((prev) => {
+        const next = prev + delta;
+        if (next < 0) return current.length - 1;
+        if (next >= current.length) return 0;
+        return next;
       });
-    },
-    [],
-  );
+      return current;
+    });
+  }, []);
 
   const getSelectedSuggestion = useCallback((): FunctionMeta | null => {
     if (suggestions.length === 0) return null;
     return suggestions[selectedIndex] ?? null;
   }, [suggestions, selectedIndex]);
 
-  const selectSuggestion = useCallback(
-    (fn: FunctionMeta, currentValue: string): string => {
-      // Find where the partial function name starts in the value
-      const partial = extractPartialFunctionName(currentValue);
-      if (!partial) return currentValue;
+  const selectSuggestion = useCallback((fn: FunctionMeta, currentValue: string): string => {
+    // Find where the partial function name starts in the value
+    const partial = extractPartialFunctionName(currentValue);
+    if (!partial) return currentValue;
 
-      // Replace the partial with the full function name + opening paren
-      const insertText = fn.name + '(';
-      const prefix = currentValue.slice(0, currentValue.length - partial.length);
-      return prefix + insertText;
-    },
-    [],
-  );
+    // Replace the partial with the full function name + opening paren
+    const insertText = fn.name + '(';
+    const prefix = currentValue.slice(0, currentValue.length - partial.length);
+    return prefix + insertText;
+  }, []);
 
   return {
     suggestions,

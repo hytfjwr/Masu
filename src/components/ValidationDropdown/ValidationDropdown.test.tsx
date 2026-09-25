@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ValidationDropdown } from './index';
 
@@ -8,7 +8,14 @@ const OPTIONS = ['Apple', 'Banana', 'Cherry'];
 describe('ValidationDropdown', () => {
   it('filters the option list as the search input changes', () => {
     render(
-      <ValidationDropdown options={OPTIONS} currentValue="" x={0} y={0} onSelect={() => {}} onClose={() => {}} />,
+      <ValidationDropdown
+        options={OPTIONS}
+        currentValue=""
+        x={0}
+        y={0}
+        onSelect={() => {}}
+        onClose={() => {}}
+      />,
     );
 
     expect(screen.getByText('Apple')).toBeTruthy();
@@ -25,7 +32,14 @@ describe('ValidationDropdown', () => {
   it('selects the highlighted option on Enter', () => {
     const onSelect = vi.fn();
     render(
-      <ValidationDropdown options={OPTIONS} currentValue="" x={0} y={0} onSelect={onSelect} onClose={() => {}} />,
+      <ValidationDropdown
+        options={OPTIONS}
+        currentValue=""
+        x={0}
+        y={0}
+        onSelect={onSelect}
+        onClose={() => {}}
+      />,
     );
 
     const search = screen.getByPlaceholderText('検索');
@@ -38,7 +52,14 @@ describe('ValidationDropdown', () => {
   it('closes on Escape', () => {
     const onClose = vi.fn();
     render(
-      <ValidationDropdown options={OPTIONS} currentValue="" x={0} y={0} onSelect={() => {}} onClose={onClose} />,
+      <ValidationDropdown
+        options={OPTIONS}
+        currentValue=""
+        x={0}
+        y={0}
+        onSelect={() => {}}
+        onClose={onClose}
+      />,
     );
 
     fireEvent.keyDown(screen.getByPlaceholderText('検索'), { key: 'Escape' });

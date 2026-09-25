@@ -1,11 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { tokenize } from './tokenizer';
 import { TokenType } from './types';
 
 describe('Tokenizer - dotted identifiers', () => {
   it('tokenizes dotted function names', () => {
-    expect(tokenize('STDEV.S(A1:A3)')[0]).toEqual({ type: TokenType.FunctionName, value: 'STDEV.S' });
-    expect(tokenize('NORM.S.DIST(1,TRUE)')[0]).toEqual({ type: TokenType.FunctionName, value: 'NORM.S.DIST' });
+    expect(tokenize('STDEV.S(A1:A3)')[0]).toEqual({
+      type: TokenType.FunctionName,
+      value: 'STDEV.S',
+    });
+    expect(tokenize('NORM.S.DIST(1,TRUE)')[0]).toEqual({
+      type: TokenType.FunctionName,
+      value: 'NORM.S.DIST',
+    });
   });
 
   it('keeps cell refs and decimals intact', () => {

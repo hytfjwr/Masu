@@ -4,11 +4,7 @@ import type { GroupRange } from '../types/grid';
  * ネストレベルの自動計算。
  * 既存グループとの重なりに基づいてレベルを決定する。
  */
-export function computeGroupLevel(
-  groups: GroupRange[],
-  start: number,
-  end: number,
-): number {
+export function computeGroupLevel(groups: GroupRange[], start: number, end: number): number {
   let maxOverlappingLevel = 0;
   for (const g of groups) {
     // Check if ranges overlap
@@ -51,34 +47,23 @@ export function addGroup(
 /**
  * グループを削除する。
  */
-export function removeGroup(
-  groups: GroupRange[],
-  groupId: string,
-): GroupRange[] {
-  return groups.filter(g => g.id !== groupId);
+export function removeGroup(groups: GroupRange[], groupId: string): GroupRange[] {
+  return groups.filter((g) => g.id !== groupId);
 }
 
 /**
  * グループの折りたたみ/展開を切り替える。
  */
-export function toggleGroupCollapse(
-  groups: GroupRange[],
-  groupId: string,
-): GroupRange[] {
-  return groups.map(g =>
-    g.id === groupId ? { ...g, collapsed: !g.collapsed } : g,
-  );
+export function toggleGroupCollapse(groups: GroupRange[], groupId: string): GroupRange[] {
+  return groups.map((g) => (g.id === groupId ? { ...g, collapsed: !g.collapsed } : g));
 }
 
 /**
  * レベルボタンによる一括展開/折りたたみ。
  * 指定レベル以下のグループを展開し、それ以上を折りたたむ。
  */
-export function setExpandLevel(
-  groups: GroupRange[],
-  level: number,
-): GroupRange[] {
-  return groups.map(g => ({
+export function setExpandLevel(groups: GroupRange[], level: number): GroupRange[] {
+  return groups.map((g) => ({
     ...g,
     collapsed: g.level >= level,
   }));
@@ -112,7 +97,7 @@ export function computeCollapsedIndices(
  */
 export function getMaxGroupLevel(groups: GroupRange[]): number {
   if (groups.length === 0) return 0;
-  return Math.max(...groups.map(g => g.level));
+  return Math.max(...groups.map((g) => g.level));
 }
 
 /**
@@ -124,7 +109,7 @@ export function shiftGroupRanges(
   operation: 'insert' | 'delete',
 ): GroupRange[] {
   if (operation === 'insert') {
-    return groups.map(g => {
+    return groups.map((g) => {
       if (g.start >= index) {
         return { ...g, start: g.start + 1, end: g.end + 1 };
       } else if (index <= g.end) {
@@ -136,8 +121,8 @@ export function shiftGroupRanges(
   } else {
     // Delete
     return groups
-      .filter(g => !(g.start === index && g.end === index)) // Remove single-element groups at the deleted index
-      .map(g => {
+      .filter((g) => !(g.start === index && g.end === index)) // Remove single-element groups at the deleted index
+      .map((g) => {
         if (g.start > index) {
           return { ...g, start: g.start - 1, end: g.end - 1 };
         } else if (g.start <= index && index <= g.end) {

@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { clearAutosave, isAutosaveAvailable, loadAutosave, saveAutosave } from '../io/autosave';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 interface UseAutosaveParams {
-  version: number;                 // useGridData の version（変更検知）
-  sizeVersion: number;             // useColumnRowSizes の sizeVersion（列幅変更も保存対象）
-  serialize: () => string;         // 現在のワークブックをネイティブ形式（.tabula.json）の JSON 文字列に
+  version: number; // useGridData の version（変更検知）
+  sizeVersion: number; // useColumnRowSizes の sizeVersion（列幅変更も保存対象）
+  serialize: () => string; // 現在のワークブックをネイティブ形式（.tabula.json）の JSON 文字列に
   restore: (json: string) => void; // JSON 文字列からワークブックを復元
 }
 
@@ -19,16 +19,25 @@ interface UseAutosaveReturn {
 const DEBOUNCE_MS = 1000;
 const IDLE_TIMEOUT_MS = 2000;
 
-export function useAutosave({ version, sizeVersion, serialize, restore }: UseAutosaveParams): UseAutosaveReturn {
+export function useAutosave({
+  version,
+  sizeVersion,
+  serialize,
+  restore,
+}: UseAutosaveParams): UseAutosaveReturn {
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
-  const [restored, setRestored] = useState(false);
+  // Without IndexedDB there is nothing to restore, so start out restored
+  const [restored, setRestored] = useState(() => !isAutosaveAvailable());
 
-  // Keep the latest serialize/restore without widening effect dependencies
   const serializeRef = useRef(serialize);
-  serializeRef.current = serialize;
   const restoreRef = useRef(restore);
-  restoreRef.current = restore;
+  // useEffect required: keep the latest serialize/restore without widening effect dependencies;
+  // layout effect so they are current before any passive effect or timer reads them
+  useLayoutEffect(() => {
+    serializeRef.current = serialize;
+    restoreRef.current = restore;
+  });
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** A save is scheduled for the next idle period (after the debounce) */
@@ -50,11 +59,8 @@ export function useAutosave({ version, sizeVersion, serialize, restore }: UseAut
 
   // useEffect required: one-time restore from IndexedDB on mount
   useEffect(() => {
+    if (!isAutosaveAvailable()) return;
     let cancelled = false;
-    if (!isAutosaveAvailable()) {
-      setRestored(true);
-      return;
-    }
     (async () => {
       try {
         const record = await loadAutosave();
@@ -85,7 +91,11 @@ export function useAutosave({ version, sizeVersion, serialize, restore }: UseAut
     if (!restored) return;
     const timer = setTimeout(() => {
       debounceTimerRef.current = null;
-      const ric = (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback;
+      const ric = (
+        window as Window & {
+          requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+        }
+      ).requestIdleCallback;
       idlePendingRef.current = true;
       const run = () => {
         if (!idlePendingRef.current) return; // already flushed (tab hidden/closed)

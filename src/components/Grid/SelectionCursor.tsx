@@ -15,11 +15,22 @@ const GLIDE_MAX_DISTANCE = 1600;
  * size transition) from the previous rect to the new one instead of jumping cell to cell. Because it
  * lives inside the scrolled content, native scrolling moves it with no JS and frozen panes cover it.
  */
-export function SelectionCursor({ rect, variant }: { rect: CursorRect; variant: 'active' | 'range' }) {
+export function SelectionCursor({
+  rect,
+  variant,
+}: {
+  rect: CursorRect;
+  variant: 'active' | 'range';
+}) {
   // Previous rect, tracked during render so a far jump (Ctrl+End, Name box, …) can snap.
   const [prev, setPrev] = useState(rect);
   const [snap, setSnap] = useState(false);
-  if (prev.left !== rect.left || prev.top !== rect.top || prev.width !== rect.width || prev.height !== rect.height) {
+  if (
+    prev.left !== rect.left ||
+    prev.top !== rect.top ||
+    prev.width !== rect.width ||
+    prev.height !== rect.height
+  ) {
     const distance = Math.abs(rect.left - prev.left) + Math.abs(rect.top - prev.top);
     setPrev(rect);
     setSnap(distance > GLIDE_MAX_DISTANCE);

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { computeSortOrder } from './sortRange';
 import { makeError } from '../engine/types';
 import type { FormulaResult } from '../engine/types';
@@ -48,11 +48,10 @@ describe('computeSortOrder', () => {
       0: ['a', 'a', 'b'],
       1: [2, 1, 0],
     };
-    const order = computeSortOrder(
-      (col, row) => table[col as 0 | 1][row],
-      0, 2,
-      [{ col: 0, ascending: true }, { col: 1, ascending: true }],
-    );
+    const order = computeSortOrder((col, row) => table[col as 0 | 1][row], 0, 2, [
+      { col: 0, ascending: true },
+      { col: 1, ascending: true },
+    ]);
     expect(order).toEqual([1, 0, 2]);
   });
 

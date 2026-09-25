@@ -168,43 +168,137 @@ export function useKeyboard({
 
       // Navigation mode - Ctrl/Cmd modifier combinations
       if (mod) {
-        if (e.key === 'ArrowUp') { e.preventDefault(); onJump?.(0, -1, e.shiftKey); return; }
-        if (e.key === 'ArrowDown') { e.preventDefault(); onJump?.(0, 1, e.shiftKey); return; }
-        if (e.key === 'ArrowLeft') { e.preventDefault(); onJump?.(-1, 0, e.shiftKey); return; }
-        if (e.key === 'ArrowRight') { e.preventDefault(); onJump?.(1, 0, e.shiftKey); return; }
-        if (e.key === 'Home') { e.preventDefault(); onCtrlHome?.(); return; }
-        if (e.key === 'End') { e.preventDefault(); onCtrlEnd?.(); return; }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          onJump?.(0, -1, e.shiftKey);
+          return;
+        }
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          onJump?.(0, 1, e.shiftKey);
+          return;
+        }
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          onJump?.(-1, 0, e.shiftKey);
+          return;
+        }
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          onJump?.(1, 0, e.shiftKey);
+          return;
+        }
+        if (e.key === 'Home') {
+          e.preventDefault();
+          onCtrlHome?.();
+          return;
+        }
+        if (e.key === 'End') {
+          e.preventDefault();
+          onCtrlEnd?.();
+          return;
+        }
 
         if (key === 'z') {
           e.preventDefault();
-          if (e.shiftKey) onRedo?.(); else onUndo?.();
+          if (e.shiftKey) onRedo?.();
+          else onUndo?.();
           return;
         }
-        if (key === 'y') { e.preventDefault(); onRedo?.(); return; }
+        if (key === 'y') {
+          e.preventDefault();
+          onRedo?.();
+          return;
+        }
         // Plain mod+C / mod+X / mod+V are left unhandled here (no preventDefault) so the
         // browser's native copy/cut/paste events fire and Grid's document-level listeners
         // can read/write text/html via e.clipboardData.
-        if (key === 'x' && e.shiftKey) { e.preventDefault(); onToggleStrikethrough?.(); return; }
-        if (key === 'k' && e.shiftKey) { e.preventDefault(); onToggleDevTools?.(); return; }
-        if (key === 'v' && e.shiftKey) { e.preventDefault(); onPasteValues?.(); return; }
-        if (key === 'b') { e.preventDefault(); onToggleBold?.(); return; }
-        if (key === 'i') { e.preventDefault(); onToggleItalic?.(); return; }
-        if (key === 'u') { e.preventDefault(); onToggleUnderline?.(); return; }
-        if (key === 'a') { e.preventDefault(); onSelectAll?.(); return; }
-        if (key === ' ') { e.preventDefault(); onSelectColumn?.(); return; }
-        if (key === 'd') { e.preventDefault(); onFillDown?.(); return; }
-        if (key === 'r') {
+        if (key === 'x' && e.shiftKey) {
           e.preventDefault();
-          if (e.shiftKey) onAlign?.('right'); else onFillRight?.();
+          onToggleStrikethrough?.();
           return;
         }
-        if (key === 'e' && e.shiftKey) { e.preventDefault(); onAlign?.('center'); return; }
-        if (key === 'l' && e.shiftKey) { e.preventDefault(); onAlign?.('left'); return; }
-        if (key === 'h') { e.preventDefault(); onSearchReplace?.(); return; }
-        if (key === '/') { e.preventDefault(); onShowShortcuts?.(); return; }
-        if (key === '\\') { e.preventDefault(); onClearFormatting?.(); return; }
-        if (key === ';' && !e.shiftKey) { e.preventDefault(); onInsertDate?.(); return; }
-        if ((key === ';' || key === ':') && e.shiftKey) { e.preventDefault(); onInsertTime?.(); return; }
+        if (key === 'k' && e.shiftKey) {
+          e.preventDefault();
+          onToggleDevTools?.();
+          return;
+        }
+        if (key === 'v' && e.shiftKey) {
+          e.preventDefault();
+          onPasteValues?.();
+          return;
+        }
+        if (key === 'b') {
+          e.preventDefault();
+          onToggleBold?.();
+          return;
+        }
+        if (key === 'i') {
+          e.preventDefault();
+          onToggleItalic?.();
+          return;
+        }
+        if (key === 'u') {
+          e.preventDefault();
+          onToggleUnderline?.();
+          return;
+        }
+        if (key === 'a') {
+          e.preventDefault();
+          onSelectAll?.();
+          return;
+        }
+        if (key === ' ') {
+          e.preventDefault();
+          onSelectColumn?.();
+          return;
+        }
+        if (key === 'd') {
+          e.preventDefault();
+          onFillDown?.();
+          return;
+        }
+        if (key === 'r') {
+          e.preventDefault();
+          if (e.shiftKey) onAlign?.('right');
+          else onFillRight?.();
+          return;
+        }
+        if (key === 'e' && e.shiftKey) {
+          e.preventDefault();
+          onAlign?.('center');
+          return;
+        }
+        if (key === 'l' && e.shiftKey) {
+          e.preventDefault();
+          onAlign?.('left');
+          return;
+        }
+        if (key === 'h') {
+          e.preventDefault();
+          onSearchReplace?.();
+          return;
+        }
+        if (key === '/') {
+          e.preventDefault();
+          onShowShortcuts?.();
+          return;
+        }
+        if (key === '\\') {
+          e.preventDefault();
+          onClearFormatting?.();
+          return;
+        }
+        if (key === ';' && !e.shiftKey) {
+          e.preventDefault();
+          onInsertDate?.();
+          return;
+        }
+        if ((key === ';' || key === ':') && e.shiftKey) {
+          e.preventDefault();
+          onInsertTime?.();
+          return;
+        }
       }
 
       // Alt+ArrowDown (no other modifiers): open the active cell's dropdown, if it has one.
@@ -257,7 +351,8 @@ export function useKeyboard({
           break;
         case 'Enter':
           e.preventDefault();
-          if (shift) onMove(0, -1, false); else onMove(0, 1, false);
+          if (shift) onMove(0, -1, false);
+          else onMove(0, 1, false);
           break;
         case 'Home':
           e.preventDefault();

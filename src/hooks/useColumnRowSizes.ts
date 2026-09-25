@@ -39,7 +39,11 @@ function cloneSheetSizes(sizes: SheetSizes): SheetSizes {
 }
 
 /** Shift a set of row/column indices for an insert or delete at `index`. */
-function shiftIndexSet(set: Set<number>, index: number, operation: 'insert' | 'delete'): Set<number> {
+function shiftIndexSet(
+  set: Set<number>,
+  index: number,
+  operation: 'insert' | 'delete',
+): Set<number> {
   const next = new Set<number>();
   for (const i of set) {
     if (operation === 'insert') next.add(i >= index ? i + 1 : i);
@@ -127,7 +131,11 @@ function computeOffset(index: number, oi: OffsetIndex, defaultSize: number): num
 }
 
 /** Shift a single size map's keys for a column/row insert or delete at `index`. */
-function shiftSizeMap(map: Map<number, number>, index: number, operation: 'insert' | 'delete'): Map<number, number> {
+function shiftSizeMap(
+  map: Map<number, number>,
+  index: number,
+  operation: 'insert' | 'delete',
+): Map<number, number> {
   const newMap = new Map<number, number>();
   for (const [i, size] of map) {
     if (operation === 'insert') {
@@ -164,77 +172,106 @@ export function useColumnRowSizes(activeSheetId: string): UseColumnRowSizesRetur
   // Prefix-sum offset indices for the active sheet only, rebuilt whenever it changes or any
   // size mutation bumps sizeVersion (mutations on other sheets cause a harmless extra rebuild).
   // The active sheet's defaults (only restoreAllSizes changes them, which bumps sizeVersion)
+  // The size maps live in a ref and are mutated in place; sizeVersion is what drives recomputation,
+  // so reading the ref here during render is intentional.
+  /* oxlint-disable react-hooks/refs */
   const defaultColWidth = useMemo(
     () => colDefault(getSheetSizes(activeSheetId)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [activeSheetId, sizeVersion],
   );
   const defaultRowHeight = useMemo(
     () => rowDefault(getSheetSizes(activeSheetId)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [activeSheetId, sizeVersion],
   );
 
   const colOffsetIndex = useMemo(
     () => buildOffsetIndex(getSheetSizes(activeSheetId).colWidths, defaultColWidth),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [activeSheetId, sizeVersion, defaultColWidth],
   );
   const rowOffsetIndex = useMemo(
     () => buildOffsetIndex(getSheetSizes(activeSheetId).rowHeights, defaultRowHeight),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [activeSheetId, sizeVersion, defaultRowHeight],
   );
+  /* oxlint-enable react-hooks/refs */
 
-  const getColWidth = useCallback((colIndex: number): number => {
-    const sizes = getSheetSizes(activeSheetId);
-    return sizes.colWidths.get(colIndex) ?? colDefault(sizes);
-  }, [activeSheetId, getSheetSizes]);
+  const getColWidth = useCallback(
+    (colIndex: number): number => {
+      const sizes = getSheetSizes(activeSheetId);
+      return sizes.colWidths.get(colIndex) ?? colDefault(sizes);
+    },
+    [activeSheetId, getSheetSizes],
+  );
 
-  const setColWidth = useCallback((colIndex: number, width: number) => {
-    const clamped = clamp(width, MIN_COL_WIDTH, MAX_COL_WIDTH);
-    getSheetSizes(activeSheetId).colWidths.set(colIndex, clamped);
-    setSizeVersion((v) => v + 1);
-  }, [activeSheetId, getSheetSizes]);
+  const setColWidth = useCallback(
+    (colIndex: number, width: number) => {
+      const clamped = clamp(width, MIN_COL_WIDTH, MAX_COL_WIDTH);
+      getSheetSizes(activeSheetId).colWidths.set(colIndex, clamped);
+      setSizeVersion((v) => v + 1);
+    },
+    [activeSheetId, getSheetSizes],
+  );
 
-  const getRowHeight = useCallback((rowIndex: number): number => {
-    const sizes = getSheetSizes(activeSheetId);
-    return sizes.rowHeights.get(rowIndex) ?? rowDefault(sizes);
-  }, [activeSheetId, getSheetSizes]);
+  const getRowHeight = useCallback(
+    (rowIndex: number): number => {
+      const sizes = getSheetSizes(activeSheetId);
+      return sizes.rowHeights.get(rowIndex) ?? rowDefault(sizes);
+    },
+    [activeSheetId, getSheetSizes],
+  );
 
-  const setRowHeight = useCallback((rowIndex: number, height: number, options?: { auto?: boolean }) => {
-    const clamped = clamp(height, MIN_ROW_HEIGHT, MAX_ROW_HEIGHT);
-    const sizes = getSheetSizes(activeSheetId);
-    sizes.rowHeights.set(rowIndex, clamped);
-    if (options?.auto) (sizes.autoRowHeights ??= new Set()).add(rowIndex);
-    else sizes.autoRowHeights?.delete(rowIndex);
-    setSizeVersion((v) => v + 1);
-  }, [activeSheetId, getSheetSizes]);
+  const setRowHeight = useCallback(
+    (rowIndex: number, height: number, options?: { auto?: boolean }) => {
+      const clamped = clamp(height, MIN_ROW_HEIGHT, MAX_ROW_HEIGHT);
+      const sizes = getSheetSizes(activeSheetId);
+      sizes.rowHeights.set(rowIndex, clamped);
+      if (options?.auto) (sizes.autoRowHeights ??= new Set()).add(rowIndex);
+      else sizes.autoRowHeights?.delete(rowIndex);
+      setSizeVersion((v) => v + 1);
+    },
+    [activeSheetId, getSheetSizes],
+  );
 
-  const resetRowHeight = useCallback((rowIndex: number) => {
-    const sizes = getSheetSizes(activeSheetId);
-    if (!sizes.rowHeights.delete(rowIndex)) return;
-    sizes.autoRowHeights?.delete(rowIndex);
-    setSizeVersion((v) => v + 1);
-  }, [activeSheetId, getSheetSizes]);
+  const resetRowHeight = useCallback(
+    (rowIndex: number) => {
+      const sizes = getSheetSizes(activeSheetId);
+      if (!sizes.rowHeights.delete(rowIndex)) return;
+      sizes.autoRowHeights?.delete(rowIndex);
+      setSizeVersion((v) => v + 1);
+    },
+    [activeSheetId, getSheetSizes],
+  );
 
-  const isRowHeightManual = useCallback((rowIndex: number): boolean => {
-    const sizes = getSheetSizes(activeSheetId);
-    return sizes.rowHeights.has(rowIndex) && !sizes.autoRowHeights?.has(rowIndex);
-  }, [activeSheetId, getSheetSizes]);
+  const isRowHeightManual = useCallback(
+    (rowIndex: number): boolean => {
+      const sizes = getSheetSizes(activeSheetId);
+      return sizes.rowHeights.has(rowIndex) && !sizes.autoRowHeights?.has(rowIndex);
+    },
+    [activeSheetId, getSheetSizes],
+  );
 
-  const shiftColWidths = useCallback((index: number, operation: 'insert' | 'delete') => {
-    const entry = getSheetSizes(activeSheetId);
-    entry.colWidths = shiftSizeMap(entry.colWidths, index, operation);
-    setSizeVersion((v) => v + 1);
-  }, [activeSheetId, getSheetSizes]);
+  const shiftColWidths = useCallback(
+    (index: number, operation: 'insert' | 'delete') => {
+      const entry = getSheetSizes(activeSheetId);
+      entry.colWidths = shiftSizeMap(entry.colWidths, index, operation);
+      setSizeVersion((v) => v + 1);
+    },
+    [activeSheetId, getSheetSizes],
+  );
 
-  const shiftRowHeights = useCallback((index: number, operation: 'insert' | 'delete') => {
-    const entry = getSheetSizes(activeSheetId);
-    entry.rowHeights = shiftSizeMap(entry.rowHeights, index, operation);
-    if (entry.autoRowHeights) entry.autoRowHeights = shiftIndexSet(entry.autoRowHeights, index, operation);
-    setSizeVersion((v) => v + 1);
-  }, [activeSheetId, getSheetSizes]);
+  const shiftRowHeights = useCallback(
+    (index: number, operation: 'insert' | 'delete') => {
+      const entry = getSheetSizes(activeSheetId);
+      entry.rowHeights = shiftSizeMap(entry.rowHeights, index, operation);
+      if (entry.autoRowHeights)
+        entry.autoRowHeights = shiftIndexSet(entry.autoRowHeights, index, operation);
+      setSizeVersion((v) => v + 1);
+    },
+    [activeSheetId, getSheetSizes],
+  );
 
   const getAllColWidths = useCallback((): Map<number, number> => {
     return new Map(getSheetSizes(activeSheetId).colWidths);
@@ -244,25 +281,37 @@ export function useColumnRowSizes(activeSheetId: string): UseColumnRowSizesRetur
     return new Map(getSheetSizes(activeSheetId).rowHeights);
   }, [activeSheetId, getSheetSizes]);
 
-  const restoreColWidths = useCallback((widths: Map<number, number>) => {
-    getSheetSizes(activeSheetId).colWidths = new Map(widths);
-    setSizeVersion((v) => v + 1);
-  }, [activeSheetId, getSheetSizes]);
+  const restoreColWidths = useCallback(
+    (widths: Map<number, number>) => {
+      getSheetSizes(activeSheetId).colWidths = new Map(widths);
+      setSizeVersion((v) => v + 1);
+    },
+    [activeSheetId, getSheetSizes],
+  );
 
-  const restoreRowHeights = useCallback((heights: Map<number, number>) => {
-    const sizes = getSheetSizes(activeSheetId);
-    sizes.rowHeights = new Map(heights);
-    sizes.autoRowHeights = undefined;
-    setSizeVersion((v) => v + 1);
-  }, [activeSheetId, getSheetSizes]);
+  const restoreRowHeights = useCallback(
+    (heights: Map<number, number>) => {
+      const sizes = getSheetSizes(activeSheetId);
+      sizes.rowHeights = new Map(heights);
+      sizes.autoRowHeights = undefined;
+      setSizeVersion((v) => v + 1);
+    },
+    [activeSheetId, getSheetSizes],
+  );
 
-  const getColOffset = useCallback((colIndex: number): number => {
-    return computeOffset(colIndex, colOffsetIndex, defaultColWidth);
-  }, [colOffsetIndex, defaultColWidth]);
+  const getColOffset = useCallback(
+    (colIndex: number): number => {
+      return computeOffset(colIndex, colOffsetIndex, defaultColWidth);
+    },
+    [colOffsetIndex, defaultColWidth],
+  );
 
-  const getRowOffset = useCallback((rowIndex: number): number => {
-    return computeOffset(rowIndex, rowOffsetIndex, defaultRowHeight);
-  }, [rowOffsetIndex, defaultRowHeight]);
+  const getRowOffset = useCallback(
+    (rowIndex: number): number => {
+      return computeOffset(rowIndex, rowOffsetIndex, defaultRowHeight);
+    },
+    [rowOffsetIndex, defaultRowHeight],
+  );
 
   const getAllSizesBySheet = useCallback((): Map<string, SheetSizes> => {
     const result = new Map<string, SheetSizes>();
@@ -281,10 +330,13 @@ export function useColumnRowSizes(activeSheetId: string): UseColumnRowSizesRetur
     setSizeVersion((v) => v + 1);
   }, []);
 
-  const copySheetSizes = useCallback((fromSheetId: string, toSheetId: string) => {
-    sheetSizesRef.current.set(toSheetId, cloneSheetSizes(getSheetSizes(fromSheetId)));
-    setSizeVersion((v) => v + 1);
-  }, [getSheetSizes]);
+  const copySheetSizes = useCallback(
+    (fromSheetId: string, toSheetId: string) => {
+      sheetSizesRef.current.set(toSheetId, cloneSheetSizes(getSheetSizes(fromSheetId)));
+      setSizeVersion((v) => v + 1);
+    },
+    [getSheetSizes],
+  );
 
   return {
     getColWidth,

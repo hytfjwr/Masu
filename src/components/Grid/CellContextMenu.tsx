@@ -79,7 +79,8 @@ export const CellContextMenu = memo(function CellContextMenu({
     [onClose],
   );
 
-  const itemClass = 'w-full text-left px-3 py-1.5 text-xs text-text-primary hover:bg-accent-selection/10 transition-colors duration-75';
+  const itemClass =
+    'w-full text-left px-3 py-1.5 text-xs text-text-primary hover:bg-accent-selection/10 transition-colors duration-75';
 
   return (
     <div

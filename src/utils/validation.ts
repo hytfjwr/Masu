@@ -46,18 +46,31 @@ export function getListOptions(rule: ValidationRule, ctx: ValidationContext): st
 }
 
 /** Compare `value` against a min/max threshold pair using a ValidationOperator. */
-function compareThreshold(value: number, min: number | undefined, max: number | undefined, operator: ValidationOperator): boolean {
+function compareThreshold(
+  value: number,
+  min: number | undefined,
+  max: number | undefined,
+  operator: ValidationOperator,
+): boolean {
   const lo = min ?? 0;
   const hi = max ?? 0;
   switch (operator) {
-    case 'between': return value >= lo && value <= hi;
-    case 'notBetween': return value < lo || value > hi;
-    case 'equal': return value === lo;
-    case 'notEqual': return value !== lo;
-    case 'greaterThan': return value > lo;
-    case 'greaterThanOrEqual': return value >= lo;
-    case 'lessThan': return value < lo;
-    case 'lessThanOrEqual': return value <= lo;
+    case 'between':
+      return value >= lo && value <= hi;
+    case 'notBetween':
+      return value < lo || value > hi;
+    case 'equal':
+      return value === lo;
+    case 'notEqual':
+      return value !== lo;
+    case 'greaterThan':
+      return value > lo;
+    case 'greaterThanOrEqual':
+      return value >= lo;
+    case 'lessThan':
+      return value < lo;
+    case 'lessThanOrEqual':
+      return value <= lo;
   }
 }
 
@@ -79,22 +92,28 @@ export function validateInput(
     case 'list': {
       const lower = rawValue.toLowerCase();
       const options = getListOptions(rule, ctx);
-      return options.some(o => o.toLowerCase() === lower) ? { valid: true } : invalid();
+      return options.some((o) => o.toLowerCase() === lower) ? { valid: true } : invalid();
     }
     case 'number': {
       const parsed = parseUserInput(rawValue).value;
       if (typeof parsed !== 'number') return invalid();
-      return compareThreshold(parsed, rule.min, rule.max, rule.operator ?? 'between') ? { valid: true } : invalid();
+      return compareThreshold(parsed, rule.min, rule.max, rule.operator ?? 'between')
+        ? { valid: true }
+        : invalid();
     }
     case 'textLength': {
       const length = [...rawValue].length;
-      return compareThreshold(length, rule.min, rule.max, rule.operator ?? 'between') ? { valid: true } : invalid();
+      return compareThreshold(length, rule.min, rule.max, rule.operator ?? 'between')
+        ? { valid: true }
+        : invalid();
     }
     case 'date': {
       const parsed = parseUserInput(rawValue).value;
       if (typeof parsed !== 'number') return invalid();
       const value = Math.floor(parsed);
-      return compareThreshold(value, rule.dateMin, rule.dateMax, rule.operator ?? 'between') ? { valid: true } : invalid();
+      return compareThreshold(value, rule.dateMin, rule.dateMax, rule.operator ?? 'between')
+        ? { valid: true }
+        : invalid();
     }
     case 'checkbox': {
       const checked = (rule.checkedValue ?? 'TRUE').toLowerCase();
@@ -105,7 +124,9 @@ export function validateInput(
     case 'customFormula': {
       if (!ctx.evaluateFormulaAt || !rule.formula) return { valid: true };
       const f = rule.formula.startsWith('=') ? rule.formula.slice(1) : rule.formula;
-      const shifted = rule.anchor ? shiftFormula(f, pos.col - rule.anchor.col, pos.row - rule.anchor.row) : f;
+      const shifted = rule.anchor
+        ? shiftFormula(f, pos.col - rule.anchor.col, pos.row - rule.anchor.row)
+        : f;
       const result = ctx.evaluateFormulaAt(shifted, pos.col, pos.row);
       if (isFormulaError(result)) return invalid();
       return toBoolean(result) === true ? { valid: true } : invalid();
@@ -141,14 +162,22 @@ function describeThreshold(
   const lo = formatValue(min ?? 0);
   const hi = formatValue(max ?? 0);
   switch (operator) {
-    case 'between': return `${lo} から ${hi} までの${label}を入力してください`;
-    case 'notBetween': return `${lo} から ${hi} の範囲外の${label}を入力してください`;
-    case 'equal': return `${lo} と等しい${label}を入力してください`;
-    case 'notEqual': return `${lo} と異なる${label}を入力してください`;
-    case 'greaterThan': return `${lo} より大きい${label}を入力してください`;
-    case 'greaterThanOrEqual': return `${lo} 以上の${label}を入力してください`;
-    case 'lessThan': return `${lo} より小さい${label}を入力してください`;
-    case 'lessThanOrEqual': return `${lo} 以下の${label}を入力してください`;
+    case 'between':
+      return `${lo} から ${hi} までの${label}を入力してください`;
+    case 'notBetween':
+      return `${lo} から ${hi} の範囲外の${label}を入力してください`;
+    case 'equal':
+      return `${lo} と等しい${label}を入力してください`;
+    case 'notEqual':
+      return `${lo} と異なる${label}を入力してください`;
+    case 'greaterThan':
+      return `${lo} より大きい${label}を入力してください`;
+    case 'greaterThanOrEqual':
+      return `${lo} 以上の${label}を入力してください`;
+    case 'lessThan':
+      return `${lo} より小さい${label}を入力してください`;
+    case 'lessThanOrEqual':
+      return `${lo} 以下の${label}を入力してください`;
   }
 }
 
@@ -164,7 +193,13 @@ export function describeRule(rule: ValidationRule, ctx: ValidationContext): stri
     case 'textLength':
       return describeThreshold('文字数', rule.min, rule.max, rule.operator ?? 'between', String);
     case 'date':
-      return describeThreshold('日付', rule.dateMin, rule.dateMax, rule.operator ?? 'between', formatDateThreshold);
+      return describeThreshold(
+        '日付',
+        rule.dateMin,
+        rule.dateMax,
+        rule.operator ?? 'between',
+        formatDateThreshold,
+      );
     case 'checkbox':
       return 'チェックボックスの値を入力してください';
     case 'customFormula':

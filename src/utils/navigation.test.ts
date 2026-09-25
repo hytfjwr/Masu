@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { findDataEdge } from './navigation';
 
 // Simulate a row of cells with values at the given column indices (0-indexed), on row 0.

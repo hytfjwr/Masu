@@ -36,7 +36,13 @@ function parseRangeText(text: string): ParsedRange | null {
 // Note: relies on being conditionally mounted at the call site (e.g. `{visible && <RemoveDuplicatesDialog .../>}`)
 // so that opening the dialog again always starts from a fresh default (a new mount), rather than
 // resetting existing state from a `visible` prop change inside an effect.
-export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({ visible, onClose, defaultRangeText, getCellText, onConfirm }: RemoveDuplicatesDialogProps) {
+export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({
+  visible,
+  onClose,
+  defaultRangeText,
+  getCellText,
+  onConfirm,
+}: RemoveDuplicatesDialogProps) {
   const [rangeText, setRangeText] = useState(defaultRangeText);
   const [hasHeader, setHasHeader] = useState(true);
   const [checkedCols, setCheckedCols] = useState<Set<number>>(() => {
@@ -61,15 +67,16 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({ vis
   }, [parsedRange, hasHeader, getCellText]);
 
   const toggleCol = useCallback((col: number) => {
-    setCheckedCols(prev => {
+    setCheckedCols((prev) => {
       const next = new Set(prev);
-      if (next.has(col)) next.delete(col); else next.add(col);
+      if (next.has(col)) next.delete(col);
+      else next.add(col);
       return next;
     });
   }, []);
 
   const selectAllCols = useCallback(() => {
-    setCheckedCols(new Set(columnOptions.map(o => o.col)));
+    setCheckedCols(new Set(columnOptions.map((o) => o.col)));
   }, [columnOptions]);
 
   const deselectAllCols = useCallback(() => {
@@ -86,13 +93,20 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({ vis
       setError('対象列を1つ以上選択してください');
       return;
     }
-    onConfirm(parsed, hasHeader, Array.from(checkedCols).sort((a, b) => a - b));
+    onConfirm(
+      parsed,
+      hasHeader,
+      Array.from(checkedCols).sort((a, b) => a - b),
+    );
     onClose();
   }, [rangeText, hasHeader, checkedCols, onConfirm, onClose]);
 
-  const handleBackdropMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) onClose();
-  }, [onClose]);
+  const handleBackdropMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget) onClose();
+    },
+    [onClose],
+  );
 
   if (!visible) return null;
 
@@ -101,10 +115,18 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({ vis
       className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-backdrop-in"
       onMouseDown={handleBackdropMouseDown}
     >
-      <div className="glass-panel rounded-2xl w-[380px] flex flex-col animate-dialog-spring" data-testid="remove-duplicates-dialog">
+      <div
+        className="glass-panel rounded-2xl w-[380px] flex flex-col animate-dialog-spring"
+        data-testid="remove-duplicates-dialog"
+      >
         <div className="flex items-center justify-between px-4 py-3 border-b border-grid-line">
           <h2 className="text-sm font-semibold text-text-primary">重複を削除</h2>
-          <button onClick={onClose} className="text-text-primary hover:text-error text-lg leading-none">&times;</button>
+          <button
+            onClick={onClose}
+            className="text-text-primary hover:text-error text-lg leading-none"
+          >
+            &times;
+          </button>
         </div>
 
         <div className="p-4 space-y-3">
@@ -134,15 +156,35 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({ vis
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs text-text-primary/80">対象列</span>
               <div className="flex gap-1">
-                <button type="button" className="text-[10px] text-accent-selection hover:underline" onClick={selectAllCols}>すべて選択</button>
+                <button
+                  type="button"
+                  className="text-[10px] text-accent-selection hover:underline"
+                  onClick={selectAllCols}
+                >
+                  すべて選択
+                </button>
                 <span className="text-[10px] text-text-primary/30">|</span>
-                <button type="button" className="text-[10px] text-accent-selection hover:underline" onClick={deselectAllCols}>すべて解除</button>
+                <button
+                  type="button"
+                  className="text-[10px] text-accent-selection hover:underline"
+                  onClick={deselectAllCols}
+                >
+                  すべて解除
+                </button>
               </div>
             </div>
             <div className="border border-grid-line rounded max-h-[160px] overflow-y-auto">
-              {columnOptions.map(o => (
-                <label key={o.col} className="flex items-center gap-2 px-2 py-1 text-xs text-text-primary hover:bg-accent-selection/10 cursor-pointer">
-                  <input type="checkbox" checked={checkedCols.has(o.col)} onChange={() => toggleCol(o.col)} className="w-3 h-3" />
+              {columnOptions.map((o) => (
+                <label
+                  key={o.col}
+                  className="flex items-center gap-2 px-2 py-1 text-xs text-text-primary hover:bg-accent-selection/10 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={checkedCols.has(o.col)}
+                    onChange={() => toggleCol(o.col)}
+                    className="w-3 h-3"
+                  />
                   <span className="truncate">{o.label}</span>
                 </label>
               ))}
@@ -153,7 +195,10 @@ export const RemoveDuplicatesDialog = memo(function RemoveDuplicatesDialog({ vis
         </div>
 
         <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-grid-line">
-          <button onClick={onClose} className="px-3 py-1 text-xs bg-ui-bg border border-grid-line rounded hover:bg-header-bg">
+          <button
+            onClick={onClose}
+            className="px-3 py-1 text-xs bg-ui-bg border border-grid-line rounded hover:bg-header-bg"
+          >
             キャンセル
           </button>
           <button

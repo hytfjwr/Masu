@@ -1,7 +1,14 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { GRID_CONSTANTS } from '../../types/grid';
-import type { CellStyle, CellPosition, FilterCondition, MergeInfo, NumberFormat, SortKey } from '../../types/grid';
+import type {
+  CellStyle,
+  CellPosition,
+  FilterCondition,
+  MergeInfo,
+  NumberFormat,
+  SortKey,
+} from '../../types/grid';
 import type { ChartData } from '../../types/chart';
 import { Cell } from '../Cell';
 import type { CellValidationUi } from '../Cell';
@@ -42,27 +49,56 @@ import { evaluateCondition, createConditionalFormatter } from '../../utils/condi
 import { detectDelimiter } from '../../utils/dataCleanup';
 import { UNTITLED_SPREADSHEET_NAME } from '../../utils/filename';
 import { SidePanel } from '../SidePanel';
-const ConditionalFormatPanel = lazy(() => import('../ConditionalFormatPanel').then(m => ({ default: m.ConditionalFormatPanel })));
-const DataValidationPanel = lazy(() => import('../DataValidationPanel').then(m => ({ default: m.DataValidationPanel })));
+const ConditionalFormatPanel = lazy(() =>
+  import('../ConditionalFormatPanel').then((m) => ({ default: m.ConditionalFormatPanel })),
+);
+const DataValidationPanel = lazy(() =>
+  import('../DataValidationPanel').then((m) => ({ default: m.DataValidationPanel })),
+);
 import { ValidationDropdown } from '../ValidationDropdown';
-import { validateInput, toggleCheckboxValue, isCheckboxChecked, getListOptions } from '../../utils/validation';
+import {
+  validateInput,
+  toggleCheckboxValue,
+  isCheckboxChecked,
+  getListOptions,
+} from '../../utils/validation';
 import type { ValidationContext } from '../../utils/validation';
-const NamedRangeDialog = lazy(() => import('../NamedRangeDialog').then(m => ({ default: m.NamedRangeDialog })));
-const ShortcutsDialog = lazy(() => import('../ShortcutsDialog').then(m => ({ default: m.ShortcutsDialog })));
-const DevTools = lazy(() => import('../DevTools/DevTools').then(m => ({ default: m.DevTools })));
-const SortRangeDialog = lazy(() => import('../SortRangeDialog').then(m => ({ default: m.SortRangeDialog })));
-const RemoveDuplicatesDialog = lazy(() => import('../RemoveDuplicatesDialog').then(m => ({ default: m.RemoveDuplicatesDialog })));
+const NamedRangeDialog = lazy(() =>
+  import('../NamedRangeDialog').then((m) => ({ default: m.NamedRangeDialog })),
+);
+const ShortcutsDialog = lazy(() =>
+  import('../ShortcutsDialog').then((m) => ({ default: m.ShortcutsDialog })),
+);
+const DevTools = lazy(() => import('../DevTools/DevTools').then((m) => ({ default: m.DevTools })));
+const SortRangeDialog = lazy(() =>
+  import('../SortRangeDialog').then((m) => ({ default: m.SortRangeDialog })),
+);
+const RemoveDuplicatesDialog = lazy(() =>
+  import('../RemoveDuplicatesDialog').then((m) => ({ default: m.RemoveDuplicatesDialog })),
+);
 import { FilterMenu } from '../FilterMenu';
 import { useToast, ToastContainer } from '../Toast';
 import { CellContextMenu } from './CellContextMenu';
 import { CommentTooltip } from '../CommentTooltip';
-const ChartEditorPanel = lazy(() => import('../ChartEditorPanel').then(m => ({ default: m.ChartEditorPanel })));
-const ChartOverlay = lazy(() => import('../ChartOverlay').then(m => ({ default: m.ChartOverlay })));
+const ChartEditorPanel = lazy(() =>
+  import('../ChartEditorPanel').then((m) => ({ default: m.ChartEditorPanel })),
+);
+const ChartOverlay = lazy(() =>
+  import('../ChartOverlay').then((m) => ({ default: m.ChartOverlay })),
+);
 import { DocumentTitle } from '../DocumentTitle';
-const SparklineDialog = lazy(() => import('../SparklineDialog').then(m => ({ default: m.SparklineDialog })));
-const PrintPreviewDialog = lazy(() => import('../PrintPreviewDialog').then(m => ({ default: m.PrintPreviewDialog })));
-const PivotTableDialog = lazy(() => import('../PivotTableDialog').then(m => ({ default: m.PivotTableDialog })));
-const FunctionWizardDialog = lazy(() => import('../FunctionWizardDialog').then(m => ({ default: m.FunctionWizardDialog })));
+const SparklineDialog = lazy(() =>
+  import('../SparklineDialog').then((m) => ({ default: m.SparklineDialog })),
+);
+const PrintPreviewDialog = lazy(() =>
+  import('../PrintPreviewDialog').then((m) => ({ default: m.PrintPreviewDialog })),
+);
+const PivotTableDialog = lazy(() =>
+  import('../PivotTableDialog').then((m) => ({ default: m.PivotTableDialog })),
+);
+const FunctionWizardDialog = lazy(() =>
+  import('../FunctionWizardDialog').then((m) => ({ default: m.FunctionWizardDialog })),
+);
 import { buildPivotTable as buildPivotTableFn } from '../../pivot/pivotEngine';
 import { RowGroupBar } from '../Header/RowGroupBar';
 import { ColGroupBar } from '../Header/ColGroupBar';
@@ -99,7 +135,8 @@ const REF_COLORS = [
 ];
 
 // Same default font stack as the body / Cell text rendering (src/index.css)
-const DEFAULT_CELL_FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+const DEFAULT_CELL_FONT_FAMILY =
+  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 
 // Every CellStyle key, defaulted to undefined — used as a base so applying a copied/painted style
 // fully replaces the target's existing style instead of shallow-merging with its leftover properties.
@@ -139,7 +176,8 @@ const {
 const EMPTY_ROW_SET: Set<number> = new Set();
 
 function resolveMergeAnchor(
-  col: number, row: number,
+  col: number,
+  row: number,
   getMergeInfo: (c: number, r: number) => MergeInfo | undefined,
 ): { col: number; row: number } {
   const info = getMergeInfo(col, row);
@@ -160,14 +198,17 @@ function findIndexByOffset(x: number, count: number, getOffset: (i: number) => n
   let hi = count - 1;
   while (lo < hi) {
     const mid = Math.ceil((lo + hi) / 2);
-    if (getOffset(mid) <= x) lo = mid; else hi = mid - 1;
+    if (getOffset(mid) <= x) lo = mid;
+    else hi = mid - 1;
   }
   return lo;
 }
 
 function getRangePixelRect(
-  startCol: number, endCol: number,
-  startRow: number, endRow: number,
+  startCol: number,
+  endCol: number,
+  startRow: number,
+  endRow: number,
   getColWidth: (c: number) => number,
   getRowHeight: (r: number) => number,
 ): { left: number; top: number; width: number; height: number } {
@@ -215,10 +256,22 @@ function expandToDataRegion(
   let changed = true;
   while (changed) {
     changed = false;
-    while (left > 0 && colHasValue(left - 1)) { left--; changed = true; }
-    while (right < maxCol && colHasValue(right + 1)) { right++; changed = true; }
-    while (top > 0 && rowHasValue(top - 1)) { top--; changed = true; }
-    while (bottom < maxRow && rowHasValue(bottom + 1)) { bottom++; changed = true; }
+    while (left > 0 && colHasValue(left - 1)) {
+      left--;
+      changed = true;
+    }
+    while (right < maxCol && colHasValue(right + 1)) {
+      right++;
+      changed = true;
+    }
+    while (top > 0 && rowHasValue(top - 1)) {
+      top--;
+      changed = true;
+    }
+    while (bottom < maxRow && rowHasValue(bottom + 1)) {
+      bottom++;
+      changed = true;
+    }
   }
 
   return { startCol: left, endCol: right, startRow: top, endRow: bottom };
@@ -226,9 +279,20 @@ function expandToDataRegion(
 
 /** Every CellStyle key, used by fullStyle() below to build a "replace, don't merge" style object. */
 const FULL_STYLE_KEYS: Array<keyof CellStyle> = [
-  'bold', 'italic', 'underline', 'strikethrough', 'textAlign', 'verticalAlign',
-  'backgroundColor', 'textColor', 'numberFormat', 'numberFormatPattern',
-  'fontSize', 'fontFamily', 'wrapText', 'borders',
+  'bold',
+  'italic',
+  'underline',
+  'strikethrough',
+  'textAlign',
+  'verticalAlign',
+  'backgroundColor',
+  'textColor',
+  'numberFormat',
+  'numberFormatPattern',
+  'fontSize',
+  'fontFamily',
+  'wrapText',
+  'borders',
 ];
 
 /**
@@ -319,19 +383,30 @@ export function Grid() {
   const measureCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Conditional format / data validation / chart editor side panel (docked right of the grid; mutually exclusive)
-  const [sidePanel, setSidePanel] = useState<'conditionalFormat' | 'validation' | 'chart' | null>(null);
+  const [sidePanel, setSidePanel] = useState<'conditionalFormat' | 'validation' | 'chart' | null>(
+    null,
+  );
   // Whether the next open of the validation panel should jump straight into the new-rule
   // (プルダウン) edit form, e.g. from 挿入 > プルダウン.
   const [validationPanelNewOnOpen, setValidationPanelNewOnOpen] = useState(false);
 
   // Data validation dropdown (list-type rule), positioned against the active cell's rect
-  const [validationDropdown, setValidationDropdown] = useState<{ col: number; row: number; rect: DOMRect } | null>(null);
+  const [validationDropdown, setValidationDropdown] = useState<{
+    col: number;
+    row: number;
+    rect: DOMRect;
+  } | null>(null);
 
   // Named range dialog
   const [showNamedRangeDialog, setShowNamedRangeDialog] = useState(false);
 
   // Cell context menu
-  const [cellContextMenu, setCellContextMenu] = useState<{ col: number; row: number; x: number; y: number } | null>(null);
+  const [cellContextMenu, setCellContextMenu] = useState<{
+    col: number;
+    row: number;
+    x: number;
+    y: number;
+  } | null>(null);
 
   // Chart editor (side panel): id of the chart currently being edited (null = editor closed)
   const [editingChartId, setEditingChartId] = useState<string | null>(null);
@@ -549,27 +624,30 @@ export function Grid() {
   }, [sparklines]);
 
   // Helper: resolve sparkline data values from a range string
-  const getSparklineValues = useCallback((dataRange: string): number[] => {
-    const values: number[] = [];
-    const rangeParts = dataRange.split(':');
-    if (rangeParts.length !== 2) return values;
-    const startPos = parseCellKey(rangeParts[0]);
-    const endPos = parseCellKey(rangeParts[1]);
-    const minCol = Math.min(startPos.col, endPos.col);
-    const maxCol = Math.max(startPos.col, endPos.col);
-    const minRow = Math.min(startPos.row, endPos.row);
-    const maxRow = Math.max(startPos.row, endPos.row);
-    for (let r = minRow; r <= maxRow; r++) {
-      for (let c = minCol; c <= maxCol; c++) {
-        const cell = getCellData(c, r);
-        const display = cell?.displayValue ?? '';
-        const num = Number(display);
-        values.push(isNaN(num) ? 0 : num);
+  const getSparklineValues = useCallback(
+    (dataRange: string): number[] => {
+      const values: number[] = [];
+      const rangeParts = dataRange.split(':');
+      if (rangeParts.length !== 2) return values;
+      const startPos = parseCellKey(rangeParts[0]);
+      const endPos = parseCellKey(rangeParts[1]);
+      const minCol = Math.min(startPos.col, endPos.col);
+      const maxCol = Math.max(startPos.col, endPos.col);
+      const minRow = Math.min(startPos.row, endPos.row);
+      const maxRow = Math.max(startPos.row, endPos.row);
+      for (let r = minRow; r <= maxRow; r++) {
+        for (let c = minCol; c <= maxCol; c++) {
+          const cell = getCellData(c, r);
+          const display = cell?.displayValue ?? '';
+          const num = Number(display);
+          values.push(isNaN(num) ? 0 : num);
+        }
       }
-    }
-    return values;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getCellData, version]);
+      return values;
+    },
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+    [getCellData, version],
+  );
 
   // Compute group scales for sparklines with groupId
   const sparklineGroupScales = useMemo(() => {
@@ -612,46 +690,55 @@ export function Grid() {
   // Conditional formatting: rebuilt (and its internal per-rule caches invalidated) whenever
   // the rule set or workbook data changes.
   const conditionalFormatter = useMemo(
-    () => createConditionalFormatter(conditionalFormatRules, {
-      getValue: (c, r) => {
-        const cell = getCellData(c, r);
-        if (cell?.error) return makeError(cell.error as ErrorCode);
-        if (cell?.computed !== undefined) return cell.computed;
-        return cell?.displayValue ?? '';
-      },
-      evaluateFormulaAt: (formula, c, r) => evaluateFormulaAt(formula, c, r),
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    () =>
+      createConditionalFormatter(conditionalFormatRules, {
+        getValue: (c, r) => {
+          const cell = getCellData(c, r);
+          if (cell?.error) return makeError(cell.error as ErrorCode);
+          if (cell?.computed !== undefined) return cell.computed;
+          return cell?.displayValue ?? '';
+        },
+        evaluateFormulaAt: (formula, c, r) => evaluateFormulaAt(formula, c, r),
+      }),
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [conditionalFormatRules, version],
   );
   const getCfStyle = useCallback(
-    (col: number, row: number): import('../../types/grid').CellStyle | undefined => conditionalFormatter(col, row),
+    (col: number, row: number): import('../../types/grid').CellStyle | undefined =>
+      conditionalFormatter(col, row),
     [conditionalFormatter],
   );
 
   // Data validation: per-cell display mode (checkbox / dropdown) and invalid-input message.
-  const validationCtx: ValidationContext = useMemo(() => ({
-    resolveRangeValues: (range: string) => resolveRangeValues(range),
-    evaluateFormulaAt: (formula: string, c: number, r: number) => evaluateFormulaAt(formula, c, r),
-  }), [resolveRangeValues, evaluateFormulaAt]);
+  const validationCtx: ValidationContext = useMemo(
+    () => ({
+      resolveRangeValues: (range: string) => resolveRangeValues(range),
+      evaluateFormulaAt: (formula: string, c: number, r: number) =>
+        evaluateFormulaAt(formula, c, r),
+    }),
+    [resolveRangeValues, evaluateFormulaAt],
+  );
 
-  const getValidationUi = useCallback((col: number, row: number): { validationUi?: CellValidationUi; invalidMessage?: string } => {
-    const cell = getCellData(col, row);
-    const rule = cell?.validation;
-    if (!rule) return {};
+  const getValidationUi = useCallback(
+    (col: number, row: number): { validationUi?: CellValidationUi; invalidMessage?: string } => {
+      const cell = getCellData(col, row);
+      const rule = cell?.validation;
+      if (!rule) return {};
 
-    const rawValue = cell?.rawValue ?? '';
-    let validationUi: CellValidationUi | undefined;
-    if (rule.type === 'checkbox') {
-      validationUi = { kind: 'checkbox', checked: isCheckboxChecked(rule, rawValue) };
-    } else if (rule.type === 'list' && (rule.showDropdown ?? true)) {
-      validationUi = { kind: 'dropdown', style: rule.dropdownStyle ?? 'chip' };
-    }
+      const rawValue = cell?.rawValue ?? '';
+      let validationUi: CellValidationUi | undefined;
+      if (rule.type === 'checkbox') {
+        validationUi = { kind: 'checkbox', checked: isCheckboxChecked(rule, rawValue) };
+      } else if (rule.type === 'list' && (rule.showDropdown ?? true)) {
+        validationUi = { kind: 'dropdown', style: rule.dropdownStyle ?? 'chip' };
+      }
 
-    const result = validateInput(rule, rawValue, { col, row }, validationCtx);
-    return { validationUi, invalidMessage: result.valid ? undefined : result.message };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getCellData, validationCtx, version]);
+      const result = validateInput(rule, rawValue, { col, row }, validationCtx);
+      return { validationUi, invalidMessage: result.valid ? undefined : result.message };
+    },
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+    [getCellData, validationCtx, version],
+  );
 
   const {
     activeCell,
@@ -705,7 +792,7 @@ export function Grid() {
     const hidden = new Set<number>();
     const dataMap = getDataMap();
     const dataStartRow = filterRange.startRow + 1;
-    const dataEndRow = filterRange.endRow ?? (rowCount - 1);
+    const dataEndRow = filterRange.endRow ?? rowCount - 1;
     for (let r = dataStartRow; r <= dataEndRow; r++) {
       for (let c = filterRange.startCol; c <= filterRange.endCol; c++) {
         const cell = dataMap.get(cellKey(c, r));
@@ -716,18 +803,26 @@ export function Grid() {
           break;
         }
         const condition = filterConditions[c];
-        if (condition && !evaluateCondition(val, {
-          id: '', style: {}, priority: 0, enabled: true,
-          range: { startCol: 0, startRow: 0, endCol: 0, endRow: 0 },
-          operator: condition.operator, value1: condition.value1 ?? '', value2: condition.value2,
-        })) {
+        if (
+          condition &&
+          !evaluateCondition(val, {
+            id: '',
+            style: {},
+            priority: 0,
+            enabled: true,
+            range: { startCol: 0, startRow: 0, endCol: 0, endRow: 0 },
+            operator: condition.operator,
+            value1: condition.value1 ?? '',
+            value2: condition.value2,
+          })
+        ) {
           hidden.add(r);
           break;
         }
       }
     }
     return hidden;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [filterRange, filterState, filterConditions, rowCount, version]);
 
   // Rows/cols that are not rendered (explicitly hidden, group-collapsed, or filtered out). Overlay positions
@@ -740,17 +835,31 @@ export function Grid() {
     [collapsedCols, explicitHiddenCols],
   );
   const isRowHidden = useCallback(
-    (r: number) => hiddenRows.has(r) || collapsedRows.has(r) || (explicitHiddenRows?.includes(r) ?? false),
+    (r: number) =>
+      hiddenRows.has(r) || collapsedRows.has(r) || (explicitHiddenRows?.includes(r) ?? false),
     [hiddenRows, collapsedRows, explicitHiddenRows],
   );
-  const visibleColWidth = useCallback((c: number) => (isColHidden(c) ? 0 : getColWidth(c)), [isColHidden, getColWidth]);
-  const visibleRowHeight = useCallback((r: number) => (isRowHidden(r) ? 0 : getRowHeight(r)), [isRowHidden, getRowHeight]);
+  const visibleColWidth = useCallback(
+    (c: number) => (isColHidden(c) ? 0 : getColWidth(c)),
+    [isColHidden, getColWidth],
+  );
+  const visibleRowHeight = useCallback(
+    (r: number) => (isRowHidden(r) ? 0 : getRowHeight(r)),
+    [isRowHidden, getRowHeight],
+  );
 
   const formulaRefRects = useMemo(() => {
     return formulaRefs.map((fRef) =>
-      getRangePixelRect(fRef.startCol, fRef.endCol, fRef.startRow, fRef.endRow, visibleColWidth, visibleRowHeight)
+      getRangePixelRect(
+        fRef.startCol,
+        fRef.endCol,
+        fRef.startRow,
+        fRef.endRow,
+        visibleColWidth,
+        visibleRowHeight,
+      ),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [formulaRefs, visibleColWidth, visibleRowHeight, sizeVersion]);
 
   // Content-space rects for the gliding selection cursor (active cell expanded to its merge, plus the
@@ -759,14 +868,24 @@ export function Grid() {
   const cursorRects = useMemo(() => {
     const merge = getMergeInfo(activeCell.col, activeCell.row);
     const active = getRangePixelRect(
-      activeCell.col, activeCell.col + Math.max(1, merge?.colSpan ?? 1) - 1,
-      activeCell.row, activeCell.row + Math.max(1, merge?.rowSpan ?? 1) - 1,
-      visibleColWidth, visibleRowHeight,
+      activeCell.col,
+      activeCell.col + Math.max(1, merge?.colSpan ?? 1) - 1,
+      activeCell.row,
+      activeCell.row + Math.max(1, merge?.rowSpan ?? 1) - 1,
+      visibleColWidth,
+      visibleRowHeight,
     );
     const sel = getNormalizedSelection();
     const isRange = sel.start.col !== sel.end.col || sel.start.row !== sel.end.row;
     const selection = isRange
-      ? getRangePixelRect(sel.start.col, sel.end.col, sel.start.row, sel.end.row, visibleColWidth, visibleRowHeight)
+      ? getRangePixelRect(
+          sel.start.col,
+          sel.end.col,
+          sel.start.row,
+          sel.end.row,
+          visibleColWidth,
+          visibleRowHeight,
+        )
       : active;
     return {
       active: activeCell.col >= frozenCols && activeCell.row >= frozenRows ? active : null,
@@ -776,8 +895,17 @@ export function Grid() {
       // Active cell incl. merge span, regardless of pane (precedent arrows target)
       activeRect: active,
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCell, getNormalizedSelection, getMergeInfo, visibleColWidth, visibleRowHeight, frozenCols, frozenRows, sizeVersion]);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeCell,
+    getNormalizedSelection,
+    getMergeInfo,
+    visibleColWidth,
+    visibleRowHeight,
+    frozenCols,
+    frozenRows,
+    sizeVersion,
+  ]);
 
   // "Trace precedents" for the selected formula cell: same-sheet references (up to 8), colored like
   // the in-editor reference highlights. Cross-sheet references (Sheet2!A1) are skipped.
@@ -792,9 +920,12 @@ export function Grid() {
       .slice(0, 8)
       .map((r, i) => ({
         rect: getRangePixelRect(
-          Math.min(r.startCol, r.endCol, maxCol), Math.min(Math.max(r.startCol, r.endCol), maxCol),
-          Math.min(r.startRow, r.endRow, maxRow), Math.min(Math.max(r.startRow, r.endRow), maxRow),
-          visibleColWidth, visibleRowHeight,
+          Math.min(r.startCol, r.endCol, maxCol),
+          Math.min(Math.max(r.startCol, r.endCol), maxCol),
+          Math.min(r.startRow, r.endRow, maxRow),
+          Math.min(Math.max(r.startRow, r.endRow), maxRow),
+          visibleColWidth,
+          visibleRowHeight,
         ),
         color: REF_COLORS[i % REF_COLORS.length],
       }))
@@ -805,8 +936,19 @@ export function Grid() {
       sources,
       target: cursorRects.activeRect,
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditing, activeFormula, activeCell, activeSheetId, colCount, rowCount, visibleColWidth, visibleRowHeight, cursorRects, sizeVersion]);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isEditing,
+    activeFormula,
+    activeCell,
+    activeSheetId,
+    colCount,
+    rowCount,
+    visibleColWidth,
+    visibleRowHeight,
+    cursorRects,
+    sizeVersion,
+  ]);
 
   // Sheet-level hidden row/col sets (explicit hide, distinct from filter/group collapse) — used
   // by keyboard navigation's hidden-skip logic and the header boundary unhide indicators.
@@ -849,91 +991,132 @@ export function Grid() {
     rows: Map<number, { dy: number; delay: number }>;
   } | null>(null);
   const sortPhaseRef = useRef(0);
-  const animateSort = useCallback((range: { startCol: number; endCol: number; startRow: number }, order: number[]) => {
-    if (order.length === 0 || order.length > 5000) return;
-    const lastRow = Math.max(range.startRow + order.length - 1, ...order);
-    const tops = new Array<number>(lastRow + 1);
-    let y = 0;
-    for (let r = 0; r <= lastRow; r++) {
-      tops[r] = y;
-      y += visibleRowHeight(r);
-    }
-    const rows = new Map<number, { dy: number; delay: number }>();
-    order.forEach((oldRow, i) => {
-      const newRow = range.startRow + i;
-      const dy = tops[oldRow] - tops[newRow];
-      // A light cascade down the range: later rows set off a little later
-      if (dy !== 0) rows.set(newRow, { dy, delay: Math.min(i * 14, 220) });
-    });
-    if (rows.size === 0) return;
-    sortPhaseRef.current += 1;
-    setSortMotion({ phase: sortPhaseRef.current, startCol: range.startCol, endCol: range.endCol, rows });
-  }, [visibleRowHeight]);
+  const animateSort = useCallback(
+    (range: { startCol: number; endCol: number; startRow: number }, order: number[]) => {
+      if (order.length === 0 || order.length > 5000) return;
+      const lastRow = Math.max(range.startRow + order.length - 1, ...order);
+      const tops = new Array<number>(lastRow + 1);
+      let y = 0;
+      for (let r = 0; r <= lastRow; r++) {
+        tops[r] = y;
+        y += visibleRowHeight(r);
+      }
+      const rows = new Map<number, { dy: number; delay: number }>();
+      order.forEach((oldRow, i) => {
+        const newRow = range.startRow + i;
+        const dy = tops[oldRow] - tops[newRow];
+        // A light cascade down the range: later rows set off a little later
+        if (dy !== 0) rows.set(newRow, { dy, delay: Math.min(i * 14, 220) });
+      });
+      if (rows.size === 0) return;
+      sortPhaseRef.current += 1;
+      setSortMotion({
+        phase: sortPhaseRef.current,
+        startCol: range.startCol,
+        endCol: range.endCol,
+        rows,
+      });
+    },
+    [visibleRowHeight],
+  );
   // useEffect required: timer that drops the finished sort motion (so cells lose their animation)
   useEffect(() => {
     if (!sortMotion) return;
     const timer = setTimeout(() => setSortMotion(null), 1100);
     return () => clearTimeout(timer);
   }, [sortMotion]);
-  const getSortMotionProps = useCallback((col: number, row: number) => {
-    if (!sortMotion || col < sortMotion.startCol || col > sortMotion.endCol) return undefined;
-    const m = sortMotion.rows.get(row);
-    return m ? { dy: m.dy, delay: m.delay, phase: sortMotion.phase } : undefined;
-  }, [sortMotion]);
+  const getSortMotionProps = useCallback(
+    (col: number, row: number) => {
+      if (!sortMotion || col < sortMotion.startCol || col > sortMotion.endCol) return undefined;
+      const m = sortMotion.rows.get(row);
+      return m ? { dy: m.dy, delay: m.delay, phase: sortMotion.phase } : undefined;
+    },
+    [sortMotion],
+  );
 
   /** Sort `range` and animate the rows into place; toasts when the range contains merged cells. */
-  const sortAndAnimate = useCallback((range: { startCol: number; endCol: number; startRow: number; endRow: number }, keys: SortKey[]) => {
-    const ok = sortRange(range, keys, (order) => animateSort(range, order));
-    if (!ok) showToast('結合されたセルを含む範囲は並べ替えできません', 'error');
-  }, [sortRange, animateSort, showToast]);
+  const sortAndAnimate = useCallback(
+    (
+      range: { startCol: number; endCol: number; startRow: number; endRow: number },
+      keys: SortKey[],
+    ) => {
+      const ok = sortRange(range, keys, (order) => animateSort(range, order));
+      if (!ok) showToast('結合されたセルを含む範囲は並べ替えできません', 'error');
+    },
+    [sortRange, animateSort, showToast],
+  );
 
   /** Sort the whole sheet (below any frozen rows) by a single column — used by the column
    * header context menu and the データ menu's "Sort sheet" commands. */
-  const sortSheetByColumn = useCallback((colIndex: number, ascending: boolean) => {
-    sortAndAnimate(
-      { startCol: 0, endCol: colCount - 1, startRow: frozenRows, endRow: rowCount - 1 },
-      [{ col: colIndex, ascending }],
-    );
-  }, [sortAndAnimate, colCount, rowCount, frozenRows]);
+  const sortSheetByColumn = useCallback(
+    (colIndex: number, ascending: boolean) => {
+      sortAndAnimate(
+        { startCol: 0, endCol: colCount - 1, startRow: frozenRows, endRow: rowCount - 1 },
+        [{ col: colIndex, ascending }],
+      );
+    },
+    [sortAndAnimate, colCount, rowCount, frozenRows],
+  );
 
   /** FilterMenu's "A→Z/Z→A で並べ替え": sorts only the filter range's data rows (below its header row). */
-  const sortFilterRangeByColumn = useCallback((colIndex: number, ascending: boolean) => {
-    if (!filterRange) return;
-    sortAndAnimate(
-      { startCol: filterRange.startCol, endCol: filterRange.endCol, startRow: filterRange.startRow + 1, endRow: filterRange.endRow ?? (rowCount - 1) },
-      [{ col: colIndex, ascending }],
-    );
-  }, [sortAndAnimate, filterRange, rowCount]);
+  const sortFilterRangeByColumn = useCallback(
+    (colIndex: number, ascending: boolean) => {
+      if (!filterRange) return;
+      sortAndAnimate(
+        {
+          startCol: filterRange.startCol,
+          endCol: filterRange.endCol,
+          startRow: filterRange.startRow + 1,
+          endRow: filterRange.endRow ?? rowCount - 1,
+        },
+        [{ col: colIndex, ascending }],
+      );
+    },
+    [sortAndAnimate, filterRange, rowCount],
+  );
 
   // "範囲を並べ替え" dialog
   const [showSortRangeDialog, setShowSortRangeDialog] = useState(false);
-  const handleConfirmSortRange = useCallback((range: { startCol: number; endCol: number; startRow: number; endRow: number }, keys: SortKey[]) => {
-    sortAndAnimate(range, keys);
-  }, [sortAndAnimate]);
+  const handleConfirmSortRange = useCallback(
+    (
+      range: { startCol: number; endCol: number; startRow: number; endRow: number },
+      keys: SortKey[],
+    ) => {
+      sortAndAnimate(range, keys);
+    },
+    [sortAndAnimate],
+  );
 
   // --- Filter logic ---
   /** Unique display values within the filter's data rows (below the header row) for one column. */
-  const getUniqueValuesForColumn = useCallback((colIndex: number): string[] => {
-    if (!filterRange) return [];
-    const dataMap = getDataMap();
-    const values = new Set<string>();
-    const dataStartRow = filterRange.startRow + 1;
-    const dataEndRow = filterRange.endRow ?? (rowCount - 1);
-    for (let r = dataStartRow; r <= dataEndRow; r++) {
-      const cell = dataMap.get(cellKey(colIndex, r));
-      values.add(cell?.displayValue ?? '');
-    }
-    return Array.from(values).sort();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterRange, getDataMap, rowCount, version]);
+  const getUniqueValuesForColumn = useCallback(
+    (colIndex: number): string[] => {
+      if (!filterRange) return [];
+      const dataMap = getDataMap();
+      const values = new Set<string>();
+      const dataStartRow = filterRange.startRow + 1;
+      const dataEndRow = filterRange.endRow ?? rowCount - 1;
+      for (let r = dataStartRow; r <= dataEndRow; r++) {
+        const cell = dataMap.get(cellKey(colIndex, r));
+        values.add(cell?.displayValue ?? '');
+      }
+      return Array.from(values).sort();
+    },
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+    [filterRange, getDataMap, rowCount, version],
+  );
 
-  const handleFilterMenuApply = useCallback((colIndex: number, values: Set<string> | undefined, condition: FilterCondition | undefined) => {
-    const prev = getFilterState();
-    const next = new Map(prev);
-    if (values) next.set(colIndex, values); else next.delete(colIndex);
-    setSheetFilterState(next);
-    setFilterCondition(colIndex, condition);
-  }, [getFilterState, setSheetFilterState, setFilterCondition]);
+  const handleFilterMenuApply = useCallback(
+    (colIndex: number, values: Set<string> | undefined, condition: FilterCondition | undefined) => {
+      const prev = getFilterState();
+      const next = new Map(prev);
+      if (values) next.set(colIndex, values);
+      else next.delete(colIndex);
+      setSheetFilterState(next);
+      setFilterCondition(colIndex, condition);
+    },
+    [getFilterState, setSheetFilterState, setFilterCondition],
+  );
 
   /** "フィルタを作成" / "フィルタを削除" (データ menu + toolbar): toggles the filter on the current selection. */
   const handleToggleFilter = useCallback(() => {
@@ -951,36 +1134,68 @@ export function Grid() {
       const region = expandToDataRegion(sel.start, hasValue, colCount - 1, rowCount - 1);
       createFilter(region);
     } else {
-      createFilter({ startCol: sel.start.col, endCol: sel.end.col, startRow: sel.start.row, endRow: sel.end.row });
+      createFilter({
+        startCol: sel.start.col,
+        endCol: sel.end.col,
+        startRow: sel.start.row,
+        endRow: sel.end.row,
+      });
     }
-  }, [filterRange, removeFilter, getNormalizedSelection, getCellData, colCount, rowCount, createFilter]);
+  }, [
+    filterRange,
+    removeFilter,
+    getNormalizedSelection,
+    getCellData,
+    colCount,
+    rowCount,
+    createFilter,
+  ]);
 
   // --- Data cleanup ---
   const [showRemoveDuplicatesDialog, setShowRemoveDuplicatesDialog] = useState(false);
-  const handleConfirmRemoveDuplicates = useCallback((
-    range: { startCol: number; endCol: number; startRow: number; endRow: number },
-    hasHeader: boolean,
-    checkCols: number[],
-  ) => {
-    const { duplicateCount, uniqueCount } = removeDuplicateRows(range, hasHeader, checkCols);
-    showToast(`重複する行が ${duplicateCount} 行見つかり、削除されました。${uniqueCount} 行の一意の値が残っています。`);
-  }, [removeDuplicateRows, showToast]);
+  const handleConfirmRemoveDuplicates = useCallback(
+    (
+      range: { startCol: number; endCol: number; startRow: number; endRow: number },
+      hasHeader: boolean,
+      checkCols: number[],
+    ) => {
+      const { duplicateCount, uniqueCount } = removeDuplicateRows(range, hasHeader, checkCols);
+      showToast(
+        `重複する行が ${duplicateCount} 行見つかり、削除されました。${uniqueCount} 行の一意の値が残っています。`,
+      );
+    },
+    [removeDuplicateRows, showToast],
+  );
 
   const handleTrimWhitespace = useCallback(() => {
     const sel = getNormalizedSelection();
-    trimWhitespaceInRange({ startCol: sel.start.col, endCol: sel.end.col, startRow: sel.start.row, endRow: sel.end.row });
+    trimWhitespaceInRange({
+      startCol: sel.start.col,
+      endCol: sel.end.col,
+      startRow: sel.start.row,
+      endRow: sel.end.row,
+    });
   }, [getNormalizedSelection, trimWhitespaceInRange]);
 
   // "テキストを列に分割": popover to change the auto-detected delimiter after the fact
   // (re-splitting is implemented as undo + re-split, per the design note in the spec).
   type SplitDelimiterMode = 'auto' | ',' | ';' | '.' | ' ' | 'custom';
-  const [splitPopover, setSplitPopover] = useState<{ col: number; startRow: number; endRow: number; mode: SplitDelimiterMode; custom: string } | null>(null);
+  const [splitPopover, setSplitPopover] = useState<{
+    col: number;
+    startRow: number;
+    endRow: number;
+    mode: SplitDelimiterMode;
+    custom: string;
+  } | null>(null);
 
-  const resolveSplitDelimiter = useCallback((col: number, startRow: number, mode: SplitDelimiterMode, custom: string): string => {
-    if (mode === 'auto') return detectDelimiter(getCellData(col, startRow)?.displayValue ?? '');
-    if (mode === 'custom') return custom;
-    return mode;
-  }, [getCellData]);
+  const resolveSplitDelimiter = useCallback(
+    (col: number, startRow: number, mode: SplitDelimiterMode, custom: string): string => {
+      if (mode === 'auto') return detectDelimiter(getCellData(col, startRow)?.displayValue ?? '');
+      if (mode === 'custom') return custom;
+      return mode;
+    },
+    [getCellData],
+  );
 
   const handleSplitTextToColumnsAction = useCallback(() => {
     const sel = getNormalizedSelection();
@@ -992,13 +1207,21 @@ export function Grid() {
     setSplitPopover({ col, startRow, endRow, mode: 'auto', custom: '' });
   }, [getNormalizedSelection, resolveSplitDelimiter, splitTextToColumns]);
 
-  const handleChangeSplitDelimiter = useCallback((mode: SplitDelimiterMode, custom: string) => {
-    if (!splitPopover) return;
-    const delimiter = resolveSplitDelimiter(splitPopover.col, splitPopover.startRow, mode, custom);
-    undo();
-    splitTextToColumns(splitPopover.col, splitPopover.startRow, splitPopover.endRow, delimiter);
-    setSplitPopover({ ...splitPopover, mode, custom });
-  }, [splitPopover, resolveSplitDelimiter, undo, splitTextToColumns]);
+  const handleChangeSplitDelimiter = useCallback(
+    (mode: SplitDelimiterMode, custom: string) => {
+      if (!splitPopover) return;
+      const delimiter = resolveSplitDelimiter(
+        splitPopover.col,
+        splitPopover.startRow,
+        mode,
+        custom,
+      );
+      undo();
+      splitTextToColumns(splitPopover.col, splitPopover.startRow, splitPopover.endRow, delimiter);
+      setSplitPopover({ ...splitPopover, mode, custom });
+    },
+    [splitPopover, resolveSplitDelimiter, undo, splitTextToColumns],
+  );
 
   // --- Clipboard handlers ---
   // GetCell implementation for useClipboard: rawValue + formatted display text + computed
@@ -1017,100 +1240,139 @@ export function Grid() {
     [getCellData],
   );
 
-  const handleCopy = useCallback((e?: ClipboardEvent) => {
-    clipboardSourceSheetIdRef.current = activeSheetId;
-    clipboardCopy(getNormalizedSelection(), getCellForClipboard, activeSheetId, false, e);
-  }, [clipboardCopy, getNormalizedSelection, getCellForClipboard, activeSheetId]);
+  const handleCopy = useCallback(
+    (e?: ClipboardEvent) => {
+      clipboardSourceSheetIdRef.current = activeSheetId;
+      clipboardCopy(getNormalizedSelection(), getCellForClipboard, activeSheetId, false, e);
+    },
+    [clipboardCopy, getNormalizedSelection, getCellForClipboard, activeSheetId],
+  );
 
-  const handleCut = useCallback((e?: ClipboardEvent) => {
-    clipboardSourceSheetIdRef.current = activeSheetId;
-    clipboardCopy(getNormalizedSelection(), getCellForClipboard, activeSheetId, true, e);
-  }, [clipboardCopy, getNormalizedSelection, getCellForClipboard, activeSheetId]);
+  const handleCut = useCallback(
+    (e?: ClipboardEvent) => {
+      clipboardSourceSheetIdRef.current = activeSheetId;
+      clipboardCopy(getNormalizedSelection(), getCellForClipboard, activeSheetId, true, e);
+    },
+    [clipboardCopy, getNormalizedSelection, getCellForClipboard, activeSheetId],
+  );
 
   // Apply a paste plan built by useClipboard: writes values/styles, clears cut source cells,
   // auto-expands the grid, and selects the pasted range.
-  const applyPastePlan = useCallback((plan: PastePlan) => {
-    const { entries, clearEntries, sourceSheetId, pastedRange } = plan;
+  const applyPastePlan = useCallback(
+    (plan: PastePlan) => {
+      const { entries, clearEntries, sourceSheetId, pastedRange } = plan;
 
-    // Auto-expand grid to fit pasted data
-    let maxCol = colCount;
-    let maxRow = rowCount;
-    for (const en of entries) {
-      if (en.col + 1 > maxCol) maxCol = en.col + 1;
-      if (en.row + 1 > maxRow) maxRow = en.row + 1;
-    }
-    if (clearEntries) {
-      for (const en of clearEntries) {
+      // Auto-expand grid to fit pasted data
+      let maxCol = colCount;
+      let maxRow = rowCount;
+      for (const en of entries) {
         if (en.col + 1 > maxCol) maxCol = en.col + 1;
         if (en.row + 1 > maxRow) maxRow = en.row + 1;
       }
-    }
-    if (maxCol > colCount) setColCount(Math.min(maxCol + AUTO_EXPAND_COLS, MAX_COL_COUNT));
-    if (maxRow > rowCount) setRowCount(Math.min(maxRow + AUTO_EXPAND_ROWS, MAX_ROW_COUNT));
-
-    transact(() => {
-      const crossSheetCut = !!(clearEntries && clearEntries.length > 0 && sourceSheetId && sourceSheetId !== activeSheetId);
-      const valueEntries = entries
-        .filter((en) => en.value !== undefined)
-        .map((en) => ({ col: en.col, row: en.row, value: en.value! }));
-
-      if (crossSheetCut) {
-        // batchSetCellValues records the undo snapshot; clearCellsOnSheet doesn't, so it must come second
-        if (valueEntries.length > 0) batchSetCellValues(valueEntries);
-        clearCellsOnSheet(sourceSheetId!, clearEntries!);
-      } else if (clearEntries && clearEntries.length > 0) {
-        batchSetCellValues([
-          ...clearEntries.map((en) => ({ col: en.col, row: en.row, value: '' })),
-          ...valueEntries,
-        ]);
-      } else if (valueEntries.length > 0) {
-        batchSetCellValues(valueEntries);
-      }
-
-      // A same-sheet cut also clears the source cells' style (cross-sheet clearCellsOnSheet
-      // above already removes the cells entirely, style included). Done before applying the pasted
-      // styles, and skipping cells that are paste targets, so an overlapping move keeps its format.
-      if (!crossSheetCut && clearEntries && clearEntries.length > 0) {
-        const targetKeys = new Set(entries.map((en) => `${en.col},${en.row}`));
-        const sourceOnly = clearEntries.filter((en) => !targetKeys.has(`${en.col},${en.row}`));
-        if (sourceOnly.length > 0) {
-          setCellStyle(sourceOnly.map((en) => ({ col: en.col, row: en.row })), fullStyle(null));
+      if (clearEntries) {
+        for (const en of clearEntries) {
+          if (en.col + 1 > maxCol) maxCol = en.col + 1;
+          if (en.row + 1 > maxRow) maxRow = en.row + 1;
         }
       }
+      if (maxCol > colCount) setColCount(Math.min(maxCol + AUTO_EXPAND_COLS, MAX_COL_COUNT));
+      if (maxRow > rowCount) setRowCount(Math.min(maxRow + AUTO_EXPAND_ROWS, MAX_ROW_COUNT));
 
-      // Style entries: group identical full styles together to minimize setCellStyle/undo entries
-      const styleEntries = entries.filter((en) => en.style !== undefined);
-      if (styleEntries.length > 0) {
-        const groups = new Map<string, { style: CellStyle; positions: CellPosition[] }>();
-        for (const en of styleEntries) {
-          const resolved = fullStyle(en.style ?? null);
-          const groupKey = JSON.stringify(resolved);
-          const group = groups.get(groupKey);
-          if (group) group.positions.push({ col: en.col, row: en.row });
-          else groups.set(groupKey, { style: resolved, positions: [{ col: en.col, row: en.row }] });
+      transact(() => {
+        const crossSheetCut = !!(
+          clearEntries &&
+          clearEntries.length > 0 &&
+          sourceSheetId &&
+          sourceSheetId !== activeSheetId
+        );
+        const valueEntries = entries
+          .filter((en) => en.value !== undefined)
+          .map((en) => ({ col: en.col, row: en.row, value: en.value! }));
+
+        if (crossSheetCut) {
+          // batchSetCellValues records the undo snapshot; clearCellsOnSheet doesn't, so it must come second
+          if (valueEntries.length > 0) batchSetCellValues(valueEntries);
+          clearCellsOnSheet(sourceSheetId!, clearEntries!);
+        } else if (clearEntries && clearEntries.length > 0) {
+          batchSetCellValues([
+            ...clearEntries.map((en) => ({ col: en.col, row: en.row, value: '' })),
+            ...valueEntries,
+          ]);
+        } else if (valueEntries.length > 0) {
+          batchSetCellValues(valueEntries);
         }
-        for (const { style, positions } of groups.values()) {
-          setCellStyle(positions, style);
+
+        // A same-sheet cut also clears the source cells' style (cross-sheet clearCellsOnSheet
+        // above already removes the cells entirely, style included). Done before applying the pasted
+        // styles, and skipping cells that are paste targets, so an overlapping move keeps its format.
+        if (!crossSheetCut && clearEntries && clearEntries.length > 0) {
+          const targetKeys = new Set(entries.map((en) => `${en.col},${en.row}`));
+          const sourceOnly = clearEntries.filter((en) => !targetKeys.has(`${en.col},${en.row}`));
+          if (sourceOnly.length > 0) {
+            setCellStyle(
+              sourceOnly.map((en) => ({ col: en.col, row: en.row })),
+              fullStyle(null),
+            );
+          }
         }
+
+        // Style entries: group identical full styles together to minimize setCellStyle/undo entries
+        const styleEntries = entries.filter((en) => en.style !== undefined);
+        if (styleEntries.length > 0) {
+          const groups = new Map<string, { style: CellStyle; positions: CellPosition[] }>();
+          for (const en of styleEntries) {
+            const resolved = fullStyle(en.style ?? null);
+            const groupKey = JSON.stringify(resolved);
+            const group = groups.get(groupKey);
+            if (group) group.positions.push({ col: en.col, row: en.row });
+            else
+              groups.set(groupKey, { style: resolved, positions: [{ col: en.col, row: en.row }] });
+          }
+          for (const { style, positions } of groups.values()) {
+            setCellStyle(positions, style);
+          }
+        }
+      });
+
+      // Select the pasted range
+      if (
+        pastedRange.start.col === pastedRange.end.col &&
+        pastedRange.start.row === pastedRange.end.row
+      ) {
+        setActiveCell(pastedRange.start);
+      } else {
+        selectRange(pastedRange, pastedRange.start);
       }
-    });
+    },
+    [
+      colCount,
+      rowCount,
+      setColCount,
+      setRowCount,
+      activeSheetId,
+      clearCellsOnSheet,
+      batchSetCellValues,
+      setCellStyle,
+      setActiveCell,
+      selectRange,
+      transact,
+    ],
+  );
 
-    // Select the pasted range
-    if (pastedRange.start.col === pastedRange.end.col && pastedRange.start.row === pastedRange.end.row) {
-      setActiveCell(pastedRange.start);
-    } else {
-      selectRange(pastedRange, pastedRange.start);
-    }
-  }, [colCount, rowCount, setColCount, setRowCount, activeSheetId, clearCellsOnSheet, batchSetCellValues, setCellStyle, setActiveCell, selectRange, transact]);
+  const handlePasteMode = useCallback(
+    async (mode: PasteMode, e?: ClipboardEvent) => {
+      const plan = await buildPastePlan(getNormalizedSelection(), mode, e);
+      if (plan) applyPastePlan(plan);
+    },
+    [buildPastePlan, getNormalizedSelection, applyPastePlan],
+  );
 
-  const handlePasteMode = useCallback(async (mode: PasteMode, e?: ClipboardEvent) => {
-    const plan = await buildPastePlan(getNormalizedSelection(), mode, e);
-    if (plan) applyPastePlan(plan);
-  }, [buildPastePlan, getNormalizedSelection, applyPastePlan]);
-
-  const handlePaste = useCallback((e?: ClipboardEvent) => {
-    void handlePasteMode('normal', e);
-  }, [handlePasteMode]);
+  const handlePaste = useCallback(
+    (e?: ClipboardEvent) => {
+      void handlePasteMode('normal', e);
+    },
+    [handlePasteMode],
+  );
 
   // --- Import/Export handlers ---
   const {
@@ -1138,21 +1400,38 @@ export function Grid() {
   });
 
   // --- Autosave (IndexedDB) ---
-  const serializeForAutosave = useCallback(() => serialize({
-    sheets, activeSheetId,
-    colWidths: new Map(), rowHeights: new Map(),
-    sizesBySheet: getAllSizesBySheet(),
-    namedRanges, pivotTables,
-    title,
-    compact: true,
-  }), [sheets, activeSheetId, getAllSizesBySheet, namedRanges, pivotTables, title]);
-  const restoreFromAutosave = useCallback((json: string) => {
-    const result = deserialize(json);
-    replaceWorkbook(result.workbook, { resetHistory: true });
-    restoreAllSizes(result.sizesBySheet);
-  }, [replaceWorkbook, restoreAllSizes]);
-  const { status: saveStatus, lastSavedAt, restored: autosaveRestored } = useAutosave({
-    version, sizeVersion, serialize: serializeForAutosave, restore: restoreFromAutosave,
+  const serializeForAutosave = useCallback(
+    () =>
+      serialize({
+        sheets,
+        activeSheetId,
+        colWidths: new Map(),
+        rowHeights: new Map(),
+        sizesBySheet: getAllSizesBySheet(),
+        namedRanges,
+        pivotTables,
+        title,
+        compact: true,
+      }),
+    [sheets, activeSheetId, getAllSizesBySheet, namedRanges, pivotTables, title],
+  );
+  const restoreFromAutosave = useCallback(
+    (json: string) => {
+      const result = deserialize(json);
+      replaceWorkbook(result.workbook, { resetHistory: true });
+      restoreAllSizes(result.sizesBySheet);
+    },
+    [replaceWorkbook, restoreAllSizes],
+  );
+  const {
+    status: saveStatus,
+    lastSavedAt,
+    restored: autosaveRestored,
+  } = useAutosave({
+    version,
+    sizeVersion,
+    serialize: serializeForAutosave,
+    restore: restoreFromAutosave,
   });
 
   // useEffect required: dismisses the static splash overlay from index.html (DOM outside React) once restored
@@ -1166,19 +1445,14 @@ export function Grid() {
   }, [title]);
 
   // --- Drag & Drop ---
-  const {
-    isDragging,
-    handleDragEnter,
-    handleDragLeave,
-    handleDragOver,
-    handleDrop,
-  } = useDragDrop(handleImportFile);
+  const { isDragging, handleDragEnter, handleDragLeave, handleDragOver, handleDrop } =
+    useDragDrop(handleImportFile);
 
   // --- Style management ---
   // Memoize to avoid changing the context value on unrelated re-renders
   const activeCellStyle = useMemo(
     () => getCellData(activeCell.col, activeCell.row)?.style,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [getCellData, activeCell.col, activeCell.row, version],
   );
 
@@ -1238,7 +1512,15 @@ export function Grid() {
         }
       }
     },
-    [getActiveSheet, measureCellHeight, setRowHeight, resetRowHeight, isRowHeightManual, getRowHeight, defaultRowHeight],
+    [
+      getActiveSheet,
+      measureCellHeight,
+      setRowHeight,
+      resetRowHeight,
+      isRowHeightManual,
+      getRowHeight,
+      defaultRowHeight,
+    ],
   );
 
   const handleSetCellStyle = useCallback(
@@ -1302,13 +1584,16 @@ export function Grid() {
   // --- Cell hover handlers ---
   // Hover only matters for cells with a note (comment tooltip). Updating state for every hovered cell
   // re-rendered the whole grid on each mouse move, so cells without a note are ignored.
-  const handleCellMouseEnter = useCallback((col: number, row: number) => {
-    const hasNote = !!getCellData(col, row)?.comment;
-    setHoveredCell((prev) => {
-      if (!hasNote) return prev === null ? prev : null;
-      return prev && prev.col === col && prev.row === row ? prev : { col, row };
-    });
-  }, [getCellData]);
+  const handleCellMouseEnter = useCallback(
+    (col: number, row: number) => {
+      const hasNote = !!getCellData(col, row)?.comment;
+      setHoveredCell((prev) => {
+        if (!hasNote) return prev === null ? prev : null;
+        return prev && prev.col === col && prev.row === row ? prev : { col, row };
+      });
+    },
+    [getCellData],
+  );
 
   const handleCellMouseLeave = useCallback(() => {
     setHoveredCell((prev) => (prev === null ? prev : null));
@@ -1322,10 +1607,18 @@ export function Grid() {
       type: 'bar',
       title: 'グラフ',
       sourceRange: {
-        startCol: selectionRange ? Math.min(selectionRange.start.col, selectionRange.end.col) : activeCell.col,
-        startRow: selectionRange ? Math.min(selectionRange.start.row, selectionRange.end.row) : activeCell.row,
-        endCol: selectionRange ? Math.max(selectionRange.start.col, selectionRange.end.col) : activeCell.col,
-        endRow: selectionRange ? Math.max(selectionRange.start.row, selectionRange.end.row) : activeCell.row,
+        startCol: selectionRange
+          ? Math.min(selectionRange.start.col, selectionRange.end.col)
+          : activeCell.col,
+        startRow: selectionRange
+          ? Math.min(selectionRange.start.row, selectionRange.end.row)
+          : activeCell.row,
+        endCol: selectionRange
+          ? Math.max(selectionRange.start.col, selectionRange.end.col)
+          : activeCell.col,
+        endRow: selectionRange
+          ? Math.max(selectionRange.start.row, selectionRange.end.row)
+          : activeCell.row,
       },
       x: 100,
       y: 100,
@@ -1342,13 +1635,16 @@ export function Grid() {
     setSidePanel('chart');
   }, []);
 
-  const handleDeleteChart = useCallback((id: string) => {
-    deleteChart(id);
-    if (editingChartId === id) {
-      setEditingChartId(null);
-      setSidePanel(null);
-    }
-  }, [deleteChart, editingChartId]);
+  const handleDeleteChart = useCallback(
+    (id: string) => {
+      deleteChart(id);
+      if (editingChartId === id) {
+        setEditingChartId(null);
+        setSidePanel(null);
+      }
+    },
+    [deleteChart, editingChartId],
+  );
 
   const handleCloseChartEditor = useCallback(() => {
     setSidePanel(null);
@@ -1681,30 +1977,39 @@ export function Grid() {
     setShowSearch(false);
   }, []);
 
-  const handleSearchNavigate = useCallback((sheetId: string, pos: CellPosition) => {
-    if (sheetId !== activeSheetId) setActiveSheet(sheetId);
-    setActiveCell(pos);
-  }, [activeSheetId, setActiveSheet, setActiveCell]);
+  const handleSearchNavigate = useCallback(
+    (sheetId: string, pos: CellPosition) => {
+      if (sheetId !== activeSheetId) setActiveSheet(sheetId);
+      setActiveCell(pos);
+    },
+    [activeSheetId, setActiveSheet, setActiveCell],
+  );
 
-  const handleSearchReplaceOne = useCallback((sheetId: string, col: number, row: number, newValue: string) => {
-    if (sheetId === activeSheetId) {
-      setCellValue(col, row, newValue);
-    } else {
-      batchSetCellValuesOnSheet(sheetId, [{ col, row, value: newValue }]);
-    }
-  }, [activeSheetId, setCellValue, batchSetCellValuesOnSheet]);
-
-  const handleSearchReplaceAll = useCallback((bySheet: Map<string, Array<{ col: number; row: number; value: string }>>) => {
-    transact(() => {
-      for (const [sheetId, entries] of bySheet) {
-        if (sheetId === activeSheetId) {
-          batchSetCellValues(entries);
-        } else {
-          batchSetCellValuesOnSheet(sheetId, entries);
-        }
+  const handleSearchReplaceOne = useCallback(
+    (sheetId: string, col: number, row: number, newValue: string) => {
+      if (sheetId === activeSheetId) {
+        setCellValue(col, row, newValue);
+      } else {
+        batchSetCellValuesOnSheet(sheetId, [{ col, row, value: newValue }]);
       }
-    });
-  }, [activeSheetId, transact, batchSetCellValues, batchSetCellValuesOnSheet]);
+    },
+    [activeSheetId, setCellValue, batchSetCellValuesOnSheet],
+  );
+
+  const handleSearchReplaceAll = useCallback(
+    (bySheet: Map<string, Array<{ col: number; row: number; value: string }>>) => {
+      transact(() => {
+        for (const [sheetId, entries] of bySheet) {
+          if (sheetId === activeSheetId) {
+            batchSetCellValues(entries);
+          } else {
+            batchSetCellValuesOnSheet(sheetId, entries);
+          }
+        }
+      });
+    },
+    [activeSheetId, transact, batchSetCellValues, batchSetCellValuesOnSheet],
+  );
 
   // --- Fill Auto handlers ---
   const handleFillHandleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -1718,82 +2023,119 @@ export function Grid() {
   // Uses binary search over cumulative offsets when there are no hidden rows/cols
   // (filtered/collapsed), falling back to the O(n) scan otherwise.
   const noHiddenCols = collapsedCols.size === 0 && !explicitHiddenCols?.length;
-  const noHiddenRows = hiddenRows.size === 0 && collapsedRows.size === 0 && !explicitHiddenRows?.length;
-  const getCellFromPoint = useCallback((
-    clientX: number,
-    clientY: number,
-    /** While dragging: clamp the pointer into the viewport and map frozen panes per clampDragPoint */
-    drag?: { anchorCol: number; anchorRow: number },
-  ): { col: number; row: number } | null => {
-    const el = scrollContainerRef.current;
-    if (!el) return null;
-    const rect = el.getBoundingClientRect();
-    // Inside the CSS-zoom wrapper, getBoundingClientRect/clientX are screen pixels but scrollLeft/scrollTop
-    // are already in the (unzoomed) logical space that getColWidth/getRowHeight use (verified in Chrome):
-    // only the pointer offset is divided by the zoom factor.
-    let localX = (clientX - rect.left) / zoomFactor;
-    let localY = (clientY - rect.top) / zoomFactor;
+  const noHiddenRows =
+    hiddenRows.size === 0 && collapsedRows.size === 0 && !explicitHiddenRows?.length;
+  const getCellFromPoint = useCallback(
+    (
+      clientX: number,
+      clientY: number,
+      /** While dragging: clamp the pointer into the viewport and map frozen panes per clampDragPoint */
+      drag?: { anchorCol: number; anchorRow: number },
+    ): { col: number; row: number } | null => {
+      const el = scrollContainerRef.current;
+      if (!el) return null;
+      const rect = el.getBoundingClientRect();
+      // Inside the CSS-zoom wrapper, getBoundingClientRect/clientX are screen pixels but scrollLeft/scrollTop
+      // are already in the (unzoomed) logical space that getColWidth/getRowHeight use (verified in Chrome):
+      // only the pointer offset is divided by the zoom factor.
+      let localX = (clientX - rect.left) / zoomFactor;
+      let localY = (clientY - rect.top) / zoomFactor;
 
-    // Frozen panes don't scroll: a point inside them maps to their cells without the scroll offset
-    let frozenW = 0;
-    for (let c = 0; c < frozenCols; c++) if (!isColHidden(c)) frozenW += getColWidth(c);
-    let frozenH = 0;
-    for (let r = 0; r < frozenRows; r++) if (!isRowHidden(r)) frozenH += getRowHeight(r);
+      // Frozen panes don't scroll: a point inside them maps to their cells without the scroll offset
+      let frozenW = 0;
+      for (let c = 0; c < frozenCols; c++) if (!isColHidden(c)) frozenW += getColWidth(c);
+      let frozenH = 0;
+      for (let r = 0; r < frozenRows; r++) if (!isRowHidden(r)) frozenH += getRowHeight(r);
 
-    if (drag) {
-      ({ x: localX, y: localY } = clampDragPoint({
-        x: localX, y: localY,
-        viewWidth: el.clientWidth, viewHeight: el.clientHeight,
-        frozenWidth: frozenW, frozenHeight: frozenH,
-        scrollLeft: el.scrollLeft, scrollTop: el.scrollTop,
-        anchorInFrozenCols: drag.anchorCol < frozenCols,
-        anchorInFrozenRows: drag.anchorRow < frozenRows,
-      }));
-    }
-    const scrollX = localX < frozenW ? localX : localX + el.scrollLeft;
-    const scrollY = localY < frozenH ? localY : localY + el.scrollTop;
-
-    let col: number;
-    if (noHiddenCols) {
-      col = findIndexByOffset(scrollX, colCount, getColOffset);
-    } else {
-      let accX = 0;
-      col = -1;
-      for (let c = 0; c < colCount; c++) {
-        if (isColHidden(c)) continue;
-        accX += getColWidth(c);
-        if (scrollX < accX) { col = c; break; }
+      if (drag) {
+        ({ x: localX, y: localY } = clampDragPoint({
+          x: localX,
+          y: localY,
+          viewWidth: el.clientWidth,
+          viewHeight: el.clientHeight,
+          frozenWidth: frozenW,
+          frozenHeight: frozenH,
+          scrollLeft: el.scrollLeft,
+          scrollTop: el.scrollTop,
+          anchorInFrozenCols: drag.anchorCol < frozenCols,
+          anchorInFrozenRows: drag.anchorRow < frozenRows,
+        }));
       }
-      if (col === -1) col = colCount - 1;
-    }
+      const scrollX = localX < frozenW ? localX : localX + el.scrollLeft;
+      const scrollY = localY < frozenH ? localY : localY + el.scrollTop;
 
-    let row: number;
-    if (noHiddenRows) {
-      row = findIndexByOffset(scrollY, rowCount, getRowOffset);
-    } else {
-      let accY = 0;
-      row = -1;
-      for (let r = 0; r < rowCount; r++) {
-        if (isRowHidden(r)) continue;
-        accY += getRowHeight(r);
-        if (scrollY < accY) { row = r; break; }
+      let col: number;
+      if (noHiddenCols) {
+        col = findIndexByOffset(scrollX, colCount, getColOffset);
+      } else {
+        let accX = 0;
+        col = -1;
+        for (let c = 0; c < colCount; c++) {
+          if (isColHidden(c)) continue;
+          accX += getColWidth(c);
+          if (scrollX < accX) {
+            col = c;
+            break;
+          }
+        }
+        if (col === -1) col = colCount - 1;
       }
-      if (row === -1) row = rowCount - 1;
-    }
 
-    return { col, row };
-  }, [colCount, rowCount, getColWidth, getRowHeight, getColOffset, getRowOffset, noHiddenCols, noHiddenRows, zoomFactor, frozenCols, frozenRows, isColHidden, isRowHidden]);
+      let row: number;
+      if (noHiddenRows) {
+        row = findIndexByOffset(scrollY, rowCount, getRowOffset);
+      } else {
+        let accY = 0;
+        row = -1;
+        for (let r = 0; r < rowCount; r++) {
+          if (isRowHidden(r)) continue;
+          accY += getRowHeight(r);
+          if (scrollY < accY) {
+            row = r;
+            break;
+          }
+        }
+        if (row === -1) row = rowCount - 1;
+      }
+
+      return { col, row };
+    },
+    [
+      colCount,
+      rowCount,
+      getColWidth,
+      getRowHeight,
+      getColOffset,
+      getRowOffset,
+      noHiddenCols,
+      noHiddenRows,
+      zoomFactor,
+      frozenCols,
+      frozenRows,
+      isColHidden,
+      isRowHidden,
+    ],
+  );
 
   // Edge auto-scroll for drags (selection, fill handle, formula references, header ranges)
   const frozenSizeRef = useRef({ width: 0, height: 0 });
   const getFrozenSize = useCallback(() => frozenSizeRef.current, []);
   const dragAutoScroll = useDragAutoScroll({ scrollContainerRef, zoomFactor, getFrozenSize });
 
-  interface FillSourceRange { startCol: number; endCol: number; startRow: number; endRow: number }
+  interface FillSourceRange {
+    startCol: number;
+    endCol: number;
+    startRow: number;
+    endRow: number;
+  }
 
   // Fill values (+ formulas, + styles) from a source range outward in one of 4 directions.
   const applyFill = useCallback(
-    (source: FillSourceRange, target: { col: number; row: number }, direction: 'down' | 'up' | 'right' | 'left') => {
+    (
+      source: FillSourceRange,
+      target: { col: number; row: number },
+      direction: 'down' | 'up' | 'right' | 'left',
+    ) => {
       const { startCol, endCol, startRow, endRow } = source;
       const entries: Array<{ col: number; row: number; value: string }> = [];
       const styleEntries: Array<{ col: number; row: number; style: CellStyle }> = [];
@@ -1813,7 +2155,9 @@ export function Grid() {
           const ordered = forward ? sourceValues : [...sourceValues].reverse();
           const orderedStyles = forward ? sourceStyles : [...sourceStyles].reverse();
           const hasFormula = sourceValues.some((v) => v.startsWith('='));
-          const generated = hasFormula ? null : generateFillValues(detectFillPattern(ordered), fillCount);
+          const generated = hasFormula
+            ? null
+            : generateFillValues(detectFillPattern(ordered), fillCount);
           for (let i = 0; i < fillCount; i++) {
             const targetRow = forward ? endRow + 1 + i : startRow - 1 - i;
             const srcIdx = i % sourceLen;
@@ -1821,7 +2165,9 @@ export function Grid() {
             if (hasFormula) {
               const srcValue = ordered[srcIdx];
               const srcRow = forward ? startRow + srcIdx : endRow - srcIdx;
-              value = srcValue.startsWith('=') ? '=' + shiftFormula(srcValue.slice(1), 0, targetRow - srcRow) : srcValue;
+              value = srcValue.startsWith('=')
+                ? '=' + shiftFormula(srcValue.slice(1), 0, targetRow - srcRow)
+                : srcValue;
             } else {
               value = generated![i];
             }
@@ -1845,7 +2191,9 @@ export function Grid() {
           const ordered = forward ? sourceValues : [...sourceValues].reverse();
           const orderedStyles = forward ? sourceStyles : [...sourceStyles].reverse();
           const hasFormula = sourceValues.some((v) => v.startsWith('='));
-          const generated = hasFormula ? null : generateFillValues(detectFillPattern(ordered), fillCount);
+          const generated = hasFormula
+            ? null
+            : generateFillValues(detectFillPattern(ordered), fillCount);
           for (let i = 0; i < fillCount; i++) {
             const targetCol = forward ? endCol + 1 + i : startCol - 1 - i;
             const srcIdx = i % sourceLen;
@@ -1853,7 +2201,9 @@ export function Grid() {
             if (hasFormula) {
               const srcValue = ordered[srcIdx];
               const srcCol = forward ? startCol + srcIdx : endCol - srcIdx;
-              value = srcValue.startsWith('=') ? '=' + shiftFormula(srcValue.slice(1), targetCol - srcCol, 0) : srcValue;
+              value = srcValue.startsWith('=')
+                ? '=' + shiftFormula(srcValue.slice(1), targetCol - srcCol, 0)
+                : srcValue;
             } else {
               value = generated![i];
             }
@@ -1902,19 +2252,30 @@ export function Grid() {
         return next;
       });
 
-    const srcStartCol = selectionRange ? Math.min(selectionRange.start.col, selectionRange.end.col) : activeCell.col;
-    const srcStartRow = selectionRange ? Math.min(selectionRange.start.row, selectionRange.end.row) : activeCell.row;
+    const srcStartCol = selectionRange
+      ? Math.min(selectionRange.start.col, selectionRange.end.col)
+      : activeCell.col;
+    const srcStartRow = selectionRange
+      ? Math.min(selectionRange.start.row, selectionRange.end.row)
+      : activeCell.row;
 
     const updateFillTarget = () => {
       const point = fillPointRef.current;
       if (!point) return;
-      const pos = getCellFromPoint(point.x, point.y, { anchorCol: srcStartCol, anchorRow: srcStartRow });
+      const pos = getCellFromPoint(point.x, point.y, {
+        anchorCol: srcStartCol,
+        anchorRow: srcStartRow,
+      });
       if (!pos) return;
 
       const startCol = srcStartCol;
-      const endCol = selectionRange ? Math.max(selectionRange.start.col, selectionRange.end.col) : activeCell.col;
+      const endCol = selectionRange
+        ? Math.max(selectionRange.start.col, selectionRange.end.col)
+        : activeCell.col;
       const startRow = srcStartRow;
-      const endRow = selectionRange ? Math.max(selectionRange.start.row, selectionRange.end.row) : activeCell.row;
+      const endRow = selectionRange
+        ? Math.max(selectionRange.start.row, selectionRange.end.row)
+        : activeCell.row;
 
       // Allow fill down/up/right/left from the source range
       if (pos.row > endRow && pos.col >= startCol && pos.col <= endCol) {
@@ -1945,10 +2306,18 @@ export function Grid() {
       dragAutoScroll.stop();
       fillPointRef.current = null;
       if (fillDragTarget) {
-        const startCol = selectionRange ? Math.min(selectionRange.start.col, selectionRange.end.col) : activeCell.col;
-        const endCol = selectionRange ? Math.max(selectionRange.start.col, selectionRange.end.col) : activeCell.col;
-        const startRow = selectionRange ? Math.min(selectionRange.start.row, selectionRange.end.row) : activeCell.row;
-        const endRow = selectionRange ? Math.max(selectionRange.start.row, selectionRange.end.row) : activeCell.row;
+        const startCol = selectionRange
+          ? Math.min(selectionRange.start.col, selectionRange.end.col)
+          : activeCell.col;
+        const endCol = selectionRange
+          ? Math.max(selectionRange.start.col, selectionRange.end.col)
+          : activeCell.col;
+        const startRow = selectionRange
+          ? Math.min(selectionRange.start.row, selectionRange.end.row)
+          : activeCell.row;
+        const endRow = selectionRange
+          ? Math.max(selectionRange.start.row, selectionRange.end.row)
+          : activeCell.row;
         const source: FillSourceRange = { startCol, endCol, startRow, endRow };
 
         if (fillDragTarget.row > endRow) applyFill(source, fillDragTarget, 'down');
@@ -1967,14 +2336,32 @@ export function Grid() {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isFillDragging, fillDragTarget, activeCell, selectionRange, getCellFromPoint, applyFill, dragAutoScroll, frozenCols, frozenRows]);
+  }, [
+    isFillDragging,
+    fillDragTarget,
+    activeCell,
+    selectionRange,
+    getCellFromPoint,
+    applyFill,
+    dragAutoScroll,
+    frozenCols,
+    frozenRows,
+  ]);
 
   // Fill-handle double-click: fill down to match the extent of the adjacent column's data
   const handleFillHandleDoubleClick = useCallback(() => {
-    const startCol = selectionRange ? Math.min(selectionRange.start.col, selectionRange.end.col) : activeCell.col;
-    const endCol = selectionRange ? Math.max(selectionRange.start.col, selectionRange.end.col) : activeCell.col;
-    const startRow = selectionRange ? Math.min(selectionRange.start.row, selectionRange.end.row) : activeCell.row;
-    const endRow = selectionRange ? Math.max(selectionRange.start.row, selectionRange.end.row) : activeCell.row;
+    const startCol = selectionRange
+      ? Math.min(selectionRange.start.col, selectionRange.end.col)
+      : activeCell.col;
+    const endCol = selectionRange
+      ? Math.max(selectionRange.start.col, selectionRange.end.col)
+      : activeCell.col;
+    const startRow = selectionRange
+      ? Math.min(selectionRange.start.row, selectionRange.end.row)
+      : activeCell.row;
+    const endRow = selectionRange
+      ? Math.max(selectionRange.start.row, selectionRange.end.row)
+      : activeCell.row;
 
     const adjacentCol = startCol > 0 ? startCol - 1 : endCol + 1;
     if (adjacentCol < 0 || adjacentCol >= colCount) return;
@@ -1992,13 +2379,21 @@ export function Grid() {
 
   // Compute fill handle position (bottom-right corner of the selection/active cell)
   const fillHandleInfo = useMemo(() => {
-    const endCol = selectionRange ? Math.max(selectionRange.start.col, selectionRange.end.col) : activeCell.col;
-    const endRow = selectionRange ? Math.max(selectionRange.start.row, selectionRange.end.row) : activeCell.row;
+    const endCol = selectionRange
+      ? Math.max(selectionRange.start.col, selectionRange.end.col)
+      : activeCell.col;
+    const endRow = selectionRange
+      ? Math.max(selectionRange.start.row, selectionRange.end.row)
+      : activeCell.row;
 
     // Check if active cell (or any cell in selection) has value
     let hasValue = false;
-    const sc = selectionRange ? Math.min(selectionRange.start.col, selectionRange.end.col) : activeCell.col;
-    const sr = selectionRange ? Math.min(selectionRange.start.row, selectionRange.end.row) : activeCell.row;
+    const sc = selectionRange
+      ? Math.min(selectionRange.start.col, selectionRange.end.col)
+      : activeCell.col;
+    const sr = selectionRange
+      ? Math.min(selectionRange.start.row, selectionRange.end.row)
+      : activeCell.row;
     for (let r = sr; r <= endRow && !hasValue; r++) {
       for (let c = sc; c <= endCol && !hasValue; c++) {
         const cell = getCellData(c, r);
@@ -2015,16 +2410,24 @@ export function Grid() {
     for (let r = 0; r <= endRow; r++) top += visibleRowHeight(r);
 
     return { left: left - 3, top: top - 3, endCol, endRow };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCell, selectionRange, getCellData, visibleColWidth, visibleRowHeight, version]);
 
   // Compute fill preview range for highlight (any of the 4 directions)
   const fillPreviewRange = useMemo(() => {
     if (!isFillDragging || !fillDragTarget) return null;
-    const startCol = selectionRange ? Math.min(selectionRange.start.col, selectionRange.end.col) : activeCell.col;
-    const endCol = selectionRange ? Math.max(selectionRange.start.col, selectionRange.end.col) : activeCell.col;
-    const startRow = selectionRange ? Math.min(selectionRange.start.row, selectionRange.end.row) : activeCell.row;
-    const endRow = selectionRange ? Math.max(selectionRange.start.row, selectionRange.end.row) : activeCell.row;
+    const startCol = selectionRange
+      ? Math.min(selectionRange.start.col, selectionRange.end.col)
+      : activeCell.col;
+    const endCol = selectionRange
+      ? Math.max(selectionRange.start.col, selectionRange.end.col)
+      : activeCell.col;
+    const startRow = selectionRange
+      ? Math.min(selectionRange.start.row, selectionRange.end.row)
+      : activeCell.row;
+    const endRow = selectionRange
+      ? Math.max(selectionRange.start.row, selectionRange.end.row)
+      : activeCell.row;
 
     if (fillDragTarget.row > endRow) {
       return { startCol, startRow: endRow + 1, endCol, endRow: fillDragTarget.row };
@@ -2046,14 +2449,17 @@ export function Grid() {
   }
 
   // --- Sheet operations ---
-  const handleSheetSelect = useCallback((sheetId: string) => {
-    if (isEditing) {
-      setCellValue(activeCell.col, activeCell.row, editValue);
-      setIsEditing(false);
-      setEditValue('');
-    }
-    setActiveSheet(sheetId);
-  }, [isEditing, editValue, activeCell, setCellValue, setActiveSheet]);
+  const handleSheetSelect = useCallback(
+    (sheetId: string) => {
+      if (isEditing) {
+        setCellValue(activeCell.col, activeCell.row, editValue);
+        setIsEditing(false);
+        setEditValue('');
+      }
+      setActiveSheet(sheetId);
+    },
+    [isEditing, editValue, activeCell, setCellValue, setActiveSheet],
+  );
 
   // --- Developer tools ---
   const closeDevTools = useCallback(() => {
@@ -2063,56 +2469,87 @@ export function Grid() {
     recalcProfiler.setEnabled(false);
   }, []);
   const heatmapRectFor = useCallback(
-    (col: number, row: number) => getRangePixelRect(col, col, row, row, visibleColWidth, visibleRowHeight),
+    (col: number, row: number) =>
+      getRangePixelRect(col, col, row, row, visibleColWidth, visibleRowHeight),
     [visibleColWidth, visibleRowHeight],
   );
-  const devToolsHost = useMemo<DevToolsHost>(() => ({
-    version,
-    sheets,
-    activeSheetId,
-    activeCell,
-    isEditing,
-    editValue,
-    getCell: (sheetId, key) => sheets.find((sh) => sh.id === sheetId)?.cells.get(key),
-    selectRange: (r) => {
-      selectRange({ start: { col: r.startCol, row: r.startRow }, end: { col: r.endCol, row: r.endRow } });
-      focusGrid();
-    },
-    goToCell: (sheetId, col, row) => {
-      if (sheetId !== activeSheetId) handleSheetSelect(sheetId);
-      // After a sheet switch has rendered, select the cell there
-      requestAnimationFrame(() => {
-        setActiveCell({ col, row });
+  const devToolsHost = useMemo<DevToolsHost>(
+    () => ({
+      version,
+      sheets,
+      activeSheetId,
+      activeCell,
+      isEditing,
+      editValue,
+      getCell: (sheetId, key) => sheets.find((sh) => sh.id === sheetId)?.cells.get(key),
+      selectRange: (r) => {
+        selectRange({
+          start: { col: r.startCol, row: r.startRow },
+          end: { col: r.endCol, row: r.endRow },
+        });
         focusGrid();
-      });
+      },
+      goToCell: (sheetId, col, row) => {
+        if (sheetId !== activeSheetId) handleSheetSelect(sheetId);
+        // After a sheet switch has rendered, select the cell there
+        requestAnimationFrame(() => {
+          setActiveCell({ col, row });
+          focusGrid();
+        });
+      },
+      getDependencyInfo,
+      historyTimeline,
+      jumpToHistory,
+      getHistorySnapshot,
+      heatmap: recalcHeatmap,
+      setHeatmap: setRecalcHeatmap,
+      autosave: { status: saveStatus, lastSavedAt, serialize: serializeForAutosave },
+    }),
+    [
+      version,
+      sheets,
+      activeSheetId,
+      activeCell,
+      isEditing,
+      editValue,
+      selectRange,
+      focusGrid,
+      handleSheetSelect,
+      setActiveCell,
+      getDependencyInfo,
+      historyTimeline,
+      jumpToHistory,
+      getHistorySnapshot,
+      recalcHeatmap,
+      saveStatus,
+      lastSavedAt,
+      serializeForAutosave,
+    ],
+  );
+
+  const handleDeleteSheet = useCallback(
+    (sheetId: string) => {
+      deleteSheet(sheetId);
     },
-    getDependencyInfo,
-    historyTimeline,
-    jumpToHistory,
-    getHistorySnapshot,
-    heatmap: recalcHeatmap,
-    setHeatmap: setRecalcHeatmap,
-    autosave: { status: saveStatus, lastSavedAt, serialize: serializeForAutosave },
-  }), [
-    version, sheets, activeSheetId, activeCell, isEditing, editValue, selectRange, focusGrid, handleSheetSelect,
-    setActiveCell, getDependencyInfo, historyTimeline, jumpToHistory, getHistorySnapshot, recalcHeatmap,
-    saveStatus, lastSavedAt, serializeForAutosave,
-  ]);
+    [deleteSheet],
+  );
 
-  const handleDeleteSheet = useCallback((sheetId: string) => {
-    deleteSheet(sheetId);
-  }, [deleteSheet]);
-
-  const handleRenameSheet = useCallback((sheetId: string, newName: string) => {
-    renameSheet(sheetId, newName);
-  }, [renameSheet]);
+  const handleRenameSheet = useCallback(
+    (sheetId: string, newName: string) => {
+      renameSheet(sheetId, newName);
+    },
+    [renameSheet],
+  );
 
   // Duplicating a sheet also needs to copy its column widths/row heights (per-sheet sizes
   // otherwise default to nothing for the new sheet id).
-  const handleDuplicateSheet = useCallback((sheetId: string) => {
-    const newId = duplicateSheet(sheetId);
-    if (newId) copySheetSizes(sheetId, newId);
-  }, [duplicateSheet, copySheetSizes]);
+  const handleDuplicateSheet = useCallback(
+    (sheetId: string) => {
+      const newId = duplicateSheet(sheetId);
+      if (newId) copySheetSizes(sheetId, newId);
+    },
+    [duplicateSheet, copySheetSizes],
+  );
 
   // Ctrl/Cmd+\: clear all formatting from the selection (values/formulas are untouched).
   // Also exposed via SpreadsheetActions for the 書式 menu (MenuBar).
@@ -2195,7 +2632,10 @@ export function Grid() {
       setCellComment,
       // Data validation
       setValidationRule,
-      openValidationDialog: () => { setValidationPanelNewOnOpen(false); setSidePanel('validation'); },
+      openValidationDialog: () => {
+        setValidationPanelNewOnOpen(false);
+        setSidePanel('validation');
+      },
       insertCheckbox: handleInsertCheckbox,
       insertDropdown: handleInsertDropdown,
       // Charts
@@ -2271,7 +2711,7 @@ export function Grid() {
       // ファイル: 新規作成
       newWorkbook: handleNewWorkbook,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `version` is needed: charts/sparklines/rowGroups are read from refs
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- `version` is needed: charts/sparklines/rowGroups are read from refs
     [
       version,
       handleImportFile,
@@ -2456,14 +2896,41 @@ export function Grid() {
   // Measurement inputs for the auto-scroll effect, read through a ref so the effect only fires when the
   // active cell moves (or editing ends) — not on every data/size change, which would yank the viewport
   // back to the active cell while the user is scrolling (e.g. when rows auto-expand near the bottom).
-  const autoScrollMeasureRef = useRef({ getColWidth, getRowHeight, getColOffset, getRowOffset, visibleColWidth, visibleRowHeight, noHiddenCols, noHiddenRows });
-  autoScrollMeasureRef.current = { getColWidth, getRowHeight, getColOffset, getRowOffset, visibleColWidth, visibleRowHeight, noHiddenCols, noHiddenRows };
+  const autoScrollMeasureRef = useRef({
+    getColWidth,
+    getRowHeight,
+    getColOffset,
+    getRowOffset,
+    visibleColWidth,
+    visibleRowHeight,
+    noHiddenCols,
+    noHiddenRows,
+  });
+  autoScrollMeasureRef.current = {
+    getColWidth,
+    getRowHeight,
+    getColOffset,
+    getRowOffset,
+    visibleColWidth,
+    visibleRowHeight,
+    noHiddenCols,
+    noHiddenRows,
+  };
 
   // useEffect required: auto-scrolls viewport to keep active cell visible
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el || isEditing) return;
-    const { getColWidth, getRowHeight, getColOffset, getRowOffset, visibleColWidth, visibleRowHeight, noHiddenCols, noHiddenRows } = autoScrollMeasureRef.current;
+    const {
+      getColWidth,
+      getRowHeight,
+      getColOffset,
+      getRowOffset,
+      visibleColWidth,
+      visibleRowHeight,
+      noHiddenCols,
+      noHiddenRows,
+    } = autoScrollMeasureRef.current;
 
     // Calculate cumulative position using dynamic sizes (binary search when nothing is hidden)
     let cellLeft: number;
@@ -2553,7 +3020,22 @@ export function Grid() {
       moveActiveCell(dCol, dRow, false, currentColCount, currentRowCount);
       focusGrid();
     },
-    [isEditing, editValue, activeCell, setCellValue, moveActiveCell, colCount, rowCount, setColCount, setRowCount, autoResizeRows, focusGrid, getCellData, validationCtx, showToast],
+    [
+      isEditing,
+      editValue,
+      activeCell,
+      setCellValue,
+      moveActiveCell,
+      colCount,
+      rowCount,
+      setColCount,
+      setRowCount,
+      autoResizeRows,
+      focusGrid,
+      getCellData,
+      validationCtx,
+      showToast,
+    ],
   );
 
   // Apply the current edit value to every cell in the selection (Ctrl/Cmd+Enter).
@@ -2563,7 +3045,11 @@ export function Grid() {
     const positions = getSelectedPositions();
     const entries = positions.map((pos) => {
       if (editValue.startsWith('=')) {
-        const shifted = shiftFormula(editValue.slice(1), pos.col - activeCell.col, pos.row - activeCell.row);
+        const shifted = shiftFormula(
+          editValue.slice(1),
+          pos.col - activeCell.col,
+          pos.row - activeCell.row,
+        );
         return { col: pos.col, row: pos.row, value: '=' + shifted };
       }
       return { col: pos.col, row: pos.row, value: editValue };
@@ -2574,7 +3060,12 @@ export function Grid() {
     for (const entry of entries) {
       const rule = getCellData(entry.col, entry.row)?.validation;
       if (!rule?.rejectInvalid) continue;
-      const result = validateInput(rule, entry.value, { col: entry.col, row: entry.row }, validationCtx);
+      const result = validateInput(
+        rule,
+        entry.value,
+        { col: entry.col, row: entry.row },
+        validationCtx,
+      );
       if (!result.valid) {
         showToast(result.message ?? '入力値が無効です', 'error');
         return;
@@ -2587,7 +3078,18 @@ export function Grid() {
     lastCellRefInsertRef.current = null;
     requestAnimationFrame(() => autoResizeRows(new Set(positions.map((p) => p.row))));
     focusGrid();
-  }, [isEditing, editValue, activeCell, getSelectedPositions, batchSetCellValues, autoResizeRows, focusGrid, getCellData, validationCtx, showToast]);
+  }, [
+    isEditing,
+    editValue,
+    activeCell,
+    getSelectedPositions,
+    batchSetCellValues,
+    autoResizeRows,
+    focusGrid,
+    getCellData,
+    validationCtx,
+    showToast,
+  ]);
 
   // Insert a newline at the caret position in the cell editor (Alt+Enter)
   const insertNewlineInEdit = useCallback(() => {
@@ -2673,9 +3175,15 @@ export function Grid() {
   const handleAltArrowDownOpen = useCallback((): boolean => {
     const rule = getCellData(activeCell.col, activeCell.row)?.validation;
     if (!rule || rule.type !== 'list' || !(rule.showDropdown ?? true)) return false;
-    const el = document.querySelector(`[data-col="${activeCell.col}"][data-row="${activeCell.row}"]`);
+    const el = document.querySelector(
+      `[data-col="${activeCell.col}"][data-row="${activeCell.row}"]`,
+    );
     if (!el) return false;
-    setValidationDropdown({ col: activeCell.col, row: activeCell.row, rect: el.getBoundingClientRect() });
+    setValidationDropdown({
+      col: activeCell.col,
+      row: activeCell.row,
+      rect: el.getBoundingClientRect(),
+    });
     return true;
   }, [activeCell, getCellData]);
 
@@ -2722,7 +3230,8 @@ export function Grid() {
         }
 
         const ref = cellKey(targetCol, targetRow);
-        const newValue = currentValue.substring(0, insertStart) + ref + currentValue.substring(insertEnd);
+        const newValue =
+          currentValue.substring(0, insertStart) + ref + currentValue.substring(insertEnd);
         setEditValue(newValue);
 
         const newCursorPos = insertStart + ref.length;
@@ -2767,7 +3276,10 @@ export function Grid() {
       const anchorPos = formulaDragAnchorRef.current;
       if (!point || !anchorPos || !isFormulaDragRef.current) return;
       {
-        const pos = getCellFromPoint(point.x, point.y, { anchorCol: anchorPos.col, anchorRow: anchorPos.row });
+        const pos = getCellFromPoint(point.x, point.y, {
+          anchorCol: anchorPos.col,
+          anchorRow: anchorPos.row,
+        });
         if (!pos) return;
         const lastPos = lastFormulaDragPosRef.current;
         if (lastPos && lastPos.col === pos.col && lastPos.row === pos.row) return;
@@ -2788,7 +3300,8 @@ export function Grid() {
           ref = `${cellKey(startCol, startRow)}:${cellKey(endCol, endRow)}`;
         }
 
-        const newValue = currentValue.substring(0, prev.start) + ref + currentValue.substring(prev.end);
+        const newValue =
+          currentValue.substring(0, prev.start) + ref + currentValue.substring(prev.end);
         setEditValue(newValue);
         const newCursorPos = prev.start + ref.length;
         lastCellRefInsertRef.current = { start: prev.start, end: newCursorPos };
@@ -2836,7 +3349,10 @@ export function Grid() {
       const point = dragPointRef.current;
       if (!point || !isDragSelecting.current) return;
       const anchor = activeCellRef.current;
-      const pos = getCellFromPoint(point.x, point.y, { anchorCol: anchor.col, anchorRow: anchor.row });
+      const pos = getCellFromPoint(point.x, point.y, {
+        anchorCol: anchor.col,
+        anchorRow: anchor.row,
+      });
       if (!pos) return;
       const last = lastDragCellRef.current;
       if (last && last.col === pos.col && last.row === pos.row) return;
@@ -2877,7 +3393,16 @@ export function Grid() {
         dragRafRef.current = 0;
       }
     };
-  }, [getCellFromPoint, extendSelection, formatPainter, getSelectedPositions, setCellStyle, dragAutoScroll, frozenCols, frozenRows]);
+  }, [
+    getCellFromPoint,
+    extendSelection,
+    formatPainter,
+    getSelectedPositions,
+    setCellStyle,
+    dragAutoScroll,
+    frozenCols,
+    frozenRows,
+  ]);
 
   // Handle cell double click
   const handleCellDoubleClick = useCallback(() => {
@@ -2893,7 +3418,12 @@ export function Grid() {
   // Step `from` by `delta` (nonzero) along one axis, repeatedly, until landing on a visible
   // index; returns null (don't move) if no visible index is found before running out of bounds.
   const nextVisibleIndex = useCallback(
-    (from: number, delta: number, count: number, isVisible: (i: number) => boolean): number | null => {
+    (
+      from: number,
+      delta: number,
+      count: number,
+      isVisible: (i: number) => boolean,
+    ): number | null => {
       let idx = clamp(from + delta, 0, count - 1);
       if (idx === from) return isVisible(idx) ? idx : null;
       while (!isVisible(idx)) {
@@ -2927,13 +3457,17 @@ export function Grid() {
 
       let targetCol = clamp(from.col, 0, currentColCount - 1);
       if (deltaCol !== 0) {
-        const next = nextVisibleIndex(from.col, deltaCol, currentColCount, (c) => visibleColIndexSet.has(c));
+        const next = nextVisibleIndex(from.col, deltaCol, currentColCount, (c) =>
+          visibleColIndexSet.has(c),
+        );
         if (next === null) return;
         targetCol = next;
       }
       let targetRow = clamp(from.row, 0, currentRowCount - 1);
       if (deltaRow !== 0) {
-        const next = nextVisibleIndex(from.row, deltaRow, currentRowCount, (r) => visibleRowIndexSet.has(r));
+        const next = nextVisibleIndex(from.row, deltaRow, currentRowCount, (r) =>
+          visibleRowIndexSet.has(r),
+        );
         if (next === null) return;
         targetRow = next;
       }
@@ -2946,11 +3480,18 @@ export function Grid() {
         const fromInfo = getMergeInfo(fromAnchor.col, fromAnchor.row);
         if (fromInfo && (fromInfo.colSpan > 1 || fromInfo.rowSpan > 1)) {
           const inFromMerge = (c: number, r: number) =>
-            c >= fromAnchor.col && c < fromAnchor.col + fromInfo.colSpan && r >= fromAnchor.row && r < fromAnchor.row + fromInfo.rowSpan;
-          if (deltaCol > 0 && inFromMerge(targetCol, targetRow)) targetCol = Math.min(fromAnchor.col + fromInfo.colSpan, currentColCount - 1);
-          if (deltaRow > 0 && inFromMerge(targetCol, targetRow)) targetRow = Math.min(fromAnchor.row + fromInfo.rowSpan, currentRowCount - 1);
-          if (deltaCol < 0 && inFromMerge(targetCol, targetRow)) targetCol = Math.max(fromAnchor.col - 1, 0);
-          if (deltaRow < 0 && inFromMerge(targetCol, targetRow)) targetRow = Math.max(fromAnchor.row - 1, 0);
+            c >= fromAnchor.col &&
+            c < fromAnchor.col + fromInfo.colSpan &&
+            r >= fromAnchor.row &&
+            r < fromAnchor.row + fromInfo.rowSpan;
+          if (deltaCol > 0 && inFromMerge(targetCol, targetRow))
+            targetCol = Math.min(fromAnchor.col + fromInfo.colSpan, currentColCount - 1);
+          if (deltaRow > 0 && inFromMerge(targetCol, targetRow))
+            targetRow = Math.min(fromAnchor.row + fromInfo.rowSpan, currentRowCount - 1);
+          if (deltaCol < 0 && inFromMerge(targetCol, targetRow))
+            targetCol = Math.max(fromAnchor.col - 1, 0);
+          if (deltaRow < 0 && inFromMerge(targetCol, targetRow))
+            targetRow = Math.max(fromAnchor.row - 1, 0);
         }
         const landed = resolveMergeAnchor(targetCol, targetRow, getMergeInfo);
         targetCol = landed.col;
@@ -2964,8 +3505,18 @@ export function Grid() {
       }
     },
     [
-      colCount, rowCount, activeCell, selectionRange, setColCount, setRowCount,
-      visibleColIndexSet, visibleRowIndexSet, nextVisibleIndex, extendSelectionTo, setActiveCell, getMergeInfo,
+      colCount,
+      rowCount,
+      activeCell,
+      selectionRange,
+      setColCount,
+      setRowCount,
+      visibleColIndexSet,
+      visibleRowIndexSet,
+      nextVisibleIndex,
+      extendSelectionTo,
+      setActiveCell,
+      getMergeInfo,
     ],
   );
 
@@ -2975,7 +3526,8 @@ export function Grid() {
   // nearest visible cell along the way.
   const handleJump = useCallback(
     (dCol: number, dRow: number, extend: boolean) => {
-      const isVisible = (c: number, r: number) => visibleColIndexSet.has(c) && visibleRowIndexSet.has(r);
+      const isVisible = (c: number, r: number) =>
+        visibleColIndexSet.has(c) && visibleRowIndexSet.has(r);
       // Spilled cells have an empty rawValue but a displayed value, so they count as data too
       const hasValue = (c: number, r: number) => {
         if (!isVisible(c, r)) return false;
@@ -2993,14 +3545,26 @@ export function Grid() {
         setActiveCell(resolveMergeAnchor(target.col, target.row, getMergeInfo));
       }
     },
-    [getCellData, colCount, rowCount, selectionRange, activeCell, extendSelectionTo, setActiveCell, visibleColIndexSet, visibleRowIndexSet, getMergeInfo],
+    [
+      getCellData,
+      colCount,
+      rowCount,
+      selectionRange,
+      activeCell,
+      extendSelectionTo,
+      setActiveCell,
+      visibleColIndexSet,
+      visibleRowIndexSet,
+      getMergeInfo,
+    ],
   );
 
   // Home: move to column 0 of the current row
   const handleHome = useCallback(
     (extend: boolean) => {
       const target = { col: 0, row: activeCell.row };
-      if (extend) extendSelectionTo(target); else setActiveCell(target);
+      if (extend) extendSelectionTo(target);
+      else setActiveCell(target);
     },
     [activeCell, extendSelectionTo, setActiveCell],
   );
@@ -3028,9 +3592,7 @@ export function Grid() {
   const handlePage = useCallback(
     (dir: 1 | -1, extend: boolean) => {
       const el = scrollContainerRef.current;
-      const page = el
-        ? Math.max(1, Math.floor(el.clientHeight / defaultRowHeight) - 1)
-        : 1;
+      const page = el ? Math.max(1, Math.floor(el.clientHeight / defaultRowHeight) - 1) : 1;
       handleMove(0, dir * page, extend);
     },
     [handleMove, defaultRowHeight],
@@ -3038,21 +3600,38 @@ export function Grid() {
 
   // Ctrl/Cmd+A: select the whole sheet, keeping the active cell in place
   const handleSelectAll = useCallback(() => {
-    selectRange({ start: { col: 0, row: 0 }, end: { col: colCount - 1, row: rowCount - 1 } }, activeCell);
+    selectRange(
+      { start: { col: 0, row: 0 }, end: { col: colCount - 1, row: rowCount - 1 } },
+      activeCell,
+    );
   }, [selectRange, colCount, rowCount, activeCell]);
 
   // Shift+Space: select the current row(s) in full
   const handleSelectRow = useCallback(() => {
-    const startRow = selectionRange ? Math.min(selectionRange.start.row, selectionRange.end.row) : activeCell.row;
-    const endRow = selectionRange ? Math.max(selectionRange.start.row, selectionRange.end.row) : activeCell.row;
-    selectRange({ start: { col: 0, row: startRow }, end: { col: colCount - 1, row: endRow } }, activeCell);
+    const startRow = selectionRange
+      ? Math.min(selectionRange.start.row, selectionRange.end.row)
+      : activeCell.row;
+    const endRow = selectionRange
+      ? Math.max(selectionRange.start.row, selectionRange.end.row)
+      : activeCell.row;
+    selectRange(
+      { start: { col: 0, row: startRow }, end: { col: colCount - 1, row: endRow } },
+      activeCell,
+    );
   }, [selectionRange, activeCell, colCount, selectRange]);
 
   // Ctrl/Cmd+Space: select the current column(s) in full
   const handleSelectColumn = useCallback(() => {
-    const startCol = selectionRange ? Math.min(selectionRange.start.col, selectionRange.end.col) : activeCell.col;
-    const endCol = selectionRange ? Math.max(selectionRange.start.col, selectionRange.end.col) : activeCell.col;
-    selectRange({ start: { col: startCol, row: 0 }, end: { col: endCol, row: rowCount - 1 } }, activeCell);
+    const startCol = selectionRange
+      ? Math.min(selectionRange.start.col, selectionRange.end.col)
+      : activeCell.col;
+    const endCol = selectionRange
+      ? Math.max(selectionRange.start.col, selectionRange.end.col)
+      : activeCell.col;
+    selectRange(
+      { start: { col: startCol, row: 0 }, end: { col: endCol, row: rowCount - 1 } },
+      activeCell,
+    );
   }, [selectionRange, activeCell, rowCount, selectRange]);
 
   // Ctrl/Cmd+D: copy the top row of the selection down to every row below it
@@ -3063,7 +3642,11 @@ export function Grid() {
     const startRow = Math.min(selectionRange.start.row, selectionRange.end.row);
     const endRow = Math.max(selectionRange.start.row, selectionRange.end.row);
     if (endRow <= startRow) return;
-    applyFill({ startCol, endCol, startRow, endRow: startRow }, { col: endCol, row: endRow }, 'down');
+    applyFill(
+      { startCol, endCol, startRow, endRow: startRow },
+      { col: endCol, row: endRow },
+      'down',
+    );
   }, [selectionRange, applyFill]);
 
   // Ctrl/Cmd+R: copy the leftmost column of the selection right to every column after it
@@ -3074,7 +3657,11 @@ export function Grid() {
     const startRow = Math.min(selectionRange.start.row, selectionRange.end.row);
     const endRow = Math.max(selectionRange.start.row, selectionRange.end.row);
     if (endCol <= startCol) return;
-    applyFill({ startCol, endCol: startCol, startRow, endRow }, { col: endCol, row: endRow }, 'right');
+    applyFill(
+      { startCol, endCol: startCol, startRow, endRow },
+      { col: endCol, row: endRow },
+      'right',
+    );
   }, [selectionRange, applyFill]);
 
   // Ctrl/Cmd+;: insert today's date into the active cell
@@ -3121,7 +3708,10 @@ export function Grid() {
     [activeCell, getCellData, handleSetCellStyle],
   );
   const handleIncreaseDecimals = useCallback(() => handleAdjustDecimals(1), [handleAdjustDecimals]);
-  const handleDecreaseDecimals = useCallback(() => handleAdjustDecimals(-1), [handleAdjustDecimals]);
+  const handleDecreaseDecimals = useCallback(
+    () => handleAdjustDecimals(-1),
+    [handleAdjustDecimals],
+  );
 
   // Format painter: capture the active cell's style, or clear if already active
   const handleToggleFormatPainter = useCallback(() => {
@@ -3231,7 +3821,16 @@ export function Grid() {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [headerDragType, colCount, rowCount, selectRange, getCellFromPoint, dragAutoScroll, frozenCols, frozenRows]);
+  }, [
+    headerDragType,
+    colCount,
+    rowCount,
+    selectRange,
+    getCellFromPoint,
+    dragAutoScroll,
+    frozenCols,
+    frozenRows,
+  ]);
 
   // Column header resize-handle double-click: auto-fit the column width to its content
   const handleColumnAutoFit = useCallback(
@@ -3249,7 +3848,10 @@ export function Grid() {
       for (const [key, cell] of sheet.cells) {
         const pos = parseCellKey(key);
         if (pos.col !== colIndex) continue;
-        const display = formatDisplayValue(cell.displayValue ?? '', cell.style?.numberFormat ?? 'auto');
+        const display = formatDisplayValue(
+          cell.displayValue ?? '',
+          cell.style?.numberFormat ?? 'auto',
+        );
         if (!display) continue;
         // Match Cell.tsx's rendering: custom fontSize is in `pt`, the default text size is 13px
         const fontSizeStyle = cell.style?.fontSize ? `${cell.style.fontSize}pt` : '13px';
@@ -3314,17 +3916,20 @@ export function Grid() {
     onInsertTime: handleInsertTime,
     onSpace: handleSpaceToggle,
     onAltArrowDown: handleAltArrowDownOpen,
-    onToggleAbsoluteRef: useCallback((e: React.KeyboardEvent) => {
-      const input = e.target as HTMLInputElement;
-      const cursor = input.selectionStart ?? 0;
-      const result = toggleAbsoluteRef(editValue, cursor);
-      if (result) {
-        setEditValue(result.text);
-        requestAnimationFrame(() => {
-          input.setSelectionRange(result.cursorPos, result.cursorPos);
-        });
-      }
-    }, [editValue]),
+    onToggleAbsoluteRef: useCallback(
+      (e: React.KeyboardEvent) => {
+        const input = e.target as HTMLInputElement;
+        const cursor = input.selectionStart ?? 0;
+        const result = toggleAbsoluteRef(editValue, cursor);
+        if (result) {
+          setEditValue(result.text);
+          requestAnimationFrame(() => {
+            input.setSelectionRange(result.cursorPos, result.cursorPos);
+          });
+        }
+      },
+      [editValue],
+    ),
   });
 
   // Native copy/cut/paste: reading/writing e.clipboardData directly (no permission prompt,
@@ -3408,10 +4013,13 @@ export function Grid() {
     if (!isEditing) clearCellSuggestions();
   }, [isEditing, clearCellSuggestions]);
 
-  const handleCellEditorChange = useCallback((value: string) => {
-    handleEditChange(value);
-    updateCellSuggestions(value);
-  }, [handleEditChange, updateCellSuggestions]);
+  const handleCellEditorChange = useCallback(
+    (value: string) => {
+      handleEditChange(value);
+      updateCellSuggestions(value);
+    },
+    [handleEditChange, updateCellSuggestions],
+  );
 
   // IME composition start in navigation mode: begin editing with an empty value (mirrors
   // startDirectInput(''), named separately for clarity at the CellEditor call site).
@@ -3419,12 +4027,15 @@ export function Grid() {
     startDirectInput('');
   }, [startDirectInput]);
 
-  const handleCellSuggestionSelect = useCallback((fn: FunctionMeta) => {
-    const newValue = selectCellSuggestion(fn, editValueRef.current);
-    handleEditChange(newValue);
-    updateCellSuggestions(newValue);
-    focusGrid();
-  }, [selectCellSuggestion, handleEditChange, updateCellSuggestions, focusGrid]);
+  const handleCellSuggestionSelect = useCallback(
+    (fn: FunctionMeta) => {
+      const newValue = selectCellSuggestion(fn, editValueRef.current);
+      handleEditChange(newValue);
+      updateCellSuggestions(newValue);
+      focusGrid();
+    },
+    [selectCellSuggestion, handleEditChange, updateCellSuggestions, focusGrid],
+  );
 
   // Cell editor's keydown: IME guard first, then autocomplete navigation/selection (mirroring
   // FormulaBar's own precedence), then the normal grid keyboard handling.
@@ -3433,8 +4044,16 @@ export function Grid() {
       if (e.nativeEvent.isComposing || e.keyCode === 229) return;
 
       if (isEditing && cellSuggestions.length > 0) {
-        if (e.key === 'ArrowDown') { e.preventDefault(); moveCellSuggestion(1); return; }
-        if (e.key === 'ArrowUp') { e.preventDefault(); moveCellSuggestion(-1); return; }
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          moveCellSuggestion(1);
+          return;
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          moveCellSuggestion(-1);
+          return;
+        }
         if (e.key === 'Tab' || e.key === 'Enter') {
           const selected = getSelectedCellSuggestion();
           if (selected) {
@@ -3455,9 +4074,15 @@ export function Grid() {
       handleKeyDown(e);
     },
     [
-      isEditing, cellSuggestions, editValue,
-      moveCellSuggestion, getSelectedCellSuggestion, selectCellSuggestion,
-      handleEditChange, updateCellSuggestions, clearCellSuggestions,
+      isEditing,
+      cellSuggestions,
+      editValue,
+      moveCellSuggestion,
+      getSelectedCellSuggestion,
+      selectCellSuggestion,
+      handleEditChange,
+      updateCellSuggestions,
+      clearCellSuggestions,
       handleKeyDown,
     ],
   );
@@ -3504,7 +4129,8 @@ export function Grid() {
         if (isColHidden(c)) continue; // hidden column: contributes no width, doesn't block the scan
         if (getMergeInfo(c, row)) break;
         const neighbor = getCellData(c, row);
-        const neighborEmpty = (neighbor === undefined || neighbor.rawValue === '') && !neighbor?.spillSource;
+        const neighborEmpty =
+          (neighbor === undefined || neighbor.rawValue === '') && !neighbor?.spillSource;
         if (!neighborEmpty) break;
         sum += getColWidth(c);
       }
@@ -3537,7 +4163,15 @@ export function Grid() {
       <div
         ref={measureDivRef}
         aria-hidden="true"
-        style={{ position: 'absolute', visibility: 'hidden', height: 'auto', overflow: 'hidden', padding: 0, top: -9999, left: -9999 }}
+        style={{
+          position: 'absolute',
+          visibility: 'hidden',
+          height: 'auto',
+          overflow: 'hidden',
+          padding: 0,
+          top: -9999,
+          left: -9999,
+        }}
       />
       <div
         className="flex flex-col h-full w-full"
@@ -3566,7 +4200,16 @@ export function Grid() {
                 aria-label="検索"
                 onClick={() => openSearch()}
               >
-                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  aria-hidden
+                >
                   <circle cx="7" cy="7" r="4.5" />
                   <path d="M10.4 10.4L14 14" />
                 </svg>
@@ -3575,30 +4218,32 @@ export function Grid() {
             </div>
           </div>
 
-        {/* Toolbar */}
-        <div className="flex items-center px-3 pb-2.5 shrink-0" data-header-row>
-          <Toolbar
-            activeCellStyle={activeCellStyle}
-            onSetStyle={handleSetCellStyle}
-            canMerge={canMerge}
-            isMerged={isMerged}
-            onMerge={handleMergeCells}
-            onUnmerge={handleUnmergeCells}
-            onUndo={undo}
-            onRedo={redo}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            onFormatPainter={handleToggleFormatPainter}
-            formatPainterActive={formatPainter !== null}
-            zoom={zoom}
-            onZoomChange={handleZoomChange}
-            onIncreaseDecimals={handleIncreaseDecimals}
-            onDecreaseDecimals={handleDecreaseDecimals}
-            onSetNumberFormat={handleSetNumberFormat}
-            onClearFormatting={handleClearFormatting}
-            activeCellValue={typeof activeCellData?.computed === 'number' ? activeCellData.computed : undefined}
-          />
-        </div>
+          {/* Toolbar */}
+          <div className="flex items-center px-3 pb-2.5 shrink-0" data-header-row>
+            <Toolbar
+              activeCellStyle={activeCellStyle}
+              onSetStyle={handleSetCellStyle}
+              canMerge={canMerge}
+              isMerged={isMerged}
+              onMerge={handleMergeCells}
+              onUnmerge={handleUnmergeCells}
+              onUndo={undo}
+              onRedo={redo}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              onFormatPainter={handleToggleFormatPainter}
+              formatPainterActive={formatPainter !== null}
+              zoom={zoom}
+              onZoomChange={handleZoomChange}
+              onIncreaseDecimals={handleIncreaseDecimals}
+              onDecreaseDecimals={handleDecreaseDecimals}
+              onSetNumberFormat={handleSetNumberFormat}
+              onClearFormatting={handleClearFormatting}
+              activeCellValue={
+                typeof activeCellData?.computed === 'number' ? activeCellData.computed : undefined
+              }
+            />
+          </div>
         </header>
 
         {/* Formula Bar */}
@@ -3613,7 +4258,7 @@ export function Grid() {
           onCancelEdit={cancelEdit}
           namedRanges={namedRanges}
           onNameBoxSelect={(name) => {
-            const nr = namedRanges.find(r => r.name === name);
+            const nr = namedRanges.find((r) => r.name === name);
             if (!nr) return;
             const rangeStr = nr.range;
             if (rangeStr.includes(':')) {
@@ -3639,769 +4284,912 @@ export function Grid() {
 
         {/* Grid container + docked side panel (conditional format / data validation) */}
         <div className="flex-1 flex min-w-0 overflow-hidden">
-        <div className="flex-1 relative overflow-hidden min-w-0">
-          {/* Search Panel */}
-          <SearchPanel
-            visible={showSearch}
-            initialFocus={searchInitialFocus}
-            onClose={closeSearch}
-            sheets={sheets}
-            activeSheetId={activeSheetId}
-            onNavigateToCell={handleSearchNavigate}
-            onReplaceOne={handleSearchReplaceOne}
-            onReplaceAll={handleSearchReplaceAll}
-            hiddenRows={hiddenRows}
-            dataVersion={version}
-          />
-
-          {/* Zoom wrapper: scales the cell area + header area as a whole (CSS zoom, Chrome/Safari/Firefox 126+) */}
-          <div style={{ zoom: zoomFactor, cursor: formatPainter ? 'copy' : undefined }}>
-          {/* Corner cell (top-left fixed): click to select the whole sheet */}
-          <div
-            className="absolute top-0 left-0 bg-header-bg border-r border-b border-grid-line z-30 cursor-pointer"
-            style={{ width: dynamicRowHeaderWidth, height: dynamicColHeaderHeight }}
-            onMouseDown={handleSelectAll}
-          />
-
-          {/* Column headers (fixed top, scrolls horizontally with grid) */}
-          <div
-            className="absolute top-0 overflow-hidden z-20"
-            style={{
-              left: dynamicRowHeaderWidth,
-              right: 0,
-              height: dynamicColHeaderHeight,
-            }}
-          >
-            <div
-              ref={colHeaderRef}
-              style={{
-                width: totalWidth,
-                height: dynamicColHeaderHeight,
-                position: 'relative',
-              }}
-            >
-              <div
-                aria-hidden
-                className="header-band header-band-col"
-                style={{
-                  transform: `translateX(${cursorRects.selection.left}px)`,
-                  width: cursorRects.selection.width,
-                  height: COL_HEADER_HEIGHT,
-                }}
-              />
-              {virtualCols.map((virtualCol) => {
-                const realCol = visibleColIndices[virtualCol.index];
-                const hiddenBefore = realCol > 0 && hiddenColSet.has(realCol - 1);
-                const hiddenAfter = realCol < colCount - 1 && hiddenColSet.has(realCol + 1);
-                return (
-                  <ColumnHeader
-                    key={virtualCol.key}
-                    colIndex={realCol}
-                    left={virtualCol.start}
-                    width={virtualCol.size}
-                    onResize={handleColResize}
-                    onContextMenu={handleColContextMenu}
-                    onSelect={handleColHeaderSelect}
-                    onAutoFit={handleColumnAutoFit}
-                    zoom={zoom}
-                    hiddenBefore={hiddenBefore}
-                    hiddenAfter={hiddenAfter}
-                    onUnhideBefore={hiddenBefore ? () => unhideColRunBefore(realCol - 1) : undefined}
-                    onUnhideAfter={hiddenAfter ? () => unhideColRunAfter(realCol + 1) : undefined}
-                  />
-                );
-              })}
-              {/* Column group bar */}
-              {maxColGroupLevel > 0 && (
-                <ColGroupBar
-                  groups={colGroups}
-                  maxLevel={maxColGroupLevel}
-                  colVirtualItems={virtualCols.map(c => ({ index: visibleColIndices[c.index], start: c.start, size: c.size }))}
-                  onToggleCollapse={toggleColGroupCollapse}
-                  onSetExpandLevel={setColExpandLevel}
-                  totalWidth={totalWidth}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Row headers (fixed left, scrolls vertically with grid) */}
-          <div
-            className="absolute left-0 overflow-hidden z-20"
-            style={{
-              top: dynamicColHeaderHeight,
-              bottom: 0,
-              width: dynamicRowHeaderWidth,
-            }}
-          >
-            <div
-              ref={rowHeaderRef}
-              style={{
-                width: dynamicRowHeaderWidth,
-                height: totalHeight,
-                position: 'relative',
-              }}
-            >
-              <div
-                aria-hidden
-                className="header-band header-band-row"
-                style={{
-                  transform: `translateY(${cursorRects.selection.top}px)`,
-                  width: ROW_HEADER_WIDTH,
-                  height: cursorRects.selection.height,
-                }}
-              />
-              {/* Row group bar */}
-              {maxRowGroupLevel > 0 && (
-                <RowGroupBar
-                  groups={rowGroups}
-                  maxLevel={maxRowGroupLevel}
-                  visibleRowIndices={visibleRowIndices}
-                  getRowHeight={getRowHeight}
-                  rowVirtualItems={virtualRows.map(r => ({ index: r.index, start: r.start, size: r.size }))}
-                  onToggleCollapse={toggleRowGroupCollapse}
-                  onSetExpandLevel={setRowExpandLevel}
-                  totalHeight={totalHeight}
-                />
-              )}
-              {virtualRows.map((virtualRow) => {
-                const actualRow = visibleRowIndices[virtualRow.index];
-                const hiddenBefore = actualRow > 0 && hiddenRowSet.has(actualRow - 1);
-                const hiddenAfter = actualRow < rowCount - 1 && hiddenRowSet.has(actualRow + 1);
-                return (
-                  <RowHeader
-                    key={virtualRow.key}
-                    rowIndex={actualRow}
-                    top={virtualRow.start}
-                    height={virtualRow.size}
-                    onResize={handleRowResize}
-                    onContextMenu={handleRowContextMenu}
-                    onSelect={handleRowHeaderSelect}
-                    onAutoFit={handleRowAutoFit}
-                    zoom={zoom}
-                    hiddenBefore={hiddenBefore}
-                    hiddenAfter={hiddenAfter}
-                    onUnhideBefore={hiddenBefore ? () => unhideRowRunBefore(actualRow - 1) : undefined}
-                    onUnhideAfter={hiddenAfter ? () => unhideRowRunAfter(actualRow + 1) : undefined}
-                  />
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Frozen pane boundary indicators */}
-          {frozenRows > 0 && (
-            <div
-              className="absolute pointer-events-none"
-              style={{
-                zIndex: 25,
-                top: dynamicColHeaderHeight + frozenRowHeight,
-                left: dynamicRowHeaderWidth,
-                right: 0,
-                height: 2,
-                backgroundColor: 'var(--color-accent-selection)',
-                opacity: 0.5,
-              }}
+          <div className="flex-1 relative overflow-hidden min-w-0">
+            {/* Search Panel */}
+            <SearchPanel
+              visible={showSearch}
+              initialFocus={searchInitialFocus}
+              onClose={closeSearch}
+              sheets={sheets}
+              activeSheetId={activeSheetId}
+              onNavigateToCell={handleSearchNavigate}
+              onReplaceOne={handleSearchReplaceOne}
+              onReplaceAll={handleSearchReplaceAll}
+              hiddenRows={hiddenRows}
+              dataVersion={version}
             />
-          )}
-          {frozenCols > 0 && (
-            <div
-              className="absolute pointer-events-none"
-              style={{
-                zIndex: 25,
-                top: dynamicColHeaderHeight,
-                left: dynamicRowHeaderWidth + frozenColWidth,
-                bottom: 0,
-                width: 2,
-                backgroundColor: 'var(--color-accent-selection)',
-                opacity: 0.5,
-              }}
-            />
-          )}
 
-
-          {/* Scrollable grid area */}
-          <div
-            ref={scrollContainerRef}
-            role="grid"
-            aria-rowcount={rowCount}
-            aria-colcount={colCount}
-            className="absolute overflow-auto outline-none"
-            style={{
-              top: dynamicColHeaderHeight,
-              left: dynamicRowHeaderWidth,
-              right: 0,
-              bottom: 0,
-            }}
-            onScroll={handleScroll}
-          >
-            <div
-              style={{
-                width: totalWidth,
-                height: totalHeight,
-                position: 'relative',
-                // Origin of the value-change ripple (Cell's .cell-flash delays by distance from here)
-                ['--flash-oc' as string]: activeCell.col,
-                ['--flash-or' as string]: activeCell.row,
-              }}
-            >
-              {/* Frozen rows (sticky top: the browser keeps them in place while they scroll horizontally
-                  with the grid — no JS scroll syncing, so they never lag behind the scrolled content) */}
-              {frozenRows > 0 && (
-            <div data-frozen-rows style={{ position: 'sticky', top: 0, height: 0, zIndex: 15 }}>
+            {/* Zoom wrapper: scales the cell area + header area as a whole (CSS zoom, Chrome/Safari/Firefox 126+) */}
+            <div style={{ zoom: zoomFactor, cursor: formatPainter ? 'copy' : undefined }}>
+              {/* Corner cell (top-left fixed): click to select the whole sheet */}
               <div
+                className="absolute top-0 left-0 bg-header-bg border-r border-b border-grid-line z-30 cursor-pointer"
+                style={{ width: dynamicRowHeaderWidth, height: dynamicColHeaderHeight }}
+                onMouseDown={handleSelectAll}
+              />
+
+              {/* Column headers (fixed top, scrolls horizontally with grid) */}
+              <div
+                className="absolute top-0 overflow-hidden z-20"
                 style={{
-                  width: totalWidth,
-                  height: frozenRowHeight,
-                  position: 'relative',
+                  left: dynamicRowHeaderWidth,
+                  right: 0,
+                  height: dynamicColHeaderHeight,
                 }}
               >
-                {Array.from({ length: frozenRows }, (_, r) => {
-                  let rowTop = 0;
-                  for (let rr = 0; rr < r; rr++) rowTop += visibleRowHeight(rr);
-                  const rowH = visibleRowHeight(r);
-                  return virtualCols.map((virtualCol) => {
-                    const col = visibleColIndices[virtualCol.index];
-                    const active = isCellActive(col, r);
-                    const selected = isCellSelected(col, r);
-                    const cellIsEditing = active && isEditing;
+                <div
+                  ref={colHeaderRef}
+                  style={{
+                    width: totalWidth,
+                    height: dynamicColHeaderHeight,
+                    position: 'relative',
+                  }}
+                >
+                  <div
+                    aria-hidden
+                    className="header-band header-band-col"
+                    style={{
+                      transform: `translateX(${cursorRects.selection.left}px)`,
+                      width: cursorRects.selection.width,
+                      height: COL_HEADER_HEIGHT,
+                    }}
+                  />
+                  {virtualCols.map((virtualCol) => {
+                    const realCol = visibleColIndices[virtualCol.index];
+                    const hiddenBefore = realCol > 0 && hiddenColSet.has(realCol - 1);
+                    const hiddenAfter = realCol < colCount - 1 && hiddenColSet.has(realCol + 1);
                     return (
-                      <Cell
-                        key={`frozen-row-${col}-${r}`}
-                        col={col}
-                        row={r}
-                        data={getCellData(col, r)}
-                        isActive={active}
-                        isSelected={selected}
-                        isEditing={cellIsEditing}
-                        flashScope={activeSheetId}
-                        sortMotion={getSortMotionProps(col, r)}
-                        conditionalStyle={getCfStyle(col, r)}
+                      <ColumnHeader
+                        key={virtualCol.key}
+                        colIndex={realCol}
                         left={virtualCol.start}
-                        top={rowTop}
                         width={virtualCol.size}
-                        height={rowH}
-                        onMouseDown={handleCellMouseDown}
-                        onDoubleClick={handleCellDoubleClick}
-                        {...getValidationUi(col, r)}
-                        onCheckboxToggle={handleCheckboxToggle}
-                        onDropdownOpen={handleDropdownOpen}
+                        onResize={handleColResize}
+                        onContextMenu={handleColContextMenu}
+                        onSelect={handleColHeaderSelect}
+                        onAutoFit={handleColumnAutoFit}
+                        zoom={zoom}
+                        hiddenBefore={hiddenBefore}
+                        hiddenAfter={hiddenAfter}
+                        onUnhideBefore={
+                          hiddenBefore ? () => unhideColRunBefore(realCol - 1) : undefined
+                        }
+                        onUnhideAfter={
+                          hiddenAfter ? () => unhideColRunAfter(realCol + 1) : undefined
+                        }
                       />
                     );
-                  });
-                })}
+                  })}
+                  {/* Column group bar */}
+                  {maxColGroupLevel > 0 && (
+                    <ColGroupBar
+                      groups={colGroups}
+                      maxLevel={maxColGroupLevel}
+                      colVirtualItems={virtualCols.map((c) => ({
+                        index: visibleColIndices[c.index],
+                        start: c.start,
+                        size: c.size,
+                      }))}
+                      onToggleCollapse={toggleColGroupCollapse}
+                      onSetExpandLevel={setColExpandLevel}
+                      totalWidth={totalWidth}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-          )}
 
-              {/* Frozen columns (sticky left: scroll vertically with the grid, stay put horizontally) */}
-              {frozenCols > 0 && (
-            <div data-frozen-cols style={{ position: 'sticky', left: 0, width: frozenColWidth, height: 0, zIndex: 15 }}>
+              {/* Row headers (fixed left, scrolls vertically with grid) */}
               <div
+                className="absolute left-0 overflow-hidden z-20"
                 style={{
-                  width: frozenColWidth,
-                  height: totalHeight,
-                  position: 'relative',
+                  top: dynamicColHeaderHeight,
+                  bottom: 0,
+                  width: dynamicRowHeaderWidth,
                 }}
               >
-                {virtualRows.map((virtualRow) => {
-                  const actualRow = visibleRowIndices[virtualRow.index];
-                  if (actualRow < frozenRows) return null; // Already rendered in frozen rows
-                  return Array.from({ length: frozenCols }, (_, c) => {
-                    let colLeft = 0;
-                    for (let cc = 0; cc < c; cc++) colLeft += visibleColWidth(cc);
-                    const colW = visibleColWidth(c);
-                    const active = isCellActive(c, actualRow);
-                    const selected = isCellSelected(c, actualRow);
-                    const cellIsEditing = active && isEditing;
+                <div
+                  ref={rowHeaderRef}
+                  style={{
+                    width: dynamicRowHeaderWidth,
+                    height: totalHeight,
+                    position: 'relative',
+                  }}
+                >
+                  <div
+                    aria-hidden
+                    className="header-band header-band-row"
+                    style={{
+                      transform: `translateY(${cursorRects.selection.top}px)`,
+                      width: ROW_HEADER_WIDTH,
+                      height: cursorRects.selection.height,
+                    }}
+                  />
+                  {/* Row group bar */}
+                  {maxRowGroupLevel > 0 && (
+                    <RowGroupBar
+                      groups={rowGroups}
+                      maxLevel={maxRowGroupLevel}
+                      visibleRowIndices={visibleRowIndices}
+                      getRowHeight={getRowHeight}
+                      rowVirtualItems={virtualRows.map((r) => ({
+                        index: r.index,
+                        start: r.start,
+                        size: r.size,
+                      }))}
+                      onToggleCollapse={toggleRowGroupCollapse}
+                      onSetExpandLevel={setRowExpandLevel}
+                      totalHeight={totalHeight}
+                    />
+                  )}
+                  {virtualRows.map((virtualRow) => {
+                    const actualRow = visibleRowIndices[virtualRow.index];
+                    const hiddenBefore = actualRow > 0 && hiddenRowSet.has(actualRow - 1);
+                    const hiddenAfter = actualRow < rowCount - 1 && hiddenRowSet.has(actualRow + 1);
                     return (
-                      <Cell
-                        key={`frozen-col-${c}-${actualRow}`}
-                        col={c}
-                        row={actualRow}
-                        data={getCellData(c, actualRow)}
-                        isActive={active}
-                        isSelected={selected}
-                        isEditing={cellIsEditing}
-                        flashScope={activeSheetId}
-                        sortMotion={getSortMotionProps(c, actualRow)}
-                        conditionalStyle={getCfStyle(c, actualRow)}
-                        left={colLeft}
+                      <RowHeader
+                        key={virtualRow.key}
+                        rowIndex={actualRow}
                         top={virtualRow.start}
-                        width={colW}
                         height={virtualRow.size}
-                        onMouseDown={handleCellMouseDown}
-                        onDoubleClick={handleCellDoubleClick}
-                        {...getValidationUi(c, actualRow)}
-                        onCheckboxToggle={handleCheckboxToggle}
-                        onDropdownOpen={handleDropdownOpen}
+                        onResize={handleRowResize}
+                        onContextMenu={handleRowContextMenu}
+                        onSelect={handleRowHeaderSelect}
+                        onAutoFit={handleRowAutoFit}
+                        zoom={zoom}
+                        hiddenBefore={hiddenBefore}
+                        hiddenAfter={hiddenAfter}
+                        onUnhideBefore={
+                          hiddenBefore ? () => unhideRowRunBefore(actualRow - 1) : undefined
+                        }
+                        onUnhideAfter={
+                          hiddenAfter ? () => unhideRowRunAfter(actualRow + 1) : undefined
+                        }
                       />
                     );
-                  });
-                })}
+                  })}
+                </div>
               </div>
-            </div>
-          )}
 
-              {/* Frozen corner (sticky both ways) */}
-              {frozenRows > 0 && frozenCols > 0 && (
-            <div data-frozen-corner style={{ position: 'sticky', top: 0, left: 0, width: frozenColWidth, height: 0, zIndex: 16 }}>
-            <div className="bg-grid-bg" style={{ position: 'relative', width: frozenColWidth, height: frozenRowHeight }}>
-              {Array.from({ length: frozenRows }, (_, r) => {
-                let rowTop = 0;
-                for (let rr = 0; rr < r; rr++) rowTop += visibleRowHeight(rr);
-                const rowH = visibleRowHeight(r);
-                return Array.from({ length: frozenCols }, (_, c) => {
-                  let colLeft = 0;
-                  for (let cc = 0; cc < c; cc++) colLeft += visibleColWidth(cc);
-                  const colW = visibleColWidth(c);
-                  const active = isCellActive(c, r);
-                  const selected = isCellSelected(c, r);
-                  const cellIsEditing = active && isEditing;
-                  return (
-                    <Cell
-                      key={`frozen-corner-${c}-${r}`}
-                      col={c}
-                      row={r}
-                      data={getCellData(c, r)}
-                      isActive={active}
-                      isSelected={selected}
-                      isEditing={cellIsEditing}
-                      flashScope={activeSheetId}
-                      sortMotion={getSortMotionProps(c, r)}
-                      conditionalStyle={getCfStyle(c, r)}
-                      left={colLeft}
-                      top={rowTop}
-                      width={colW}
-                      height={rowH}
-                      onMouseDown={handleCellMouseDown}
-                      onDoubleClick={handleCellDoubleClick}
-                      {...getValidationUi(c, r)}
-                      onCheckboxToggle={handleCheckboxToggle}
-                      onDropdownOpen={handleDropdownOpen}
+              {/* Frozen pane boundary indicators */}
+              {frozenRows > 0 && (
+                <div
+                  className="absolute pointer-events-none"
+                  style={{
+                    zIndex: 25,
+                    top: dynamicColHeaderHeight + frozenRowHeight,
+                    left: dynamicRowHeaderWidth,
+                    right: 0,
+                    height: 2,
+                    backgroundColor: 'var(--color-accent-selection)',
+                    opacity: 0.5,
+                  }}
+                />
+              )}
+              {frozenCols > 0 && (
+                <div
+                  className="absolute pointer-events-none"
+                  style={{
+                    zIndex: 25,
+                    top: dynamicColHeaderHeight,
+                    left: dynamicRowHeaderWidth + frozenColWidth,
+                    bottom: 0,
+                    width: 2,
+                    backgroundColor: 'var(--color-accent-selection)',
+                    opacity: 0.5,
+                  }}
+                />
+              )}
+
+              {/* Scrollable grid area */}
+              <div
+                ref={scrollContainerRef}
+                role="grid"
+                aria-rowcount={rowCount}
+                aria-colcount={colCount}
+                className="absolute overflow-auto outline-none"
+                style={{
+                  top: dynamicColHeaderHeight,
+                  left: dynamicRowHeaderWidth,
+                  right: 0,
+                  bottom: 0,
+                }}
+                onScroll={handleScroll}
+              >
+                <div
+                  style={{
+                    width: totalWidth,
+                    height: totalHeight,
+                    position: 'relative',
+                    // Origin of the value-change ripple (Cell's .cell-flash delays by distance from here)
+                    ['--flash-oc' as string]: activeCell.col,
+                    ['--flash-or' as string]: activeCell.row,
+                  }}
+                >
+                  {/* Frozen rows (sticky top: the browser keeps them in place while they scroll horizontally
+                  with the grid — no JS scroll syncing, so they never lag behind the scrolled content) */}
+                  {frozenRows > 0 && (
+                    <div
+                      data-frozen-rows
+                      style={{ position: 'sticky', top: 0, height: 0, zIndex: 15 }}
+                    >
+                      <div
+                        style={{
+                          width: totalWidth,
+                          height: frozenRowHeight,
+                          position: 'relative',
+                        }}
+                      >
+                        {Array.from({ length: frozenRows }, (_, r) => {
+                          let rowTop = 0;
+                          for (let rr = 0; rr < r; rr++) rowTop += visibleRowHeight(rr);
+                          const rowH = visibleRowHeight(r);
+                          return virtualCols.map((virtualCol) => {
+                            const col = visibleColIndices[virtualCol.index];
+                            const active = isCellActive(col, r);
+                            const selected = isCellSelected(col, r);
+                            const cellIsEditing = active && isEditing;
+                            return (
+                              <Cell
+                                key={`frozen-row-${col}-${r}`}
+                                col={col}
+                                row={r}
+                                data={getCellData(col, r)}
+                                isActive={active}
+                                isSelected={selected}
+                                isEditing={cellIsEditing}
+                                flashScope={activeSheetId}
+                                sortMotion={getSortMotionProps(col, r)}
+                                conditionalStyle={getCfStyle(col, r)}
+                                left={virtualCol.start}
+                                top={rowTop}
+                                width={virtualCol.size}
+                                height={rowH}
+                                onMouseDown={handleCellMouseDown}
+                                onDoubleClick={handleCellDoubleClick}
+                                {...getValidationUi(col, r)}
+                                onCheckboxToggle={handleCheckboxToggle}
+                                onDropdownOpen={handleDropdownOpen}
+                              />
+                            );
+                          });
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Frozen columns (sticky left: scroll vertically with the grid, stay put horizontally) */}
+                  {frozenCols > 0 && (
+                    <div
+                      data-frozen-cols
+                      style={{
+                        position: 'sticky',
+                        left: 0,
+                        width: frozenColWidth,
+                        height: 0,
+                        zIndex: 15,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: frozenColWidth,
+                          height: totalHeight,
+                          position: 'relative',
+                        }}
+                      >
+                        {virtualRows.map((virtualRow) => {
+                          const actualRow = visibleRowIndices[virtualRow.index];
+                          if (actualRow < frozenRows) return null; // Already rendered in frozen rows
+                          return Array.from({ length: frozenCols }, (_, c) => {
+                            let colLeft = 0;
+                            for (let cc = 0; cc < c; cc++) colLeft += visibleColWidth(cc);
+                            const colW = visibleColWidth(c);
+                            const active = isCellActive(c, actualRow);
+                            const selected = isCellSelected(c, actualRow);
+                            const cellIsEditing = active && isEditing;
+                            return (
+                              <Cell
+                                key={`frozen-col-${c}-${actualRow}`}
+                                col={c}
+                                row={actualRow}
+                                data={getCellData(c, actualRow)}
+                                isActive={active}
+                                isSelected={selected}
+                                isEditing={cellIsEditing}
+                                flashScope={activeSheetId}
+                                sortMotion={getSortMotionProps(c, actualRow)}
+                                conditionalStyle={getCfStyle(c, actualRow)}
+                                left={colLeft}
+                                top={virtualRow.start}
+                                width={colW}
+                                height={virtualRow.size}
+                                onMouseDown={handleCellMouseDown}
+                                onDoubleClick={handleCellDoubleClick}
+                                {...getValidationUi(c, actualRow)}
+                                onCheckboxToggle={handleCheckboxToggle}
+                                onDropdownOpen={handleDropdownOpen}
+                              />
+                            );
+                          });
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Frozen corner (sticky both ways) */}
+                  {frozenRows > 0 && frozenCols > 0 && (
+                    <div
+                      data-frozen-corner
+                      style={{
+                        position: 'sticky',
+                        top: 0,
+                        left: 0,
+                        width: frozenColWidth,
+                        height: 0,
+                        zIndex: 16,
+                      }}
+                    >
+                      <div
+                        className="bg-grid-bg"
+                        style={{
+                          position: 'relative',
+                          width: frozenColWidth,
+                          height: frozenRowHeight,
+                        }}
+                      >
+                        {Array.from({ length: frozenRows }, (_, r) => {
+                          let rowTop = 0;
+                          for (let rr = 0; rr < r; rr++) rowTop += visibleRowHeight(rr);
+                          const rowH = visibleRowHeight(r);
+                          return Array.from({ length: frozenCols }, (_, c) => {
+                            let colLeft = 0;
+                            for (let cc = 0; cc < c; cc++) colLeft += visibleColWidth(cc);
+                            const colW = visibleColWidth(c);
+                            const active = isCellActive(c, r);
+                            const selected = isCellSelected(c, r);
+                            const cellIsEditing = active && isEditing;
+                            return (
+                              <Cell
+                                key={`frozen-corner-${c}-${r}`}
+                                col={c}
+                                row={r}
+                                data={getCellData(c, r)}
+                                isActive={active}
+                                isSelected={selected}
+                                isEditing={cellIsEditing}
+                                flashScope={activeSheetId}
+                                sortMotion={getSortMotionProps(c, r)}
+                                conditionalStyle={getCfStyle(c, r)}
+                                left={colLeft}
+                                top={rowTop}
+                                width={colW}
+                                height={rowH}
+                                onMouseDown={handleCellMouseDown}
+                                onDoubleClick={handleCellDoubleClick}
+                                {...getValidationUi(c, r)}
+                                onCheckboxToggle={handleCheckboxToggle}
+                                onDropdownOpen={handleDropdownOpen}
+                              />
+                            );
+                          });
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  {virtualRows.map((virtualRow) => {
+                    const actualRow = visibleRowIndices[virtualRow.index];
+                    return virtualCols.map((virtualCol) => {
+                      const col = visibleColIndices[virtualCol.index];
+                      const row = actualRow;
+
+                      const mergeInfo: MergeInfo | undefined = getMergeInfo(col, row);
+
+                      // Skip non-anchor merge cells (they are covered by the anchor)
+                      if (mergeInfo && mergeInfo.colSpan === 0 && mergeInfo.rowSpan === 0) {
+                        return null;
+                      }
+
+                      const active = isCellActive(col, row);
+                      const selected = isCellSelected(col, row);
+
+                      const cellIsEditing = active && isEditing;
+
+                      // For anchor merge cells, compute expanded width/height
+                      let cellWidth = virtualCol.size;
+                      let cellHeight = virtualRow.size;
+                      if (mergeInfo && mergeInfo.colSpan > 1) {
+                        cellWidth = 0;
+                        for (let c = col; c < col + mergeInfo.colSpan; c++) {
+                          cellWidth += visibleColWidth(c);
+                        }
+                      }
+                      if (mergeInfo && mergeInfo.rowSpan > 1) {
+                        cellHeight = 0;
+                        for (let r = row; r < row + mergeInfo.rowSpan; r++) {
+                          cellHeight += visibleRowHeight(r);
+                        }
+                      }
+
+                      const cellData = getCellData(col, row);
+                      const ck = cellKey(col, row);
+                      const slConfig = sparklineMap.get(ck);
+                      const slValues = slConfig
+                        ? getSparklineValues(slConfig.dataRange)
+                        : undefined;
+                      const slGroupScale = slConfig?.groupId
+                        ? sparklineGroupScales.get(slConfig.groupId)
+                        : undefined;
+                      const overflowWidth = computeOverflowWidth(col, row, cellWidth);
+
+                      return (
+                        <Cell
+                          key={`${virtualCol.key}-${virtualRow.key}`}
+                          col={col}
+                          row={row}
+                          data={cellData}
+                          isActive={active}
+                          isSelected={selected}
+                          isEditing={cellIsEditing}
+                          flashScope={activeSheetId}
+                          sortMotion={getSortMotionProps(col, row)}
+                          conditionalStyle={getCfStyle(col, row)}
+                          left={virtualCol.start}
+                          top={virtualRow.start}
+                          width={cellWidth}
+                          height={cellHeight}
+                          onMouseDown={handleCellMouseDown}
+                          onDoubleClick={handleCellDoubleClick}
+                          onContextMenu={handleCellContextMenu}
+                          mergeInfo={mergeInfo}
+                          hasComment={!!cellData?.comment}
+                          onMouseEnter={handleCellMouseEnter}
+                          onMouseLeave={handleCellMouseLeave}
+                          sparklineConfig={slConfig}
+                          sparklineValues={slValues}
+                          sparklineGroupScale={slGroupScale}
+                          overflowWidth={overflowWidth}
+                          {...getValidationUi(col, row)}
+                          onCheckboxToggle={handleCheckboxToggle}
+                          onDropdownOpen={handleDropdownOpen}
+                          activeOutline={false}
+                        />
+                      );
+                    });
+                  })}
+                  {/* Gliding selection cursor (keyed by sheet so switching sheets doesn't animate across) */}
+                  {cursorRects.range && (
+                    <SelectionCursor
+                      key={`range-${activeSheetId}`}
+                      rect={cursorRects.range}
+                      variant="range"
                     />
-                  );
-                });
-              })}
-            </div>
-            </div>
-          )}
-              {virtualRows.map((virtualRow) => {
-                const actualRow = visibleRowIndices[virtualRow.index];
-                return virtualCols.map((virtualCol) => {
-                  const col = visibleColIndices[virtualCol.index];
-                  const row = actualRow;
-
-                  const mergeInfo: MergeInfo | undefined = getMergeInfo(col, row);
-
-                  // Skip non-anchor merge cells (they are covered by the anchor)
-                  if (mergeInfo && mergeInfo.colSpan === 0 && mergeInfo.rowSpan === 0) {
-                    return null;
-                  }
-
-                  const active = isCellActive(col, row);
-                  const selected = isCellSelected(col, row);
-
-                  const cellIsEditing = active && isEditing;
-
-                  // For anchor merge cells, compute expanded width/height
-                  let cellWidth = virtualCol.size;
-                  let cellHeight = virtualRow.size;
-                  if (mergeInfo && mergeInfo.colSpan > 1) {
-                    cellWidth = 0;
-                    for (let c = col; c < col + mergeInfo.colSpan; c++) {
-                      cellWidth += visibleColWidth(c);
-                    }
-                  }
-                  if (mergeInfo && mergeInfo.rowSpan > 1) {
-                    cellHeight = 0;
-                    for (let r = row; r < row + mergeInfo.rowSpan; r++) {
-                      cellHeight += visibleRowHeight(r);
-                    }
-                  }
-
-                  const cellData = getCellData(col, row);
-                  const ck = cellKey(col, row);
-                  const slConfig = sparklineMap.get(ck);
-                  const slValues = slConfig ? getSparklineValues(slConfig.dataRange) : undefined;
-                  const slGroupScale = slConfig?.groupId ? sparklineGroupScales.get(slConfig.groupId) : undefined;
-                  const overflowWidth = computeOverflowWidth(col, row, cellWidth);
-
-                  return (
-                    <Cell
-                      key={`${virtualCol.key}-${virtualRow.key}`}
-                      col={col}
-                      row={row}
-                      data={cellData}
-                      isActive={active}
-                      isSelected={selected}
-                      isEditing={cellIsEditing}
-                      flashScope={activeSheetId}
-                      sortMotion={getSortMotionProps(col, row)}
-                      conditionalStyle={getCfStyle(col, row)}
-                      left={virtualCol.start}
-                      top={virtualRow.start}
-                      width={cellWidth}
-                      height={cellHeight}
-                      onMouseDown={handleCellMouseDown}
-                      onDoubleClick={handleCellDoubleClick}
-                      onContextMenu={handleCellContextMenu}
-                      mergeInfo={mergeInfo}
-                      hasComment={!!cellData?.comment}
-                      onMouseEnter={handleCellMouseEnter}
-                      onMouseLeave={handleCellMouseLeave}
-                      sparklineConfig={slConfig}
-                      sparklineValues={slValues}
-                      sparklineGroupScale={slGroupScale}
-                      overflowWidth={overflowWidth}
-                      {...getValidationUi(col, row)}
-                      onCheckboxToggle={handleCheckboxToggle}
-                      onDropdownOpen={handleDropdownOpen}
-                      activeOutline={false}
+                  )}
+                  {cursorRects.active && (
+                    <SelectionCursor
+                      key={`active-${activeSheetId}`}
+                      rect={cursorRects.active}
+                      variant="active"
                     />
-                  );
-                });
-              })}
-              {/* Gliding selection cursor (keyed by sheet so switching sheets doesn't animate across) */}
-              {cursorRects.range && (
-                <SelectionCursor key={`range-${activeSheetId}`} rect={cursorRects.range} variant="range" />
-              )}
-              {cursorRects.active && (
-                <SelectionCursor key={`active-${activeSheetId}`} rect={cursorRects.active} variant="active" />
-              )}
-              {precedentArrows && (
-                <PrecedentArrows key={precedentArrows.key} sources={precedentArrows.sources} target={precedentArrows.target} />
-              )}
-              {recalcHeatmap && <RecalcHeatmap sheetId={activeSheetId} rectFor={heatmapRectFor} />}
-            </div>
-          </div>
+                  )}
+                  {precedentArrows && (
+                    <PrecedentArrows
+                      key={precedentArrows.key}
+                      sources={precedentArrows.sources}
+                      target={precedentArrows.target}
+                    />
+                  )}
+                  {recalcHeatmap && (
+                    <RecalcHeatmap sheetId={activeSheetId} rectFor={heatmapRectFor} />
+                  )}
+                </div>
+              </div>
 
-          {/* Persistent cell editor: always mounted (nav mode = invisible but focused, so it
+              {/* Persistent cell editor: always mounted (nav mode = invisible but focused, so it
               can catch direct typing/IME), positioned at the active cell using the same
               content-space-rect-minus-scroll math the other cell-position overlays below use.
               A merged/frozen cell is handled the same way its <Cell> above is: expand for the
               merge span, and only subtract the scroll offset the cell's own pane still scrolls with. */}
-          {(() => {
-            const { col: editCol, row: editRow } = resolveMergeAnchor(activeCell.col, activeCell.row, getMergeInfo);
-            const editMergeInfo = getMergeInfo(editCol, editRow);
-            let cellW = visibleColWidth(editCol);
-            let cellH = visibleRowHeight(editRow);
-            if (editMergeInfo && editMergeInfo.colSpan > 1) {
-              cellW = 0;
-              for (let c = editCol; c < editCol + editMergeInfo.colSpan; c++) cellW += visibleColWidth(c);
-            }
-            if (editMergeInfo && editMergeInfo.rowSpan > 1) {
-              cellH = 0;
-              for (let r = editRow; r < editRow + editMergeInfo.rowSpan; r++) cellH += visibleRowHeight(r);
-            }
+              {(() => {
+                const { col: editCol, row: editRow } = resolveMergeAnchor(
+                  activeCell.col,
+                  activeCell.row,
+                  getMergeInfo,
+                );
+                const editMergeInfo = getMergeInfo(editCol, editRow);
+                let cellW = visibleColWidth(editCol);
+                let cellH = visibleRowHeight(editRow);
+                if (editMergeInfo && editMergeInfo.colSpan > 1) {
+                  cellW = 0;
+                  for (let c = editCol; c < editCol + editMergeInfo.colSpan; c++)
+                    cellW += visibleColWidth(c);
+                }
+                if (editMergeInfo && editMergeInfo.rowSpan > 1) {
+                  cellH = 0;
+                  for (let r = editRow; r < editRow + editMergeInfo.rowSpan; r++)
+                    cellH += visibleRowHeight(r);
+                }
 
-            let contentLeft = 0;
-            for (let c = 0; c < editCol; c++) contentLeft += visibleColWidth(c);
-            let contentTop = 0;
-            for (let r = 0; r < editRow; r++) contentTop += visibleRowHeight(r);
+                let contentLeft = 0;
+                for (let c = 0; c < editCol; c++) contentLeft += visibleColWidth(c);
+                let contentTop = 0;
+                for (let r = 0; r < editRow; r++) contentTop += visibleRowHeight(r);
 
-            const inFrozenCol = editCol < frozenCols;
-            const inFrozenRow = editRow < frozenRows;
-            const scrollLeft = inFrozenCol ? 0 : (scrollContainerRef.current?.scrollLeft ?? 0);
-            const scrollTop = inFrozenRow ? 0 : (scrollContainerRef.current?.scrollTop ?? 0);
+                const inFrozenCol = editCol < frozenCols;
+                const inFrozenRow = editRow < frozenRows;
+                const scrollLeft = inFrozenCol ? 0 : (scrollContainerRef.current?.scrollLeft ?? 0);
+                const scrollTop = inFrozenRow ? 0 : (scrollContainerRef.current?.scrollTop ?? 0);
 
-            const screenLeft = contentLeft - scrollLeft + dynamicRowHeaderWidth;
-            const screenTop = contentTop - scrollTop + dynamicColHeaderHeight;
+                const screenLeft = contentLeft - scrollLeft + dynamicRowHeaderWidth;
+                const screenTop = contentTop - scrollTop + dynamicColHeaderHeight;
 
-            const editCellStyle = activeCellData?.style;
-            const editorWrapText = !!editCellStyle?.wrapText;
+                const editCellStyle = activeCellData?.style;
+                const editorWrapText = !!editCellStyle?.wrapText;
 
-            return (
-              <div
-                style={{
-                  position: 'absolute',
-                  left: screenLeft,
-                  top: screenTop,
-                  width: cellW,
-                  height: cellH,
-                  zIndex: isEditing ? 35 : -1,
-                  pointerEvents: isEditing ? 'auto' : 'none',
-                }}
-              >
-                <CellEditor
-                  readOnly={!autosaveRestored}
-                  ref={cellEditorRef}
-                  isEditing={isEditing}
-                  value={isEditing ? editValue : ''}
-                  onChange={handleCellEditorChange}
-                  onDirectInput={startDirectInput}
-                  onCompositionStart={handleCompositionStart}
-                  onKeyDown={handleCellEditorKeyDown}
-                  rect={{ left: 0, top: 0, width: cellW, height: cellH }}
-                  wrapText={editorWrapText}
-                  style={{
-                    fontFamily: editCellStyle?.fontFamily ?? DEFAULT_CELL_FONT_FAMILY,
-                    fontSize: editCellStyle?.fontSize ? `${editCellStyle.fontSize}pt` : '13px',
-                    fontWeight: editCellStyle?.bold ? 'bold' : undefined,
-                    fontStyle: editCellStyle?.italic ? 'italic' : undefined,
-                    color: editCellStyle?.textColor ?? undefined,
-                    textAlign: editCellStyle?.textAlign ?? 'left',
-                  }}
-                />
-                {isEditing && cellSuggestions.length > 0 && cellEditorHasFocus && (
-                  <Autocomplete
-                    suggestions={cellSuggestions}
-                    selectedIndex={cellSuggestionIndex}
-                    onSelect={handleCellSuggestionSelect}
-                  />
-                )}
-                {isEditing && cellSuggestions.length === 0 && cellEditorHasFocus && cellEditorCaret !== null && (
-                  <FunctionHint value={editValue} caret={cellEditorCaret} />
-                )}
-              </div>
-            );
-          })()}
+                return (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: screenLeft,
+                      top: screenTop,
+                      width: cellW,
+                      height: cellH,
+                      zIndex: isEditing ? 35 : -1,
+                      pointerEvents: isEditing ? 'auto' : 'none',
+                    }}
+                  >
+                    <CellEditor
+                      readOnly={!autosaveRestored}
+                      ref={cellEditorRef}
+                      isEditing={isEditing}
+                      value={isEditing ? editValue : ''}
+                      onChange={handleCellEditorChange}
+                      onDirectInput={startDirectInput}
+                      onCompositionStart={handleCompositionStart}
+                      onKeyDown={handleCellEditorKeyDown}
+                      rect={{ left: 0, top: 0, width: cellW, height: cellH }}
+                      wrapText={editorWrapText}
+                      style={{
+                        fontFamily: editCellStyle?.fontFamily ?? DEFAULT_CELL_FONT_FAMILY,
+                        fontSize: editCellStyle?.fontSize ? `${editCellStyle.fontSize}pt` : '13px',
+                        fontWeight: editCellStyle?.bold ? 'bold' : undefined,
+                        fontStyle: editCellStyle?.italic ? 'italic' : undefined,
+                        color: editCellStyle?.textColor ?? undefined,
+                        textAlign: editCellStyle?.textAlign ?? 'left',
+                      }}
+                    />
+                    {isEditing && cellSuggestions.length > 0 && cellEditorHasFocus && (
+                      <Autocomplete
+                        suggestions={cellSuggestions}
+                        selectedIndex={cellSuggestionIndex}
+                        onSelect={handleCellSuggestionSelect}
+                      />
+                    )}
+                    {isEditing &&
+                      cellSuggestions.length === 0 &&
+                      cellEditorHasFocus &&
+                      cellEditorCaret !== null && (
+                        <FunctionHint value={editValue} caret={cellEditorCaret} />
+                      )}
+                  </div>
+                );
+              })()}
 
-          {/* Fill Handle */}
-          {fillHandleInfo && !isEditing && (
-            <div
-              data-testid="fill-handle"
-              style={{
-                position: 'absolute',
-                left: fillHandleInfo.left - (scrollContainerRef.current?.scrollLeft ?? 0) + dynamicRowHeaderWidth,
-                top: fillHandleInfo.top - (scrollContainerRef.current?.scrollTop ?? 0) + dynamicColHeaderHeight,
-                width: 7,
-                height: 7,
-                backgroundColor: 'var(--color-accent-selection)',
-                border: '1px solid white',
-                cursor: 'crosshair',
-                zIndex: 30,
-                pointerEvents: 'auto',
-              }}
-              onMouseDown={handleFillHandleMouseDown}
-              onDoubleClick={handleFillHandleDoubleClick}
-            />
-          )}
-
-          {/* Fill Preview Highlight */}
-          {fillPreviewRange && scrollContainerRef.current && (() => {
-            const el = scrollContainerRef.current;
-            const rect = getRangePixelRect(fillPreviewRange.startCol, fillPreviewRange.endCol, fillPreviewRange.startRow, fillPreviewRange.endRow, visibleColWidth, visibleRowHeight);
-            return (
-              <div
-                data-testid="fill-preview"
-                style={{
-                  position: 'absolute',
-                  left: rect.left - el.scrollLeft + dynamicRowHeaderWidth,
-                  top: rect.top - el.scrollTop + dynamicColHeaderHeight,
-                  width: rect.width,
-                  height: rect.height,
-                  backgroundColor: 'var(--color-accent-selection)',
-                  opacity: 0.1,
-                  pointerEvents: 'none',
-                  zIndex: 29,
-                }}
-              />
-            );
-          })()}
-
-          {/* Copy/cut marching-ants overlay (hidden if the clipboard was copied from a different sheet) */}
-          {hasClipboard && clipboardRange && scrollContainerRef.current &&
-            clipboardSourceSheetIdRef.current === activeSheetId && (() => {
-            const el = scrollContainerRef.current;
-            const rect = getRangePixelRect(
-              clipboardRange.start.col, clipboardRange.end.col,
-              clipboardRange.start.row, clipboardRange.end.row,
-              visibleColWidth, visibleRowHeight,
-            );
-            const x = rect.left - el.scrollLeft + dynamicRowHeaderWidth;
-            const y = rect.top - el.scrollTop + dynamicColHeaderHeight;
-            return (
-              <svg
-                key={`${clipboardRange.start.col},${clipboardRange.start.row}:${clipboardRange.end.col},${clipboardRange.end.row}`}
-                style={{ position: 'absolute', left: x, top: y, width: rect.width, height: rect.height, pointerEvents: 'none', zIndex: 29, overflow: 'visible' }}
-              >
-                <rect
-                  className="copy-flash"
-                  x={0}
-                  y={0}
-                  width={rect.width}
-                  height={rect.height}
-                  fill="var(--color-accent-selection)"
-                />
-                <rect
-                  className="marching-ants"
-                  x={1}
-                  y={1}
-                  width={Math.max(0, rect.width - 2)}
-                  height={Math.max(0, rect.height - 2)}
-                  fill="none"
-                  stroke="var(--color-accent-selection)"
-                  strokeWidth={2}
-                  strokeDasharray="6 4"
-                />
-              </svg>
-            );
-          })()}
-
-          {/* Formula Reference Highlights (colored per reference) */}
-          {formulaRefRects.length > 0 && scrollContainerRef.current && formulaRefRects.map((rect, i) => {
-            const el = scrollContainerRef.current!;
-            const color = REF_COLORS[i % REF_COLORS.length];
-            const x = rect.left - el.scrollLeft + dynamicRowHeaderWidth;
-            const y = rect.top - el.scrollTop + dynamicColHeaderHeight;
-            return (
-              <div key={`fref-${i}`}>
+              {/* Fill Handle */}
+              {fillHandleInfo && !isEditing && (
                 <div
+                  data-testid="fill-handle"
                   style={{
                     position: 'absolute',
-                    left: x, top: y, width: rect.width, height: rect.height,
-                    backgroundColor: color,
-                    opacity: 0.1,
-                    pointerEvents: 'none',
-                    zIndex: 29,
+                    left:
+                      fillHandleInfo.left -
+                      (scrollContainerRef.current?.scrollLeft ?? 0) +
+                      dynamicRowHeaderWidth,
+                    top:
+                      fillHandleInfo.top -
+                      (scrollContainerRef.current?.scrollTop ?? 0) +
+                      dynamicColHeaderHeight,
+                    width: 7,
+                    height: 7,
+                    backgroundColor: 'var(--color-accent-selection)',
+                    border: '1px solid white',
+                    cursor: 'crosshair',
+                    zIndex: 30,
+                    pointerEvents: 'auto',
                   }}
+                  onMouseDown={handleFillHandleMouseDown}
+                  onDoubleClick={handleFillHandleDoubleClick}
                 />
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: x, top: y, width: rect.width, height: rect.height,
-                    border: `2px solid ${color}`,
-                    pointerEvents: 'none',
-                    zIndex: 29,
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-            );
-          })}
+              )}
 
-          {/* Chart Overlay */}
-          {(() => {
-            const charts = getCharts();
-            if (charts.length === 0) return null;
-            return (
-              <Suspense fallback={null}>
-                <ChartOverlay
-                  charts={charts}
-                  getCellData={getCellData}
-                  version={version}
-                  onMove={(id, x, y) => updateChart(id, { x, y })}
-                  onResize={(id, w, h) => updateChart(id, { width: w, height: h })}
-                  onDelete={handleDeleteChart}
-                  onEdit={handleEditChart}
-                />
-              </Suspense>
-            );
-          })()}
-          </div>
-          {/* end zoom wrapper */}
+              {/* Fill Preview Highlight */}
+              {fillPreviewRange &&
+                scrollContainerRef.current &&
+                (() => {
+                  const el = scrollContainerRef.current;
+                  const rect = getRangePixelRect(
+                    fillPreviewRange.startCol,
+                    fillPreviewRange.endCol,
+                    fillPreviewRange.startRow,
+                    fillPreviewRange.endRow,
+                    visibleColWidth,
+                    visibleRowHeight,
+                  );
+                  return (
+                    <div
+                      data-testid="fill-preview"
+                      style={{
+                        position: 'absolute',
+                        left: rect.left - el.scrollLeft + dynamicRowHeaderWidth,
+                        top: rect.top - el.scrollTop + dynamicColHeaderHeight,
+                        width: rect.width,
+                        height: rect.height,
+                        backgroundColor: 'var(--color-accent-selection)',
+                        opacity: 0.1,
+                        pointerEvents: 'none',
+                        zIndex: 29,
+                      }}
+                    />
+                  );
+                })()}
 
-          {/* Filter buttons: one per column of the active filter's header row, positioned over
+              {/* Copy/cut marching-ants overlay (hidden if the clipboard was copied from a different sheet) */}
+              {hasClipboard &&
+                clipboardRange &&
+                scrollContainerRef.current &&
+                clipboardSourceSheetIdRef.current === activeSheetId &&
+                (() => {
+                  const el = scrollContainerRef.current;
+                  const rect = getRangePixelRect(
+                    clipboardRange.start.col,
+                    clipboardRange.end.col,
+                    clipboardRange.start.row,
+                    clipboardRange.end.row,
+                    visibleColWidth,
+                    visibleRowHeight,
+                  );
+                  const x = rect.left - el.scrollLeft + dynamicRowHeaderWidth;
+                  const y = rect.top - el.scrollTop + dynamicColHeaderHeight;
+                  return (
+                    <svg
+                      key={`${clipboardRange.start.col},${clipboardRange.start.row}:${clipboardRange.end.col},${clipboardRange.end.row}`}
+                      style={{
+                        position: 'absolute',
+                        left: x,
+                        top: y,
+                        width: rect.width,
+                        height: rect.height,
+                        pointerEvents: 'none',
+                        zIndex: 29,
+                        overflow: 'visible',
+                      }}
+                    >
+                      <rect
+                        className="copy-flash"
+                        x={0}
+                        y={0}
+                        width={rect.width}
+                        height={rect.height}
+                        fill="var(--color-accent-selection)"
+                      />
+                      <rect
+                        className="marching-ants"
+                        x={1}
+                        y={1}
+                        width={Math.max(0, rect.width - 2)}
+                        height={Math.max(0, rect.height - 2)}
+                        fill="none"
+                        stroke="var(--color-accent-selection)"
+                        strokeWidth={2}
+                        strokeDasharray="6 4"
+                      />
+                    </svg>
+                  );
+                })()}
+
+              {/* Formula Reference Highlights (colored per reference) */}
+              {formulaRefRects.length > 0 &&
+                scrollContainerRef.current &&
+                formulaRefRects.map((rect, i) => {
+                  const el = scrollContainerRef.current!;
+                  const color = REF_COLORS[i % REF_COLORS.length];
+                  const x = rect.left - el.scrollLeft + dynamicRowHeaderWidth;
+                  const y = rect.top - el.scrollTop + dynamicColHeaderHeight;
+                  return (
+                    <div key={`fref-${i}`}>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: x,
+                          top: y,
+                          width: rect.width,
+                          height: rect.height,
+                          backgroundColor: color,
+                          opacity: 0.1,
+                          pointerEvents: 'none',
+                          zIndex: 29,
+                        }}
+                      />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: x,
+                          top: y,
+                          width: rect.width,
+                          height: rect.height,
+                          border: `2px solid ${color}`,
+                          pointerEvents: 'none',
+                          zIndex: 29,
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+
+              {/* Chart Overlay */}
+              {(() => {
+                const charts = getCharts();
+                if (charts.length === 0) return null;
+                return (
+                  <Suspense fallback={null}>
+                    <ChartOverlay
+                      charts={charts}
+                      getCellData={getCellData}
+                      version={version}
+                      onMove={(id, x, y) => updateChart(id, { x, y })}
+                      onResize={(id, w, h) => updateChart(id, { width: w, height: h })}
+                      onDelete={handleDeleteChart}
+                      onEdit={handleEditChart}
+                    />
+                  </Suspense>
+                );
+              })()}
+            </div>
+            {/* end zoom wrapper */}
+
+            {/* Filter buttons: one per column of the active filter's header row, positioned over
               that (currently on-screen) header cell via the same data-col/data-row lookup
               CommentTooltip uses, so Cell.tsx doesn't need its own filter-button rendering. */}
-          {filterRange && Array.from(
-            { length: filterRange.endCol - filterRange.startCol + 1 },
-            (_, i) => filterRange.startCol + i,
-          ).map((col) => {
-            if (typeof document === 'undefined') return null;
-            const el = document.querySelector(`[data-col="${col}"][data-row="${filterRange.startRow}"]`);
-            if (!el) return null;
-            const rect = el.getBoundingClientRect();
-            const isFiltered = filterState.has(col) || filterConditions[col] !== undefined;
-            return (
-              <button
-                key={`filter-btn-${col}`}
-                type="button"
-                data-testid={`filter-button-${col}`}
-                className={`fixed z-30 text-[9px] leading-none rounded px-0.5 ${isFiltered ? 'text-accent-selection' : 'text-text-primary/40 hover:text-text-primary/70'}`}
-                style={{ left: rect.right - 14, top: rect.top + rect.height / 2 - 5 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFilterDropdownCol((prev) => (prev === col ? null : col));
-                }}
-                title="フィルター"
-              >
-                {isFiltered ? '▼' : '▽'}
-              </button>
-            );
-          })}
+            {filterRange &&
+              Array.from(
+                { length: filterRange.endCol - filterRange.startCol + 1 },
+                (_, i) => filterRange.startCol + i,
+              ).map((col) => {
+                if (typeof document === 'undefined') return null;
+                const el = document.querySelector(
+                  `[data-col="${col}"][data-row="${filterRange.startRow}"]`,
+                );
+                if (!el) return null;
+                const rect = el.getBoundingClientRect();
+                const isFiltered = filterState.has(col) || filterConditions[col] !== undefined;
+                return (
+                  <button
+                    key={`filter-btn-${col}`}
+                    type="button"
+                    data-testid={`filter-button-${col}`}
+                    className={`fixed z-30 text-[9px] leading-none rounded px-0.5 ${isFiltered ? 'text-accent-selection' : 'text-text-primary/40 hover:text-text-primary/70'}`}
+                    style={{ left: rect.right - 14, top: rect.top + rect.height / 2 - 5 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFilterDropdownCol((prev) => (prev === col ? null : col));
+                    }}
+                    title="フィルター"
+                  >
+                    {isFiltered ? '▼' : '▽'}
+                  </button>
+                );
+              })}
 
-          {/* Filter Menu */}
-          {filterRange && filterDropdownCol !== null && (() => {
-            const el = typeof document !== 'undefined'
-              ? document.querySelector(`[data-col="${filterDropdownCol}"][data-row="${filterRange.startRow}"]`)
-              : null;
-            if (!el) return null;
-            const rect = el.getBoundingClientRect();
-            return (
-              <FilterMenu
-                colIndex={filterDropdownCol}
-                values={getUniqueValuesForColumn(filterDropdownCol)}
-                selectedValues={filterState.get(filterDropdownCol)}
-                condition={filterConditions[filterDropdownCol]}
-                onClose={() => setFilterDropdownCol(null)}
-                onApply={(values, condition) => handleFilterMenuApply(filterDropdownCol, values, condition)}
-                onSortAsc={() => { sortFilterRangeByColumn(filterDropdownCol, true); setFilterDropdownCol(null); }}
-                onSortDesc={() => { sortFilterRangeByColumn(filterDropdownCol, false); setFilterDropdownCol(null); }}
-                style={{ position: 'fixed', left: rect.left, top: rect.bottom + 2 }}
-              />
-            );
-          })()}
+            {/* Filter Menu */}
+            {filterRange &&
+              filterDropdownCol !== null &&
+              (() => {
+                const el =
+                  typeof document !== 'undefined'
+                    ? document.querySelector(
+                        `[data-col="${filterDropdownCol}"][data-row="${filterRange.startRow}"]`,
+                      )
+                    : null;
+                if (!el) return null;
+                const rect = el.getBoundingClientRect();
+                return (
+                  <FilterMenu
+                    colIndex={filterDropdownCol}
+                    values={getUniqueValuesForColumn(filterDropdownCol)}
+                    selectedValues={filterState.get(filterDropdownCol)}
+                    condition={filterConditions[filterDropdownCol]}
+                    onClose={() => setFilterDropdownCol(null)}
+                    onApply={(values, condition) =>
+                      handleFilterMenuApply(filterDropdownCol, values, condition)
+                    }
+                    onSortAsc={() => {
+                      sortFilterRangeByColumn(filterDropdownCol, true);
+                      setFilterDropdownCol(null);
+                    }}
+                    onSortDesc={() => {
+                      sortFilterRangeByColumn(filterDropdownCol, false);
+                      setFilterDropdownCol(null);
+                    }}
+                    style={{ position: 'fixed', left: rect.left, top: rect.bottom + 2 }}
+                  />
+                );
+              })()}
 
-          {/* Drop overlay */}
-          <DropOverlay visible={isDragging} />
-        </div>
+            {/* Drop overlay */}
+            <DropOverlay visible={isDragging} />
+          </div>
 
-        {/* Conditional format / data validation side panel (docked, shrinks the grid area) */}
-        {sidePanel === 'conditionalFormat' && (
-          <SidePanel title="条件付き書式" onClose={() => setSidePanel(null)}>
-            <Suspense fallback={null}>
-              <ConditionalFormatPanel
-                rules={conditionalFormatRules}
-                onAddRule={addConditionalFormatRule}
-                onUpdateRule={updateConditionalFormatRule}
-                onDeleteRule={deleteConditionalFormatRule}
-                defaultRange={{
-                  startCol: selectionRange ? Math.min(selectionRange.start.col, selectionRange.end.col) : activeCell.col,
-                  startRow: selectionRange ? Math.min(selectionRange.start.row, selectionRange.end.row) : activeCell.row,
-                  endCol: selectionRange ? Math.max(selectionRange.start.col, selectionRange.end.col) : activeCell.col,
-                  endRow: selectionRange ? Math.max(selectionRange.start.row, selectionRange.end.row) : activeCell.row,
-                }}
-              />
-            </Suspense>
-          </SidePanel>
-        )}
-        {sidePanel === 'validation' && (
-          <SidePanel title="データの入力規則" onClose={() => setSidePanel(null)}>
-            <Suspense fallback={null}>
-              <DataValidationPanel
-                cells={getDataMap()}
-                version={version}
-                onSetRule={setValidationRule}
-                initialView={validationPanelNewOnOpen ? 'new' : 'list'}
-                defaultRange={{
-                  startCol: selectionRange ? Math.min(selectionRange.start.col, selectionRange.end.col) : activeCell.col,
-                  startRow: selectionRange ? Math.min(selectionRange.start.row, selectionRange.end.row) : activeCell.row,
-                  endCol: selectionRange ? Math.max(selectionRange.start.col, selectionRange.end.col) : activeCell.col,
-                  endRow: selectionRange ? Math.max(selectionRange.start.row, selectionRange.end.row) : activeCell.row,
-                }}
-              />
-            </Suspense>
-          </SidePanel>
-        )}
-        {sidePanel === 'chart' && editingChartId && (() => {
-          const editingChart = getCharts().find((c) => c.id === editingChartId);
-          if (!editingChart) return null;
-          return (
-            <SidePanel title="グラフエディタ" onClose={handleCloseChartEditor}>
+          {/* Conditional format / data validation side panel (docked, shrinks the grid area) */}
+          {sidePanel === 'conditionalFormat' && (
+            <SidePanel title="条件付き書式" onClose={() => setSidePanel(null)}>
               <Suspense fallback={null}>
-                <ChartEditorPanel
-                  key={editingChart.id}
-                  chart={editingChart}
-                  onUpdate={(updates) => updateChart(editingChart.id, updates)}
-                  getCellData={getCellData}
-                  version={version}
+                <ConditionalFormatPanel
+                  rules={conditionalFormatRules}
+                  onAddRule={addConditionalFormatRule}
+                  onUpdateRule={updateConditionalFormatRule}
+                  onDeleteRule={deleteConditionalFormatRule}
+                  defaultRange={{
+                    startCol: selectionRange
+                      ? Math.min(selectionRange.start.col, selectionRange.end.col)
+                      : activeCell.col,
+                    startRow: selectionRange
+                      ? Math.min(selectionRange.start.row, selectionRange.end.row)
+                      : activeCell.row,
+                    endCol: selectionRange
+                      ? Math.max(selectionRange.start.col, selectionRange.end.col)
+                      : activeCell.col,
+                    endRow: selectionRange
+                      ? Math.max(selectionRange.start.row, selectionRange.end.row)
+                      : activeCell.row,
+                  }}
                 />
               </Suspense>
             </SidePanel>
-          );
-        })()}
+          )}
+          {sidePanel === 'validation' && (
+            <SidePanel title="データの入力規則" onClose={() => setSidePanel(null)}>
+              <Suspense fallback={null}>
+                <DataValidationPanel
+                  cells={getDataMap()}
+                  version={version}
+                  onSetRule={setValidationRule}
+                  initialView={validationPanelNewOnOpen ? 'new' : 'list'}
+                  defaultRange={{
+                    startCol: selectionRange
+                      ? Math.min(selectionRange.start.col, selectionRange.end.col)
+                      : activeCell.col,
+                    startRow: selectionRange
+                      ? Math.min(selectionRange.start.row, selectionRange.end.row)
+                      : activeCell.row,
+                    endCol: selectionRange
+                      ? Math.max(selectionRange.start.col, selectionRange.end.col)
+                      : activeCell.col,
+                    endRow: selectionRange
+                      ? Math.max(selectionRange.start.row, selectionRange.end.row)
+                      : activeCell.row,
+                  }}
+                />
+              </Suspense>
+            </SidePanel>
+          )}
+          {sidePanel === 'chart' &&
+            editingChartId &&
+            (() => {
+              const editingChart = getCharts().find((c) => c.id === editingChartId);
+              if (!editingChart) return null;
+              return (
+                <SidePanel title="グラフエディタ" onClose={handleCloseChartEditor}>
+                  <Suspense fallback={null}>
+                    <ChartEditorPanel
+                      key={editingChart.id}
+                      chart={editingChart}
+                      onUpdate={(updates) => updateChart(editingChart.id, updates)}
+                      getCellData={getCellData}
+                      version={version}
+                    />
+                  </Suspense>
+                </SidePanel>
+              );
+            })()}
         </div>
 
         {/* Sheet Tabs */}
@@ -4419,7 +5207,13 @@ export function Grid() {
         />
 
         {/* Status Bar */}
-        <StatusBar activeCell={activeCell} selectionRange={selectionRange} getCellData={getCellData} getCells={getDataMap} version={version} />
+        <StatusBar
+          activeCell={activeCell}
+          selectionRange={selectionRange}
+          getCellData={getCellData}
+          getCells={getDataMap}
+          version={version}
+        />
 
         {/* Named Range Dialog */}
         {showNamedRangeDialog && (
@@ -4432,7 +5226,7 @@ export function Grid() {
               onUpdate={updateNamedRange}
               onDelete={deleteNamedRange}
               currentSheetId={activeSheetId}
-              sheets={sheets.map(s => ({ id: s.id, name: s.name }))}
+              sheets={sheets.map((s) => ({ id: s.id, name: s.name }))}
             />
           </Suspense>
         )}
@@ -4466,9 +5260,7 @@ export function Grid() {
               }
             }}
             canInsert={
-              contextMenu.type === 'column'
-                ? colCount < MAX_COL_COUNT
-                : rowCount < MAX_ROW_COUNT
+              contextMenu.type === 'column' ? colCount < MAX_COL_COUNT : rowCount < MAX_ROW_COUNT
             }
             onHide={() => {
               if (contextMenu.type === 'column') {
@@ -4501,7 +5293,7 @@ export function Grid() {
             onUngroup={() => {
               const groups = contextMenu.type === 'column' ? colGroups : rowGroups;
               const idx = contextMenu.index;
-              const group = groups.find(g => g.start <= idx && idx <= g.end);
+              const group = groups.find((g) => g.start <= idx && idx <= g.end);
               if (group) {
                 if (contextMenu.type === 'column') {
                   removeColGroup(group.id);
@@ -4513,10 +5305,18 @@ export function Grid() {
             canUngroup={(() => {
               const groups = contextMenu.type === 'column' ? colGroups : rowGroups;
               const idx = contextMenu.index;
-              return groups.some(g => g.start <= idx && idx <= g.end);
+              return groups.some((g) => g.start <= idx && idx <= g.end);
             })()}
-            onSortAsc={contextMenu.type === 'column' ? () => sortSheetByColumn(contextMenu.index, true) : undefined}
-            onSortDesc={contextMenu.type === 'column' ? () => sortSheetByColumn(contextMenu.index, false) : undefined}
+            onSortAsc={
+              contextMenu.type === 'column'
+                ? () => sortSheetByColumn(contextMenu.index, true)
+                : undefined
+            }
+            onSortDesc={
+              contextMenu.type === 'column'
+                ? () => sortSheetByColumn(contextMenu.index, false)
+                : undefined
+            }
           />
         )}
 
@@ -4536,7 +5336,10 @@ export function Grid() {
             onDeleteCol={() => handleDeleteColumn(cellContextMenu.col)}
             onInsertDropdown={handleInsertDropdown}
             onOpenConditionalFormat={() => setSidePanel('conditionalFormat')}
-            onOpenDataValidation={() => { setValidationPanelNewOnOpen(false); setSidePanel('validation'); }}
+            onOpenDataValidation={() => {
+              setValidationPanelNewOnOpen(false);
+              setSidePanel('validation');
+            }}
             onAddComment={() => {
               const comment = window.prompt('コメントを入力してください:');
               if (comment !== null) {
@@ -4544,7 +5347,9 @@ export function Grid() {
               }
             }}
             hasComment={!!getCellData(cellContextMenu.col, cellContextMenu.row)?.comment}
-            onDeleteComment={() => setCellComment(cellContextMenu.col, cellContextMenu.row, undefined)}
+            onDeleteComment={() =>
+              setCellComment(cellContextMenu.col, cellContextMenu.row, undefined)
+            }
             hyperlink={getCellData(cellContextMenu.col, cellContextMenu.row)?.hyperlink}
             onOpenLink={() => {
               const link = getCellData(cellContextMenu.col, cellContextMenu.row)?.hyperlink;
@@ -4564,48 +5369,56 @@ export function Grid() {
         )}
 
         {/* Comment Tooltip */}
-        {hoveredCell && (() => {
-          const cd = getCellData(hoveredCell.col, hoveredCell.row);
-          if (!cd?.comment) return null;
-          const el = document.querySelector(`[data-col="${hoveredCell.col}"][data-row="${hoveredCell.row}"]`);
-          if (!el) return null;
-          const rect = el.getBoundingClientRect();
-          return <CommentTooltip comment={cd.comment} x={rect.right} y={rect.top} />;
-        })()}
+        {hoveredCell &&
+          (() => {
+            const cd = getCellData(hoveredCell.col, hoveredCell.row);
+            if (!cd?.comment) return null;
+            const el = document.querySelector(
+              `[data-col="${hoveredCell.col}"][data-row="${hoveredCell.row}"]`,
+            );
+            if (!el) return null;
+            const rect = el.getBoundingClientRect();
+            return <CommentTooltip comment={cd.comment} x={rect.right} y={rect.top} />;
+          })()}
 
         {/* Data validation: list dropdown (portal, viewport-clamped) */}
-        {validationDropdown && (() => {
-          const rule = getCellData(validationDropdown.col, validationDropdown.row)?.validation;
-          if (!rule || rule.type !== 'list') return null;
-          const currentValue = getCellData(validationDropdown.col, validationDropdown.row)?.rawValue ?? '';
-          return (
-            <ValidationDropdown
-              options={getListOptions(rule, validationCtx)}
-              currentValue={currentValue}
-              x={validationDropdown.rect.left}
-              y={validationDropdown.rect.bottom}
-              onSelect={handleDropdownSelect}
-              onClose={handleDropdownClose}
-            />
-          );
-        })()}
+        {validationDropdown &&
+          (() => {
+            const rule = getCellData(validationDropdown.col, validationDropdown.row)?.validation;
+            if (!rule || rule.type !== 'list') return null;
+            const currentValue =
+              getCellData(validationDropdown.col, validationDropdown.row)?.rawValue ?? '';
+            return (
+              <ValidationDropdown
+                options={getListOptions(rule, validationCtx)}
+                currentValue={currentValue}
+                x={validationDropdown.rect.left}
+                y={validationDropdown.rect.bottom}
+                onSelect={handleDropdownSelect}
+                onClose={handleDropdownClose}
+              />
+            );
+          })()}
 
         {/* Data validation: help text tooltip for the active cell */}
-        {!isEditing && (() => {
-          const rule = getCellData(activeCell.col, activeCell.row)?.validation;
-          if (!rule?.helpText) return null;
-          const el = document.querySelector(`[data-col="${activeCell.col}"][data-row="${activeCell.row}"]`);
-          if (!el) return null;
-          const rect = el.getBoundingClientRect();
-          return (
-            <div
-              className="fixed z-50 max-w-xs px-2 py-1.5 text-xs bg-yellow-100 text-text-primary border border-grid-line rounded shadow-lg pointer-events-none"
-              style={{ left: rect.left, top: rect.bottom + 4 }}
-            >
-              {rule.helpText}
-            </div>
-          );
-        })()}
+        {!isEditing &&
+          (() => {
+            const rule = getCellData(activeCell.col, activeCell.row)?.validation;
+            if (!rule?.helpText) return null;
+            const el = document.querySelector(
+              `[data-col="${activeCell.col}"][data-row="${activeCell.row}"]`,
+            );
+            if (!el) return null;
+            const rect = el.getBoundingClientRect();
+            return (
+              <div
+                className="fixed z-50 max-w-xs px-2 py-1.5 text-xs bg-yellow-100 text-text-primary border border-grid-line rounded shadow-lg pointer-events-none"
+                style={{ left: rect.left, top: rect.bottom + 4 }}
+              >
+                {rule.helpText}
+              </div>
+            );
+          })()}
 
         {/* Sparkline Dialog */}
         {showSparklineDialog && (
@@ -4655,10 +5468,18 @@ export function Grid() {
               colWidths={getColWidth}
               rowHeights={getRowHeight}
               dataRange={{
-                startCol: selectionRange ? Math.min(selectionRange.start.col, selectionRange.end.col) : 0,
-                endCol: selectionRange ? Math.max(selectionRange.start.col, selectionRange.end.col) : colCount - 1,
-                startRow: selectionRange ? Math.min(selectionRange.start.row, selectionRange.end.row) : 0,
-                endRow: selectionRange ? Math.max(selectionRange.start.row, selectionRange.end.row) : rowCount - 1,
+                startCol: selectionRange
+                  ? Math.min(selectionRange.start.col, selectionRange.end.col)
+                  : 0,
+                endCol: selectionRange
+                  ? Math.max(selectionRange.start.col, selectionRange.end.col)
+                  : colCount - 1,
+                startRow: selectionRange
+                  ? Math.min(selectionRange.start.row, selectionRange.end.row)
+                  : 0,
+                endRow: selectionRange
+                  ? Math.max(selectionRange.start.row, selectionRange.end.row)
+                  : rowCount - 1,
               }}
               sheetName={activeSheet.name}
               documentTitle={title}
@@ -4716,45 +5537,60 @@ export function Grid() {
         )}
 
         {/* Split-to-columns delimiter popover */}
-        {splitPopover && (() => {
-          const el = typeof document !== 'undefined'
-            ? document.querySelector(`[data-col="${splitPopover.col}"][data-row="${splitPopover.startRow}"]`)
-            : null;
-          const rect = el?.getBoundingClientRect();
-          return (
-            <div
-              className="fixed z-40 glass-surface rounded-xl p-2 text-xs text-text-primary animate-fade-in-scale"
-              style={{ left: rect ? rect.left : 100, top: rect ? rect.bottom + 4 : 100 }}
-              data-testid="split-delimiter-popover"
-            >
-              <label className="flex items-center gap-2">
-                区切り文字:
-                <select
-                  value={splitPopover.mode}
-                  onChange={(e) => handleChangeSplitDelimiter(e.target.value as typeof splitPopover.mode, splitPopover.custom)}
-                  className="h-6 px-1 text-xs bg-ui-bg text-text-primary border border-grid-line rounded"
-                >
-                  <option value="auto">自動検出</option>
-                  <option value=",">カンマ</option>
-                  <option value=";">セミコロン</option>
-                  <option value=".">ピリオド</option>
-                  <option value=" ">スペース</option>
-                  <option value="custom">カスタム</option>
-                </select>
-                {splitPopover.mode === 'custom' && (
-                  <input
-                    type="text"
-                    value={splitPopover.custom}
-                    onChange={(e) => handleChangeSplitDelimiter('custom', e.target.value)}
-                    className="w-12 h-6 px-1 text-xs bg-ui-bg text-text-primary border border-grid-line rounded"
-                    placeholder="区切り"
-                  />
-                )}
-                <button type="button" className="text-text-primary/50 hover:text-text-primary" onClick={() => setSplitPopover(null)}>&times;</button>
-              </label>
-            </div>
-          );
-        })()}
+        {splitPopover &&
+          (() => {
+            const el =
+              typeof document !== 'undefined'
+                ? document.querySelector(
+                    `[data-col="${splitPopover.col}"][data-row="${splitPopover.startRow}"]`,
+                  )
+                : null;
+            const rect = el?.getBoundingClientRect();
+            return (
+              <div
+                className="fixed z-40 glass-surface rounded-xl p-2 text-xs text-text-primary animate-fade-in-scale"
+                style={{ left: rect ? rect.left : 100, top: rect ? rect.bottom + 4 : 100 }}
+                data-testid="split-delimiter-popover"
+              >
+                <label className="flex items-center gap-2">
+                  区切り文字:
+                  <select
+                    value={splitPopover.mode}
+                    onChange={(e) =>
+                      handleChangeSplitDelimiter(
+                        e.target.value as typeof splitPopover.mode,
+                        splitPopover.custom,
+                      )
+                    }
+                    className="h-6 px-1 text-xs bg-ui-bg text-text-primary border border-grid-line rounded"
+                  >
+                    <option value="auto">自動検出</option>
+                    <option value=",">カンマ</option>
+                    <option value=";">セミコロン</option>
+                    <option value=".">ピリオド</option>
+                    <option value=" ">スペース</option>
+                    <option value="custom">カスタム</option>
+                  </select>
+                  {splitPopover.mode === 'custom' && (
+                    <input
+                      type="text"
+                      value={splitPopover.custom}
+                      onChange={(e) => handleChangeSplitDelimiter('custom', e.target.value)}
+                      className="w-12 h-6 px-1 text-xs bg-ui-bg text-text-primary border border-grid-line rounded"
+                      placeholder="区切り"
+                    />
+                  )}
+                  <button
+                    type="button"
+                    className="text-text-primary/50 hover:text-text-primary"
+                    onClick={() => setSplitPopover(null)}
+                  >
+                    &times;
+                  </button>
+                </label>
+              </div>
+            );
+          })()}
 
         {/* Toast notifications (sort errors, duplicate removal results, rejected validation input) */}
         <ToastContainer toasts={toasts} onDismiss={dismissToast} />
@@ -4762,4 +5598,3 @@ export function Grid() {
     </SpreadsheetContext.Provider>
   );
 }
-

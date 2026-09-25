@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { exportXlsx, importXlsx } from './xlsx';
 import { createEmptySheet } from '../utils/sheetUtils';
 import type { SheetData } from '../types/grid';
@@ -190,7 +190,15 @@ describe('xlsx export/import round trip', () => {
       colWidths: new Map(),
       rowHeights: new Map(),
       sizesBySheet: new Map([
-        [sheet1.id, { colWidths: new Map(), rowHeights: new Map(), defaultColWidth: 84, defaultRowHeight: 30 }],
+        [
+          sheet1.id,
+          {
+            colWidths: new Map(),
+            rowHeights: new Map(),
+            defaultColWidth: 84,
+            defaultRowHeight: 30,
+          },
+        ],
       ]),
     });
     const result = await importXlsx(buffer);
@@ -208,8 +216,15 @@ describe('xlsx export/import round trip', () => {
     const ws = workbook.addWorksheet('Sheet1');
     ws.getCell('A1').value = new Date(Date.UTC(2026, 3, 10));
     const raw = await workbook.xlsx.writeBuffer();
-    const view = raw as unknown as { buffer: ArrayBufferLike; byteOffset: number; byteLength: number };
-    const buffer = view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength) as ArrayBuffer;
+    const view = raw as unknown as {
+      buffer: ArrayBufferLike;
+      byteOffset: number;
+      byteLength: number;
+    };
+    const buffer = view.buffer.slice(
+      view.byteOffset,
+      view.byteOffset + view.byteLength,
+    ) as ArrayBuffer;
 
     const result = await importXlsx(buffer);
     const a1 = result.workbook.sheets[0].cells.get('A1');
@@ -256,7 +271,9 @@ describe('importXlsx rich text robustness', () => {
       text: { richText: [{ text: 'Go ', font: { bold: true } }, { text: 'here' }] },
       hyperlink: 'https://example.com/?q="x"',
     } as unknown as import('exceljs').CellValue;
-    ws.getCell('A2').value = { richText: [{ text: 'rich ' }, { text: 'text', font: { italic: true } }] };
+    ws.getCell('A2').value = {
+      richText: [{ text: 'rich ' }, { text: 'text', font: { italic: true } }],
+    };
     ws.getCell('B1').value = 'x';
     ws.getCell('B1').dataValidation = { type: 'list', allowBlank: true, formulae: ['$A$1:$A$2'] };
     const buf = await wb.xlsx.writeBuffer();

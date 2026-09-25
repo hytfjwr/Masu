@@ -19,7 +19,7 @@ A spreadsheet editor that runs entirely in your browser. There is no server and 
 
 ## Getting started
 
-Requires Node.js and [pnpm](https://pnpm.io/) 10.
+Requires Node.js and [pnpm](https://pnpm.io/) 11. The toolchain is [Vite+](https://viteplus.dev/) (`vp`), which bundles Vite, Vitest, Oxlint and Oxfmt.
 
 ```bash
 pnpm install
@@ -28,13 +28,15 @@ pnpm dev
 
 ## Scripts
 
-| Command      | Description                           |
-| ------------ | ------------------------------------- |
-| `pnpm dev`   | Start the Vite dev server             |
-| `pnpm build` | Type-check and build for production   |
-| `pnpm lint`  | Run ESLint                            |
-| `pnpm test`  | Run the test suite with Vitest        |
+| Command      | Description                                    |
+| ------------ | ---------------------------------------------- |
+| `pnpm dev`   | Start the dev server                           |
+| `pnpm build` | Type-check with `tsc` and build for production |
+| `pnpm check` | Format check, lint and type-aware lint         |
+| `pnpm lint`  | Lint with Oxlint                               |
+| `pnpm fmt`   | Format with Oxfmt                              |
+| `pnpm test`  | Run the test suite with Vitest                 |
 
 ## Tech stack
 
-React 19, TypeScript, Vite, Tailwind CSS v4, TanStack Virtual, Recharts, ExcelJS and jsPDF.
+React 19, TypeScript 7, Vite+, Tailwind CSS v4, TanStack Virtual, Recharts, ExcelJS and jsPDF.

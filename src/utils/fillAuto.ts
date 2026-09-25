@@ -3,12 +3,7 @@
  */
 
 /** Types of fill patterns */
-export type FillPatternType =
-  | 'copy'
-  | 'arithmetic'
-  | 'stringCycle'
-  | 'trailingNumber'
-  | 'date';
+export type FillPatternType = 'copy' | 'arithmetic' | 'stringCycle' | 'trailingNumber' | 'date';
 
 export interface FillPattern {
   type: FillPatternType;
@@ -96,7 +91,7 @@ export function detectFillPattern(values: string[]): FillPattern {
 
   // Multiple values: check for dates
   if (values.every(isDateString)) {
-    const parsed = values.map(v => parseDateString(v)!);
+    const parsed = values.map((v) => parseDateString(v)!);
     const separator = parsed[0].separator;
     if (values.length >= 2) {
       const diff = parsed[1].date.getTime() - parsed[0].date.getTime();
@@ -121,12 +116,12 @@ export function detectFillPattern(values: string[]): FillPattern {
 
   // Multiple values: check for arithmetic sequence
   const nums = values.map(Number);
-  if (values.every(v => v !== '' && !isNaN(Number(v)))) {
+  if (values.every((v) => v !== '' && !isNaN(Number(v)))) {
     if (values.length >= 2) {
       const diff = nums[1] - nums[0];
       let isArithmetic = true;
       for (let i = 2; i < nums.length; i++) {
-        if (Math.abs((nums[i] - nums[i - 1]) - diff) > 1e-10) {
+        if (Math.abs(nums[i] - nums[i - 1] - diff) > 1e-10) {
           isArithmetic = false;
           break;
         }
@@ -139,9 +134,9 @@ export function detectFillPattern(values: string[]): FillPattern {
 
   // Multiple values: check trailing number pattern
   const trailings = values.map(parseTrailingNumber);
-  if (trailings.every(t => t !== null)) {
+  if (trailings.every((t) => t !== null)) {
     const prefix = trailings[0]!.prefix;
-    if (trailings.every(t => t!.prefix === prefix) && values.length >= 2) {
+    if (trailings.every((t) => t!.prefix === prefix) && values.length >= 2) {
       const numDiff = trailings[1]!.num - trailings[0]!.num;
       let isConsistent = true;
       for (let i = 2; i < trailings.length; i++) {
@@ -163,7 +158,7 @@ export function detectFillPattern(values: string[]): FillPattern {
   }
 
   // Multiple string values: string cycle
-  if (values.some(v => isNaN(Number(v)) || v === '')) {
+  if (values.some((v) => isNaN(Number(v)) || v === '')) {
     return { type: 'stringCycle', values };
   }
 

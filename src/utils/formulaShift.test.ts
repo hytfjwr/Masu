@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { scanRefs, shiftFormula, updateRefsForStructureChange } from './formulaShift';
 
 describe('shiftFormula', () => {
@@ -82,8 +82,16 @@ describe('scanRefs', () => {
 });
 
 describe('updateRefsForStructureChange', () => {
-  const col = (index: number, operation: 'insert' | 'delete') => ({ type: 'column' as const, index, operation });
-  const row = (index: number, operation: 'insert' | 'delete') => ({ type: 'row' as const, index, operation });
+  const col = (index: number, operation: 'insert' | 'delete') => ({
+    type: 'column' as const,
+    index,
+    operation,
+  });
+  const row = (index: number, operation: 'insert' | 'delete') => ({
+    type: 'row' as const,
+    index,
+    operation,
+  });
 
   it('shifts whole-column and open-ended ranges', () => {
     expect(updateRefsForStructureChange('SUM(A:A)', col(0, 'insert')).formula).toBe('SUM(B:B)');
@@ -95,7 +103,10 @@ describe('updateRefsForStructureChange', () => {
   it('grows and shrinks ranges instead of breaking them', () => {
     expect(updateRefsForStructureChange('SUM(A1:A5)', row(2, 'insert')).formula).toBe('SUM(A1:A6)');
     expect(updateRefsForStructureChange('SUM(A1:A5)', row(2, 'delete')).formula).toBe('SUM(A1:A4)');
-    expect(updateRefsForStructureChange('SUM(A3:A3)', row(2, 'delete'))).toEqual({ formula: 'SUM(#REF!)', hasRefError: true });
+    expect(updateRefsForStructureChange('SUM(A3:A3)', row(2, 'delete'))).toEqual({
+      formula: 'SUM(#REF!)',
+      hasRefError: true,
+    });
   });
 
   it('moves absolute references like Excel', () => {
@@ -103,12 +114,20 @@ describe('updateRefsForStructureChange', () => {
   });
 
   it('only touches references to the changed sheet', () => {
-    expect(updateRefsForStructureChange('Sheet2!A1+A1', col(0, 'delete'))).toEqual({ formula: 'Sheet2!A1+#REF!', hasRefError: true });
-    const onOtherSheet = updateRefsForStructureChange("'My Sheet'!B1+A1", col(0, 'insert'), { appliesToUnqualified: false, targetSheetName: 'my sheet' });
+    expect(updateRefsForStructureChange('Sheet2!A1+A1', col(0, 'delete'))).toEqual({
+      formula: 'Sheet2!A1+#REF!',
+      hasRefError: true,
+    });
+    const onOtherSheet = updateRefsForStructureChange("'My Sheet'!B1+A1", col(0, 'insert'), {
+      appliesToUnqualified: false,
+      targetSheetName: 'my sheet',
+    });
     expect(onOtherSheet.formula).toBe("'My Sheet'!C1+A1");
   });
 
   it('handles lowercase references and leaves function names and strings alone', () => {
-    expect(updateRefsForStructureChange('sum(a1:a3)+LOG10(b1)&"A1"', col(0, 'insert')).formula).toBe('sum(B1:B3)+LOG10(C1)&"A1"');
+    expect(
+      updateRefsForStructureChange('sum(a1:a3)+LOG10(b1)&"A1"', col(0, 'insert')).formula,
+    ).toBe('sum(B1:B3)+LOG10(C1)&"A1"');
   });
 });

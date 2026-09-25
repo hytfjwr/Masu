@@ -1,5 +1,8 @@
 import { memo, useCallback, useRef, useState, useEffect, useLayoutEffect, Fragment } from 'react';
-import { useClampFixedToViewport, useClampDropdownToViewport } from '../../hooks/useClampToViewport';
+import {
+  useClampFixedToViewport,
+  useClampDropdownToViewport,
+} from '../../hooks/useClampToViewport';
 import { PRESET_COLORS } from '../Toolbar/colorPalette';
 import type { SheetData } from '../../types/grid';
 
@@ -27,9 +30,14 @@ type DragOverInfo = { targetId: string; side: 'before' | 'after' };
  * within `sheets` *after* it has been removed from its original slot, so that it
  * ends up immediately before/after `targetId`.
  */
-function computeMoveToIndex(sheets: SheetData[], draggedId: string, targetId: string, dropAfter: boolean): number {
-  const draggedIdx = sheets.findIndex(s => s.id === draggedId);
-  const targetIdx = sheets.findIndex(s => s.id === targetId);
+function computeMoveToIndex(
+  sheets: SheetData[],
+  draggedId: string,
+  targetId: string,
+  dropAfter: boolean,
+): number {
+  const draggedIdx = sheets.findIndex((s) => s.id === draggedId);
+  const targetIdx = sheets.findIndex((s) => s.id === targetId);
   if (draggedIdx === -1 || targetIdx === -1) return draggedIdx;
   let insertAt = dropAfter ? targetIdx + 1 : targetIdx;
   if (insertAt > draggedIdx) insertAt -= 1;
@@ -70,7 +78,7 @@ export const SheetTabs = memo(function SheetTabs({
   const allSheetsMenuRef = useRef<HTMLDivElement>(null);
   useClampFixedToViewport(allSheetsMenuRef, allSheetsMenuPos?.x ?? 0, allSheetsMenuPos?.y ?? 0);
 
-  const visibleSheets = sheets.filter(s => !s.hidden);
+  const visibleSheets = sheets.filter((s) => !s.hidden);
 
   // Sliding underline under the active tab (measured from the DOM so it can glide between tabs)
   const tabsContainerRef = useRef<HTMLDivElement>(null);
@@ -125,10 +133,13 @@ export const SheetTabs = memo(function SheetTabs({
     return () => document.removeEventListener('mousedown', handler);
   }, [showAllSheetsMenu]);
 
-  const handleTabClick = useCallback((sheetId: string) => {
-    if (editingSheetId) return;
-    onSelectSheet(sheetId);
-  }, [editingSheetId, onSelectSheet]);
+  const handleTabClick = useCallback(
+    (sheetId: string) => {
+      if (editingSheetId) return;
+      onSelectSheet(sheetId);
+    },
+    [editingSheetId, onSelectSheet],
+  );
 
   const handleTabDoubleClick = useCallback((sheetId: string, currentName: string) => {
     setEditingSheetId(sheetId);
@@ -155,15 +166,18 @@ export const SheetTabs = memo(function SheetTabs({
     setEditName('');
   }, []);
 
-  const handleEditKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      commitRename();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      cancelRename();
-    }
-  }, [commitRename, cancelRename]);
+  const handleEditKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        commitRename();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        cancelRename();
+      }
+    },
+    [commitRename, cancelRename],
+  );
 
   const closeContextMenu = useCallback(() => {
     setContextMenuSheetId(null);
@@ -187,7 +201,7 @@ export const SheetTabs = memo(function SheetTabs({
 
   const handleRenameFromMenu = useCallback(() => {
     if (contextMenuSheetId) {
-      const sheet = sheets.find(s => s.id === contextMenuSheetId);
+      const sheet = sheets.find((s) => s.id === contextMenuSheetId);
       if (sheet) {
         setEditingSheetId(contextMenuSheetId);
         setEditName(sheet.name);
@@ -212,7 +226,7 @@ export const SheetTabs = memo(function SheetTabs({
 
   const handleMoveLeftFromMenu = useCallback(() => {
     if (contextMenuSheetId) {
-      const idx = sheets.findIndex(s => s.id === contextMenuSheetId);
+      const idx = sheets.findIndex((s) => s.id === contextMenuSheetId);
       if (idx > 0) onMoveSheet?.(contextMenuSheetId, idx - 1);
     }
     closeContextMenu();
@@ -220,18 +234,21 @@ export const SheetTabs = memo(function SheetTabs({
 
   const handleMoveRightFromMenu = useCallback(() => {
     if (contextMenuSheetId) {
-      const idx = sheets.findIndex(s => s.id === contextMenuSheetId);
+      const idx = sheets.findIndex((s) => s.id === contextMenuSheetId);
       if (idx !== -1 && idx < sheets.length - 1) onMoveSheet?.(contextMenuSheetId, idx + 1);
     }
     closeContextMenu();
   }, [contextMenuSheetId, sheets, onMoveSheet, closeContextMenu]);
 
-  const handleColorPick = useCallback((color: string | undefined) => {
-    if (contextMenuSheetId) {
-      onSetTabColor?.(contextMenuSheetId, color);
-    }
-    closeContextMenu();
-  }, [contextMenuSheetId, onSetTabColor, closeContextMenu]);
+  const handleColorPick = useCallback(
+    (color: string | undefined) => {
+      if (contextMenuSheetId) {
+        onSetTabColor?.(contextMenuSheetId, color);
+      }
+      closeContextMenu();
+    },
+    [contextMenuSheetId, onSetTabColor, closeContextMenu],
+  );
 
   const handleAllSheetsButtonClick = useCallback(() => {
     const rect = allSheetsButtonRef.current?.getBoundingClientRect();
@@ -239,13 +256,16 @@ export const SheetTabs = memo(function SheetTabs({
     setShowAllSheetsMenu(true);
   }, []);
 
-  const handleSelectFromAllSheets = useCallback((sheet: SheetData) => {
-    if (sheet.hidden) {
-      onSetSheetHidden?.(sheet.id, false);
-    }
-    onSelectSheet(sheet.id);
-    setShowAllSheetsMenu(false);
-  }, [onSetSheetHidden, onSelectSheet]);
+  const handleSelectFromAllSheets = useCallback(
+    (sheet: SheetData) => {
+      if (sheet.hidden) {
+        onSetSheetHidden?.(sheet.id, false);
+      }
+      onSelectSheet(sheet.id);
+      setShowAllSheetsMenu(false);
+    },
+    [onSetSheetHidden, onSelectSheet],
+  );
 
   // --- Drag & drop reordering ---
 
@@ -260,59 +280,80 @@ export const SheetTabs = memo(function SheetTabs({
     setDragOverInfo(null);
   }, []);
 
-  const handleTabDragOver = useCallback((e: React.DragEvent, sheetId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!dragSheetId || dragSheetId === sheetId) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const side: 'before' | 'after' = e.clientX - rect.left < rect.width / 2 ? 'before' : 'after';
-    setDragOverInfo({ targetId: sheetId, side });
-  }, [dragSheetId]);
-
-  const commitDrop = useCallback((e: React.DragEvent) => {
-    const draggedId = dragSheetId ?? e.dataTransfer.getData('text/plain');
-    if (draggedId && dragOverInfo) {
-      const toIndex = computeMoveToIndex(sheets, draggedId, dragOverInfo.targetId, dragOverInfo.side === 'after');
-      onMoveSheet?.(draggedId, toIndex);
-    }
-    setDragSheetId(null);
-    setDragOverInfo(null);
-  }, [dragSheetId, dragOverInfo, sheets, onMoveSheet]);
-
-  const handleTabDrop = useCallback((e: React.DragEvent, sheetId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // dragOverInfo is normally already set to this tab from the preceding dragover events;
-    // fall back to "drop after this tab" if it somehow wasn't (e.g. a drop with no prior dragover).
-    if (!dragOverInfo || dragOverInfo.targetId !== sheetId) {
+  const handleTabDragOver = useCallback(
+    (e: React.DragEvent, sheetId: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!dragSheetId || dragSheetId === sheetId) return;
       const rect = e.currentTarget.getBoundingClientRect();
       const side: 'before' | 'after' = e.clientX - rect.left < rect.width / 2 ? 'before' : 'after';
+      setDragOverInfo({ targetId: sheetId, side });
+    },
+    [dragSheetId],
+  );
+
+  const commitDrop = useCallback(
+    (e: React.DragEvent) => {
       const draggedId = dragSheetId ?? e.dataTransfer.getData('text/plain');
-      if (draggedId && draggedId !== sheetId) {
-        const toIndex = computeMoveToIndex(sheets, draggedId, sheetId, side === 'after');
+      if (draggedId && dragOverInfo) {
+        const toIndex = computeMoveToIndex(
+          sheets,
+          draggedId,
+          dragOverInfo.targetId,
+          dragOverInfo.side === 'after',
+        );
         onMoveSheet?.(draggedId, toIndex);
       }
       setDragSheetId(null);
       setDragOverInfo(null);
-      return;
-    }
-    commitDrop(e);
-  }, [dragOverInfo, dragSheetId, sheets, onMoveSheet, commitDrop]);
+    },
+    [dragSheetId, dragOverInfo, sheets, onMoveSheet],
+  );
+
+  const handleTabDrop = useCallback(
+    (e: React.DragEvent, sheetId: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // dragOverInfo is normally already set to this tab from the preceding dragover events;
+      // fall back to "drop after this tab" if it somehow wasn't (e.g. a drop with no prior dragover).
+      if (!dragOverInfo || dragOverInfo.targetId !== sheetId) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const side: 'before' | 'after' =
+          e.clientX - rect.left < rect.width / 2 ? 'before' : 'after';
+        const draggedId = dragSheetId ?? e.dataTransfer.getData('text/plain');
+        if (draggedId && draggedId !== sheetId) {
+          const toIndex = computeMoveToIndex(sheets, draggedId, sheetId, side === 'after');
+          onMoveSheet?.(draggedId, toIndex);
+        }
+        setDragSheetId(null);
+        setDragOverInfo(null);
+        return;
+      }
+      commitDrop(e);
+    },
+    [dragOverInfo, dragSheetId, sheets, onMoveSheet, commitDrop],
+  );
 
   // Fallback for drops past the last tab (container background, not a specific tab)
-  const handleContainerDragOver = useCallback((e: React.DragEvent) => {
-    if (!dragSheetId) return;
-    e.preventDefault();
-    const lastVisible = visibleSheets[visibleSheets.length - 1];
-    if (lastVisible && lastVisible.id !== dragSheetId) {
-      setDragOverInfo({ targetId: lastVisible.id, side: 'after' });
-    }
-  }, [dragSheetId, visibleSheets]);
+  const handleContainerDragOver = useCallback(
+    (e: React.DragEvent) => {
+      if (!dragSheetId) return;
+      e.preventDefault();
+      const lastVisible = visibleSheets[visibleSheets.length - 1];
+      if (lastVisible && lastVisible.id !== dragSheetId) {
+        setDragOverInfo({ targetId: lastVisible.id, side: 'after' });
+      }
+    },
+    [dragSheetId, visibleSheets],
+  );
 
-  const handleContainerDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    commitDrop(e);
-  }, [commitDrop]);
+  const handleContainerDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      commitDrop(e);
+    },
+    [commitDrop],
+  );
 
   return (
     <div
@@ -341,7 +382,10 @@ export const SheetTabs = memo(function SheetTabs({
         return (
           <Fragment key={sheet.id}>
             {dragOverInfo?.targetId === sheet.id && dragOverInfo.side === 'before' && (
-              <div className="w-0.5 self-stretch bg-accent-selection rounded-full" data-testid="sheet-drop-indicator" />
+              <div
+                className="w-0.5 self-stretch bg-accent-selection rounded-full"
+                data-testid="sheet-drop-indicator"
+              />
             )}
             <div
               className={`relative flex items-center h-6 px-3 text-xs rounded-t cursor-pointer select-none border border-b-0 transition-all duration-150 animate-tab-in ${
@@ -384,7 +428,10 @@ export const SheetTabs = memo(function SheetTabs({
               )}
             </div>
             {dragOverInfo?.targetId === sheet.id && dragOverInfo.side === 'after' && (
-              <div className="w-0.5 self-stretch bg-accent-selection rounded-full" data-testid="sheet-drop-indicator" />
+              <div
+                className="w-0.5 self-stretch bg-accent-selection rounded-full"
+                data-testid="sheet-drop-indicator"
+              />
             )}
           </Fragment>
         );
@@ -394,7 +441,10 @@ export const SheetTabs = memo(function SheetTabs({
         <div
           aria-hidden
           className="sheet-tab-glider"
-          style={{ transform: `translateX(${indicator.left + 4}px)`, width: Math.max(0, indicator.width - 8) }}
+          style={{
+            transform: `translateX(${indicator.left + 4}px)`,
+            width: Math.max(0, indicator.width - 8),
+          }}
         />
       )}
 
@@ -559,7 +609,9 @@ export const SheetTabs = memo(function SheetTabs({
               }}
             >
               <span className="truncate">{sheet.name}</span>
-              {sheet.hidden && <span className="text-[10px] text-text-primary/40 shrink-0">非表示</span>}
+              {sheet.hidden && (
+                <span className="text-[10px] text-text-primary/40 shrink-0">非表示</span>
+              )}
             </button>
           ))}
         </div>

@@ -1,7 +1,13 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import type { PrintSettings, PaperSize, Orientation, MarginPreset } from '../../types/print';
 import type { CellData } from '../../types/grid';
-import { computePageLayout, resolveMargins, computePrintableArea, pxToMm, expandHeaderFooterTemplate } from '../../print/layoutCalculator';
+import {
+  computePageLayout,
+  resolveMargins,
+  computePrintableArea,
+  pxToMm,
+  expandHeaderFooterTemplate,
+} from '../../print/layoutCalculator';
 import { PAPER_DIMENSIONS } from '../../types/print';
 import { formatDisplayValue } from '../../utils/numberFormat';
 
@@ -62,9 +68,12 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
     [settings, colWidths, rowHeights, dataRange],
   );
 
-  const handleBackdropMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) onClose();
-  }, [onClose]);
+  const handleBackdropMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget) onClose();
+    },
+    [onClose],
+  );
 
   const handleExportPDF = useCallback(async () => {
     setIsExporting(true);
@@ -103,12 +112,14 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
   const hasHeader = settings.header.left || settings.header.center || settings.header.right;
   const hasFooter = settings.footer.left || settings.footer.center || settings.footer.right;
   const date = new Date().toLocaleDateString('ja-JP');
-  const templateCtx = page ? {
-    pageNumber: page.pageNumber,
-    totalPages: layout.totalPages,
-    sheetName,
-    date,
-  } : { pageNumber: 1, totalPages: 1, sheetName, date };
+  const templateCtx = page
+    ? {
+        pageNumber: page.pageNumber,
+        totalPages: layout.totalPages,
+        sheetName,
+        date,
+      }
+    : { pageNumber: 1, totalPages: 1, sheetName, date };
 
   return (
     <div
@@ -130,13 +141,15 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
               <select
                 value={settings.paperSize}
                 onChange={(e) => {
-                  setSettings(s => ({ ...s, paperSize: e.target.value as PaperSize }));
+                  setSettings((s) => ({ ...s, paperSize: e.target.value as PaperSize }));
                   setCurrentPage(0);
                 }}
                 className="h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none"
               >
-                {PAPER_OPTIONS.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
+                {PAPER_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
                 ))}
               </select>
             </label>
@@ -145,14 +158,14 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
             <label className="flex flex-col gap-1 text-xs text-text-primary">
               <span>向き</span>
               <div className="flex gap-2">
-                {ORIENTATION_OPTIONS.map(o => (
+                {ORIENTATION_OPTIONS.map((o) => (
                   <label key={o.value} className="flex items-center gap-1 text-xs">
                     <input
                       type="radio"
                       name="orientation"
                       checked={settings.orientation === o.value}
                       onChange={() => {
-                        setSettings(s => ({ ...s, orientation: o.value }));
+                        setSettings((s) => ({ ...s, orientation: o.value }));
                         setCurrentPage(0);
                       }}
                     />
@@ -168,13 +181,15 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
               <select
                 value={settings.marginPreset}
                 onChange={(e) => {
-                  setSettings(s => ({ ...s, marginPreset: e.target.value as MarginPreset }));
+                  setSettings((s) => ({ ...s, marginPreset: e.target.value as MarginPreset }));
                   setCurrentPage(0);
                 }}
                 className="h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none"
               >
-                {MARGIN_OPTIONS.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
+                {MARGIN_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
                 ))}
               </select>
             </label>
@@ -184,7 +199,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
               <input
                 type="checkbox"
                 checked={settings.showGridLines}
-                onChange={(e) => setSettings(s => ({ ...s, showGridLines: e.target.checked }))}
+                onChange={(e) => setSettings((s) => ({ ...s, showGridLines: e.target.checked }))}
               />
               <span>グリッド線を表示</span>
             </label>
@@ -195,7 +210,9 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
               <input
                 type="text"
                 value={settings.header.center}
-                onChange={(e) => setSettings(s => ({ ...s, header: { ...s.header, center: e.target.value } }))}
+                onChange={(e) =>
+                  setSettings((s) => ({ ...s, header: { ...s.header, center: e.target.value } }))
+                }
                 placeholder="{sheetName}"
                 className="h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none"
               />
@@ -207,7 +224,9 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
               <input
                 type="text"
                 value={settings.footer.center}
-                onChange={(e) => setSettings(s => ({ ...s, footer: { ...s.footer, center: e.target.value } }))}
+                onChange={(e) =>
+                  setSettings((s) => ({ ...s, footer: { ...s.footer, center: e.target.value } }))
+                }
                 placeholder="{pageNumber} / {totalPages}"
                 className="h-7 px-2 text-xs bg-ui-bg text-text-primary border border-grid-line rounded outline-none"
               />
@@ -231,7 +250,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
                 type="button"
                 className="h-6 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40 disabled:opacity-30"
                 disabled={currentPage === 0}
-                onClick={() => setCurrentPage(p => p - 1)}
+                onClick={() => setCurrentPage((p) => p - 1)}
               >
                 ← 前
               </button>
@@ -239,7 +258,7 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
                 type="button"
                 className="h-6 px-2 text-xs text-text-primary bg-ui-bg border border-grid-line rounded hover:bg-grid-line/40 disabled:opacity-30"
                 disabled={currentPage >= layout.totalPages - 1}
-                onClick={() => setCurrentPage(p => p + 1)}
+                onClick={() => setCurrentPage((p) => p + 1)}
               >
                 次 →
               </button>
@@ -287,7 +306,12 @@ export const PrintPreviewDialog = memo(function PrintPreviewDialog({
                       for (let c = page.startCol; c < page.endCol; c++) {
                         const cw = pxToMm(colWidths(c)) * scale;
                         const cell = getCellData(c, r);
-                        const display = cell ? formatDisplayValue(cell.displayValue ?? '', cell.style?.numberFormat ?? 'auto') : '';
+                        const display = cell
+                          ? formatDisplayValue(
+                              cell.displayValue ?? '',
+                              cell.style?.numberFormat ?? 'auto',
+                            )
+                          : '';
                         cells.push(
                           <div
                             key={`${c}-${r}`}

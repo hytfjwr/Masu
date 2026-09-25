@@ -1,4 +1,10 @@
-import type { SheetData, CellDataMap, ConditionalFormatRule, GroupRange, MergeInfo } from '../types/grid';
+import type {
+  SheetData,
+  CellDataMap,
+  ConditionalFormatRule,
+  GroupRange,
+  MergeInfo,
+} from '../types/grid';
 import { GRID_CONSTANTS } from '../types/grid';
 
 /**
@@ -61,7 +67,9 @@ export function generateCopyName(baseName: string, existingNames: string[]): str
  * Deep clone a CellDataMap, ensuring no shared references.
  */
 /** Deep clone a CellBorders object. */
-function deepCloneBorders(borders: import('../types/grid').CellBorders): import('../types/grid').CellBorders {
+function deepCloneBorders(
+  borders: import('../types/grid').CellBorders,
+): import('../types/grid').CellBorders {
   return {
     ...(borders.top ? { top: { ...borders.top } } : {}),
     ...(borders.right ? { right: { ...borders.right } } : {}),
@@ -80,19 +88,25 @@ export function deepCloneCellDataMap(data: CellDataMap): CellDataMap {
       ...(cell.formula !== undefined ? { formula: cell.formula } : {}),
       ...(cell.dependencies !== undefined ? { dependencies: [...cell.dependencies] } : {}),
       ...(cell.error !== undefined ? { error: cell.error } : {}),
-      ...(cell.style !== undefined ? {
-        style: {
-          ...cell.style,
-          ...(cell.style.borders ? { borders: deepCloneBorders(cell.style.borders) } : {}),
-        },
-      } : {}),
+      ...(cell.style !== undefined
+        ? {
+            style: {
+              ...cell.style,
+              ...(cell.style.borders ? { borders: deepCloneBorders(cell.style.borders) } : {}),
+            },
+          }
+        : {}),
       ...(cell.comment !== undefined ? { comment: cell.comment } : {}),
-      ...(cell.validation !== undefined ? {
-        validation: {
-          ...cell.validation,
-          ...(cell.validation.listValues ? { listValues: [...cell.validation.listValues] } : {}),
-        },
-      } : {}),
+      ...(cell.validation !== undefined
+        ? {
+            validation: {
+              ...cell.validation,
+              ...(cell.validation.listValues
+                ? { listValues: [...cell.validation.listValues] }
+                : {}),
+            },
+          }
+        : {}),
     });
   }
   return clone;
@@ -128,8 +142,8 @@ export function deepCloneSheet(sheet: SheetData): SheetData {
     ...(sheet.preSortData ? { preSortData: deepCloneCellDataMap(sheet.preSortData) } : {}),
     conditionalFormatRules: deepCloneConditionalFormatRules(sheet.conditionalFormatRules ?? []),
     merges: clonedMerges,
-    charts: (sheet.charts ?? []).map(c => ({ ...c, sourceRange: { ...c.sourceRange } })),
-    sparklines: (sheet.sparklines ?? []).map(s => ({ ...s, colors: { ...s.colors } })),
+    charts: (sheet.charts ?? []).map((c) => ({ ...c, sourceRange: { ...c.sourceRange } })),
+    sparklines: (sheet.sparklines ?? []).map((s) => ({ ...s, colors: { ...s.colors } })),
     rowGroups: (sheet.rowGroups ?? []).map((g: GroupRange) => ({ ...g })),
     colGroups: (sheet.colGroups ?? []).map((g: GroupRange) => ({ ...g })),
     ...(sheet.tabColor !== undefined ? { tabColor: sheet.tabColor } : {}),
@@ -138,7 +152,11 @@ export function deepCloneSheet(sheet: SheetData): SheetData {
     ...(sheet.hiddenCols !== undefined ? { hiddenCols: sheet.hiddenCols.slice() } : {}),
     ...(sheet.filterRange !== undefined ? { filterRange: { ...sheet.filterRange } } : {}),
     ...(sheet.filterConditions !== undefined
-      ? { filterConditions: Object.fromEntries(Object.entries(sheet.filterConditions).map(([col, cond]) => [col, { ...cond }])) }
+      ? {
+          filterConditions: Object.fromEntries(
+            Object.entries(sheet.filterConditions).map(([col, cond]) => [col, { ...cond }]),
+          ),
+        }
       : {}),
   };
 }
@@ -146,8 +164,10 @@ export function deepCloneSheet(sheet: SheetData): SheetData {
 /**
  * Deep clone conditional format rules.
  */
-export function deepCloneConditionalFormatRules(rules: ConditionalFormatRule[]): ConditionalFormatRule[] {
-  return rules.map(rule => ({
+export function deepCloneConditionalFormatRules(
+  rules: ConditionalFormatRule[],
+): ConditionalFormatRule[] {
+  return rules.map((rule) => ({
     ...rule,
     range: { ...rule.range },
     style: { ...rule.style },

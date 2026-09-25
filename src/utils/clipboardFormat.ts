@@ -217,16 +217,20 @@ function extractCellStyle(td: Element): CellStyle | undefined {
   const style: CellStyle = {};
 
   const fontWeight = styleMap['font-weight'];
-  const boldFromWeight = fontWeight === 'bold' || fontWeight === 'bolder' ||
+  const boldFromWeight =
+    fontWeight === 'bold' ||
+    fontWeight === 'bolder' ||
     (/^\d+$/.test(fontWeight ?? '') && parseInt(fontWeight, 10) >= 700);
   if (boldFromWeight || td.querySelector('b, strong') !== null) style.bold = true;
 
   const fontStyle = styleMap['font-style'];
-  if (fontStyle === 'italic' || fontStyle === 'oblique' || td.querySelector('i, em') !== null) style.italic = true;
+  if (fontStyle === 'italic' || fontStyle === 'oblique' || td.querySelector('i, em') !== null)
+    style.italic = true;
 
   const textDecoration = styleMap['text-decoration'] ?? '';
   if (/underline/.test(textDecoration) || td.querySelector('u') !== null) style.underline = true;
-  if (/line-through/.test(textDecoration) || td.querySelector('s, strike, del') !== null) style.strikethrough = true;
+  if (/line-through/.test(textDecoration) || td.querySelector('s, strike, del') !== null)
+    style.strikethrough = true;
 
   const color = styleMap['color'];
   if (color) style.textColor = normalizeColor(color);
@@ -238,10 +242,12 @@ function extractCellStyle(td: Element): CellStyle | undefined {
   }
 
   const textAlign = styleMap['text-align'];
-  if (textAlign && (TEXT_ALIGNS as string[]).includes(textAlign)) style.textAlign = textAlign as TextAlign;
+  if (textAlign && (TEXT_ALIGNS as string[]).includes(textAlign))
+    style.textAlign = textAlign as TextAlign;
 
   const verticalAlign = styleMap['vertical-align'];
-  if (verticalAlign && (VERTICAL_ALIGNS as string[]).includes(verticalAlign)) style.verticalAlign = verticalAlign as VerticalAlign;
+  if (verticalAlign && (VERTICAL_ALIGNS as string[]).includes(verticalAlign))
+    style.verticalAlign = verticalAlign as VerticalAlign;
 
   const fontSizeRaw = styleMap['font-size'];
   if (fontSizeRaw) {
@@ -290,7 +296,8 @@ export function parseHTMLTable(html: string): ClipCell[][] | null {
         if (!grid[r]) grid[r] = [];
         for (let dc = 0; dc < colSpan; dc++) {
           const c = colIndex + dc;
-          grid[r][c] = dr === 0 && dc === 0 ? { value, ...(style ? { style } : {}) } : { value: '' };
+          grid[r][c] =
+            dr === 0 && dc === 0 ? { value, ...(style ? { style } : {}) } : { value: '' };
         }
       }
       colIndex += colSpan;

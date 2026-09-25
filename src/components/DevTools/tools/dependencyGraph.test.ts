@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import type { CellData } from '../../../types/grid';
 import { buildDependencyGraph, splitGlobalKey } from './dependencyGraph';
 
@@ -6,14 +6,22 @@ import { buildDependencyGraph, splitGlobalKey } from './dependencyGraph';
 function host(reads: Record<string, string[]>, formulas: Record<string, string> = {}) {
   const dependents = (g: string) => Object.keys(reads).filter((k) => reads[k].includes(g));
   return {
-    sheets: [{ id: 's', name: 'Sheet1' }, { id: 't', name: 'Other' }] as never,
+    sheets: [
+      { id: 's', name: 'Sheet1' },
+      { id: 't', name: 'Other' },
+    ] as never,
     getCell: (sheetId: string, key: string): CellData | undefined => {
       const f = formulas[`${sheetId}:${key}`];
-      return f ? { rawValue: `=${f}`, displayValue: '1', formula: f } : { rawValue: '1', displayValue: '1' };
+      return f
+        ? { rawValue: `=${f}`, displayValue: '1', formula: f }
+        : { rawValue: '1', displayValue: '1' };
     },
     getDependencyInfo: (sheetId: string, key: string) => ({
       precedents: reads[`${sheetId}:${key}`] ?? [],
-      rangePrecedents: sheetId === 's' && key === 'C1' ? [{ sheetId: 's', startCol: 0, startRow: 4, endCol: 0, endRow: 9 }] : [],
+      rangePrecedents:
+        sheetId === 's' && key === 'C1'
+          ? [{ sheetId: 's', startCol: 0, startRow: 4, endCol: 0, endRow: 9 }]
+          : [],
       dependents: dependents(`${sheetId}:${key}`),
     }),
   };

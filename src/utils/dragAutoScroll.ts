@@ -48,16 +48,20 @@ export function computeAutoScrollDelta(v: DragViewport): { dx: number; dy: numbe
     const right = v.x - (v.viewWidth - AUTO_SCROLL_EDGE);
     const leftEdge = v.anchorInFrozenCols ? 0 : v.frozenWidth;
     const left = leftEdge + AUTO_SCROLL_EDGE - v.x;
-    if (right > 0 && v.scrollLeft < v.maxScrollLeft) dx = Math.min(speed(right), v.maxScrollLeft - v.scrollLeft);
-    else if (left > 0 && v.scrollLeft > 0 && !(v.anchorInFrozenCols && v.x < v.frozenWidth)) dx = -Math.min(speed(left), v.scrollLeft);
+    if (right > 0 && v.scrollLeft < v.maxScrollLeft)
+      dx = Math.min(speed(right), v.maxScrollLeft - v.scrollLeft);
+    else if (left > 0 && v.scrollLeft > 0 && !(v.anchorInFrozenCols && v.x < v.frozenWidth))
+      dx = -Math.min(speed(left), v.scrollLeft);
   }
 
   if (v.axis !== 'x') {
     const bottom = v.y - (v.viewHeight - AUTO_SCROLL_EDGE);
     const topEdge = v.anchorInFrozenRows ? 0 : v.frozenHeight;
     const top = topEdge + AUTO_SCROLL_EDGE - v.y;
-    if (bottom > 0 && v.scrollTop < v.maxScrollTop) dy = Math.min(speed(bottom), v.maxScrollTop - v.scrollTop);
-    else if (top > 0 && v.scrollTop > 0 && !(v.anchorInFrozenRows && v.y < v.frozenHeight)) dy = -Math.min(speed(top), v.scrollTop);
+    if (bottom > 0 && v.scrollTop < v.maxScrollTop)
+      dy = Math.min(speed(bottom), v.maxScrollTop - v.scrollTop);
+    else if (top > 0 && v.scrollTop > 0 && !(v.anchorInFrozenRows && v.y < v.frozenHeight))
+      dy = -Math.min(speed(top), v.scrollTop);
   }
 
   return { dx, dy };
@@ -69,7 +73,10 @@ export function computeAutoScrollDelta(v: DragViewport): { dx: number; dy: numbe
  * area is scrolled and the drag started outside the frozen panes — a pointer over the frozen panes
  * targets the first visible unfrozen column/row instead of the frozen cells underneath.
  */
-export function clampDragPoint(v: Omit<DragViewport, 'maxScrollLeft' | 'maxScrollTop' | 'axis'>): { x: number; y: number } {
+export function clampDragPoint(v: Omit<DragViewport, 'maxScrollLeft' | 'maxScrollTop' | 'axis'>): {
+  x: number;
+  y: number;
+} {
   let x = Math.min(Math.max(v.x, 0), Math.max(v.viewWidth - 1, 0));
   let y = Math.min(Math.max(v.y, 0), Math.max(v.viewHeight - 1, 0));
   if (!v.anchorInFrozenCols && v.scrollLeft > 0 && x < v.frozenWidth) x = v.frozenWidth;

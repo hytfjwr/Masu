@@ -86,7 +86,8 @@ export function compareValues(a: FormulaResult, b: FormulaResult): number {
   if (bv === '' && typeof av === 'number') bv = 0;
   else if (bv === '' && typeof av === 'boolean') bv = false;
 
-  const rank = (v: FormulaValue): number => (typeof v === 'number' ? 0 : typeof v === 'string' ? 1 : 2);
+  const rank = (v: FormulaValue): number =>
+    typeof v === 'number' ? 0 : typeof v === 'string' ? 1 : 2;
   const ra = rank(av);
   const rb = rank(bv);
   if (ra !== rb) return ra < rb ? -1 : 1;

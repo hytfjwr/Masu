@@ -1,4 +1,10 @@
-import type { FormulaError, FormulaResult, FunctionArgValue, FunctionContext, FunctionReturnValue } from '../types';
+import type {
+  FormulaError,
+  FormulaResult,
+  FunctionArgValue,
+  FunctionContext,
+  FunctionReturnValue,
+} from '../types';
 import { isFormulaError, makeError } from '../types';
 
 /**
@@ -42,7 +48,10 @@ function buildIndex(values: Iterable<FormulaResult>): Map<string, number> {
  * key → first row index for column `col` of a cached (frozen) grid, built once and reused while the
  * grid is cached (one recalculation pass). null when the grid is not cached or too small to be worth it.
  */
-export function exactMatchIndexForColumn(grid: FormulaResult[][], col: number): Map<string, number> | null {
+export function exactMatchIndexForColumn(
+  grid: FormulaResult[][],
+  col: number,
+): Map<string, number> | null {
   if (grid.length < EXACT_INDEX_MIN || !Object.isFrozen(grid)) return null;
   let byCol = columnIndexes.get(grid);
   if (!byCol) columnIndexes.set(grid, (byCol = new Map()));
@@ -66,12 +75,18 @@ export function exactMatchIndexForList(list: FormulaResult[]): Map<string, numbe
 }
 
 /** Identity of a range's contents within one recalculation pass (sheet + geometry). */
-export function rangeCacheKey(arg: Extract<FunctionArgValue, { kind: 'range' }>, ctx: FunctionContext): string {
+export function rangeCacheKey(
+  arg: Extract<FunctionArgValue, { kind: 'range' }>,
+  ctx: FunctionContext,
+): string {
   return `${arg.sheetId ?? ctx.currentCell?.sheetId ?? ''}|${arg.startRow}|${arg.startCol}|${arg.rows}|${arg.cols}`;
 }
 
 /** Resolve a range argument to a grid, reusing ctx.rangeCache for large ranges. The result may be frozen. */
-function resolveRangeGrid(arg: Extract<FunctionArgValue, { kind: 'range' }>, ctx: FunctionContext): FormulaResult[][] {
+function resolveRangeGrid(
+  arg: Extract<FunctionArgValue, { kind: 'range' }>,
+  ctx: FunctionContext,
+): FormulaResult[][] {
   const cache = arg.rows * arg.cols >= RANGE_CACHE_MIN_CELLS ? ctx.rangeCache : undefined;
   const cacheKey = cache ? rangeCacheKey(arg, ctx) : '';
   if (cache) {
@@ -239,10 +254,7 @@ export function resolveNumericValues(
  * Resolve a single scalar argument to its value.
  * A range with exactly one cell, or a 1x1 array, resolves to that value; anything larger is #VALUE!.
  */
-export function resolveScalar(
-  arg: FunctionArgValue,
-  ctx: FunctionContext,
-): FormulaResult {
+export function resolveScalar(arg: FunctionArgValue, ctx: FunctionContext): FormulaResult {
   if (arg.kind === 'range') {
     if (arg.rows === 1 && arg.cols === 1) {
       return ctx.resolve(arg.keys[0]);
@@ -263,10 +275,7 @@ export function resolveScalar(
 /**
  * Resolve a single argument to a string value.
  */
-export function resolveString(
-  arg: FunctionArgValue,
-  ctx: FunctionContext,
-): string | FormulaError {
+export function resolveString(arg: FunctionArgValue, ctx: FunctionContext): string | FormulaError {
   const val = resolveScalar(arg, ctx);
   if (isFormulaError(val)) return val;
   if (typeof val === 'string') return val;
@@ -278,10 +287,7 @@ export function resolveString(
 /**
  * Resolve a single argument to a number.
  */
-export function resolveNumber(
-  arg: FunctionArgValue,
-  ctx: FunctionContext,
-): number | FormulaError {
+export function resolveNumber(arg: FunctionArgValue, ctx: FunctionContext): number | FormulaError {
   const val = resolveScalar(arg, ctx);
   if (isFormulaError(val)) return val;
   if (typeof val === 'number') return val;
@@ -325,7 +331,11 @@ export function buildWildcardMatcher(pattern: string): (s: string) => boolean {
   let regexStr = '';
   for (let i = 0; i < pattern.length; i++) {
     const c = pattern[i];
-    if (c === '~' && i + 1 < pattern.length && (pattern[i + 1] === '*' || pattern[i + 1] === '?' || pattern[i + 1] === '~')) {
+    if (
+      c === '~' &&
+      i + 1 < pattern.length &&
+      (pattern[i + 1] === '*' || pattern[i + 1] === '?' || pattern[i + 1] === '~')
+    ) {
       regexStr += escapeRegExpChar(pattern[i + 1]);
       i++;
       continue;
@@ -364,7 +374,8 @@ export function parseCriteria(criteria: FormulaResult): (val: FormulaResult) => 
   }
 
   if (typeof criteria === 'boolean') {
-    return (val: FormulaResult) => !isFormulaError(val) && typeof val === 'boolean' && val === criteria;
+    return (val: FormulaResult) =>
+      !isFormulaError(val) && typeof val === 'boolean' && val === criteria;
   }
 
   if (criteria === '') {
@@ -403,11 +414,16 @@ export function parseCriteria(criteria: FormulaResult): (val: FormulaResult) => 
       const numVal = coerceToNumberForCriteria(val);
       if (numVal === null) return false;
       switch (op) {
-        case '>': return numVal > targetNum;
-        case '<': return numVal < targetNum;
-        case '>=': return numVal >= targetNum;
-        case '<=': return numVal <= targetNum;
-        default: return false;
+        case '>':
+          return numVal > targetNum;
+        case '<':
+          return numVal < targetNum;
+        case '>=':
+          return numVal >= targetNum;
+        case '<=':
+          return numVal <= targetNum;
+        default:
+          return false;
       }
     };
   }
