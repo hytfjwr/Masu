@@ -75,6 +75,17 @@ const DATE_VARIANTS: { re: RegExp; hint: string }[] = [
 ];
 const DATE_TIME_TAIL_RE = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/;
 
+/** Accounting-style negatives: `(100)`, `(1,234.5)`, `(10%)`, `(¥1,000)` are the negated amount. */
+function tryParenthesizedNegative(trimmed: string): ParsedInput | undefined {
+  const m = trimmed.match(/^\(\s*([^()+-][^()]*?)\s*\)$/);
+  if (!m) return undefined;
+  const inner = m[1];
+  if (/^(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(inner)) return { value: -Number(inner) };
+  const parsed = tryThousands(inner) ?? tryPercent(inner) ?? tryCurrency(inner);
+  if (!parsed || typeof parsed.value !== 'number' || parsed.value < 0) return undefined;
+  return { ...parsed, value: -parsed.value };
+}
+
 /** `yyyy/m/d`, `yyyy-m-d`, `yyyy.m.d`, `yyyy年m月d日`, optionally followed by a time, and bare `m/d`. */
 function tryDate(trimmed: string): ParsedInput | undefined {
   for (const variant of DATE_VARIANTS) {
@@ -176,6 +187,9 @@ export function parseUserInput(raw: string): ParsedInput {
 
   const currency = tryCurrency(trimmed);
   if (currency) return currency;
+
+  const negative = tryParenthesizedNegative(trimmed);
+  if (negative) return negative;
 
   const date = tryDate(trimmed);
   if (date) return date;

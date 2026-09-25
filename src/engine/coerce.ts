@@ -4,25 +4,33 @@
  */
 import type { FormulaError, FormulaResult, FormulaValue } from './types';
 import { isFormulaError, makeError } from './types';
+import { parseUserInput } from '../utils/valueParser';
 
 /**
  * Coerce a value to a number.
- * number -> itself, boolean -> 1/0, '' -> 0, error -> itself.
- * Strings are trimmed and parsed with Number(); if that fails, group separators
- * (',') are stripped and parsing is retried before giving up with #VALUE!.
+ * number -> itself, boolean -> 1/0, '' -> 0, error -> itself, other text -> textToNumber.
  */
 export function toNumber(v: FormulaResult): number | FormulaError {
   if (isFormulaError(v)) return v;
   if (typeof v === 'number') return v;
   if (typeof v === 'boolean') return v ? 1 : 0;
+  return textToNumber(v);
+}
 
-  const trimmed = v.trim();
-  if (trimmed === '') return 0;
-  const n = Number(trimmed);
-  if (!isNaN(n)) return n;
-  const n2 = Number(trimmed.replace(/,/g, ''));
-  if (!isNaN(n2)) return n2;
-  return makeError('#VALUE!');
+const DECIMAL_RE = /^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i;
+
+/**
+ * Convert text to a number the way Excel coerces text in arithmetic and numeric arguments: plain
+ * decimal/scientific notation, or anything typed input reads as a number ("1,000", "10%", "¥1,000",
+ * "(100)", dates, times). Other text (including JS-only forms like "0x10" or "Infinity") is #VALUE!.
+ * '' (also what an empty cell resolves to) is 0.
+ */
+export function textToNumber(s: string): number | FormulaError {
+  if (s === '') return 0;
+  const trimmed = s.trim();
+  if (DECIMAL_RE.test(trimmed)) return Number(trimmed);
+  const parsed = parseUserInput(s).value;
+  return typeof parsed === 'number' ? parsed : makeError('#VALUE!');
 }
 
 /**
@@ -37,13 +45,21 @@ export function toText(v: FormulaResult): string | FormulaError {
 }
 
 /**
- * Format a number for text concatenation: rounds to 15 significant digits to avoid
- * floating point artifacts (e.g. 0.1+0.2 -> '0.3'), while integers are stringified directly.
+ * Format a number as text the way Excel converts a number to a string (`&`, text functions):
+ * 15 significant digits (so 0.1+0.2 -> '0.3', 1/3 -> '0.333333333333333'), switching to
+ * E notation with an upper-case E and a two-digit exponent ('1E+15', '1.5E-07') when the
+ * value needs more than 15 integer digits or is very small.
  */
 export function formatNumberForText(n: number): string {
   if (!isFinite(n)) return String(n);
-  if (Number.isInteger(n)) return String(n);
   const rounded = Number(n.toPrecision(15));
+  const abs = Math.abs(rounded);
+  if (abs !== 0 && (abs >= 1e15 || abs < 1e-6)) {
+    const [mantissa, exp] = rounded.toExponential(14).split('e');
+    const e = Number(exp);
+    const digits = String(Math.abs(e)).padStart(2, '0');
+    return `${mantissa.replace(/\.?0+$/, '')}E${e < 0 ? '-' : '+'}${digits}`;
+  }
   return String(rounded);
 }
 

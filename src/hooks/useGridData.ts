@@ -519,7 +519,11 @@ export function useGridData(): UseGridDataReturn {
   // Helper: resolve a sheet name to a sheet ID (for the evaluator)
   const resolveSheetName: SheetNameResolver = useCallback(
     (sheetName: string): string | undefined => {
-      const sheet = sheetsRef.current.find((s) => s.name === sheetName);
+      // Sheet names are case-insensitive, as in Excel (an exact match wins for legacy duplicates)
+      const upper = sheetName.toUpperCase();
+      const sheet =
+        sheetsRef.current.find((s) => s.name === sheetName) ??
+        sheetsRef.current.find((s) => s.name.toUpperCase() === upper);
       return sheet?.id;
     },
     [],
@@ -532,7 +536,11 @@ export function useGridData(): UseGridDataReturn {
   // resolver treats unprefixed keys as belonging to the evaluating sheet.
   const namedRangeResolverFor = useCallback((sheetId: string): NamedRangeResolver => {
     return (name: string) => {
-      const nr = namedRangesRef.current.find((r) => r.name === name);
+      // Names are case-insensitive, as in Excel (an exact match wins for legacy duplicates)
+      const upper = name.toUpperCase();
+      const nr =
+        namedRangesRef.current.find((r) => r.name === name) ??
+        namedRangesRef.current.find((r) => r.name.toUpperCase() === upper);
       if (!nr) return undefined;
 
       const rangeStr = nr.range;
@@ -1973,7 +1981,9 @@ export function useGridData(): UseGridDataReturn {
       if (!trimmed) return false;
 
       // Check for duplicate names
-      const duplicate = sheetsRef.current.some((s) => s.id !== sheetId && s.name === trimmed);
+      const duplicate = sheetsRef.current.some(
+        (s) => s.id !== sheetId && s.name.toUpperCase() === trimmed.toUpperCase(),
+      );
       if (duplicate) return false;
 
       const sheetIdx = sheetsRef.current.findIndex((s) => s.id === sheetId);
@@ -2880,7 +2890,9 @@ export function useGridData(): UseGridDataReturn {
     (name: string, range: string, refSheetId?: string): boolean => {
       if (!isValidNamedRangeName(name)) return false;
       // Check for duplicate names
-      if (namedRangesRef.current.some((r) => r.name === name)) return false;
+      if (namedRangesRef.current.some((r) => r.name.toUpperCase() === name.toUpperCase())) {
+        return false;
+      }
       pushWorkbookSnapshot();
       namedRangesRef.current = [
         ...namedRangesRef.current,
@@ -2911,7 +2923,10 @@ export function useGridData(): UseGridDataReturn {
       if (idx === -1) return false;
       if (oldName !== newName) {
         if (!isValidNamedRangeName(newName)) return false;
-        if (namedRangesRef.current.some((r) => r.name === newName)) return false;
+        const upper = newName.toUpperCase();
+        if (namedRangesRef.current.some((r, i) => i !== idx && r.name.toUpperCase() === upper)) {
+          return false;
+        }
       }
       pushWorkbookSnapshot();
 
@@ -2920,10 +2935,10 @@ export function useGridData(): UseGridDataReturn {
         for (const sheet of sheetsRef.current) {
           for (const [key, cell] of sheet.cells) {
             if (cell.formula && cell.rawValue.startsWith('=')) {
-              // Simple text replacement of the name in formulas
+              // Simple text replacement of the name in formulas (names are case-insensitive)
               const regex = new RegExp(
                 `(?<![\\p{L}\\p{N}_])${escapeRegExp(oldName)}(?![\\p{L}\\p{N}_])`,
-                'gu',
+                'giu',
               );
               const updatedFormula = cell.formula.replace(regex, newName);
               if (updatedFormula !== cell.formula) {

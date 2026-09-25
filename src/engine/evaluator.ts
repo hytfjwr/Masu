@@ -325,9 +325,10 @@ function mapUnary(op: '-' | '+' | '%', val: EvalValue): EvalValue {
 
 function applyUnaryScalar(op: '-' | '+' | '%', v: FormulaResult): FormulaResult {
   if (isFormulaError(v)) return v;
+  // Unary plus is a no-op in Excel (=+"abc" is "abc")
+  if (op === '+') return v;
   const n = toNumber(v);
   if (isFormulaError(n)) return n;
-  if (op === '+') return n;
   if (op === '-') return -n;
   return n / 100;
 }
@@ -367,26 +368,32 @@ function applyBinaryScalar(op: BinaryOperator, a: FormulaResult, b: FormulaResul
   const bn = toNumber(b);
   if (isFormulaError(bn)) return bn;
 
+  let result: number;
   switch (op) {
     case '+':
-      return an + bn;
+      result = an + bn;
+      break;
     case '-':
-      return an - bn;
+      result = an - bn;
+      break;
     case '*':
-      return an * bn;
+      result = an * bn;
+      break;
     case '/':
       if (bn === 0) return makeError('#DIV/0!');
-      return an / bn;
-    case '^': {
+      result = an / bn;
+      break;
+    case '^':
       if (an === 0 && bn === 0) return makeError('#NUM!');
+      if (an === 0 && bn < 0) return makeError('#DIV/0!');
       if (an < 0 && !Number.isInteger(bn)) return makeError('#NUM!');
-      const result = Math.pow(an, bn);
-      if (!isFinite(result)) return makeError('#NUM!');
-      return result;
-    }
+      result = Math.pow(an, bn);
+      break;
     default:
       return makeError('#VALUE!');
   }
+  // Overflow (e.g. =1E308*10) is #NUM! rather than Infinity
+  return isFinite(result) ? result : makeError('#NUM!');
 }
 
 interface Shape2D {

@@ -6,6 +6,7 @@ import type {
   FunctionReturnValue,
 } from '../types';
 import { isFormulaError, makeError } from '../types';
+import { formatNumberForText, textToNumber } from '../coerce';
 
 /**
  * Convert a function argument into a 2D grid of resolved values.
@@ -168,7 +169,7 @@ export function makeSpill(values: FormulaResult[][]): FunctionReturnValue {
  * Resolve function arguments into numeric values.
  * For range/array arguments, resolves/flattens each cell and extracts numeric values.
  * Options:
- * - skipNonNumeric: skip non-numeric values in ranges/arrays (for SUM, AVERAGE, etc.)
+ * - skipNonNumeric: skip text and logical values in ranges/arrays (for SUM, AVERAGE, etc.)
  * - strictScalar: requires all args to be scalar values, and they must be numeric. A 1x1 range/array
  *   (e.g. a bare cell reference, which arrives as a 1x1 range) counts as a scalar.
  */
@@ -187,6 +188,8 @@ export function resolveNumericArgs(
         if (typeof val === 'number') {
           result.push(val);
         } else if (typeof val === 'boolean') {
+          // Like text, logical values in a reference or array are ignored (a literal TRUE still counts)
+          if (options.skipNonNumeric) continue;
           result.push(val ? 1 : 0);
         } else if (typeof val === 'string') {
           if (val === '') continue; // Skip empty cells
@@ -208,14 +211,12 @@ export function resolveNumericArgs(
   return result;
 }
 
-/** A scalar as a number the way scalar numeric parameters read it ('' = 0, non-numeric text = #VALUE!). */
+/** A scalar as a number the way scalar numeric parameters read it ('' = 0, text via textToNumber). */
 function scalarToNumber(val: FormulaResult): number | FormulaError {
   if (isFormulaError(val)) return val;
   if (typeof val === 'number') return val;
   if (typeof val === 'boolean') return val ? 1 : 0;
-  if (val === '') return 0;
-  const num = Number(val);
-  return isNaN(num) ? makeError('#VALUE!') : num;
+  return textToNumber(val);
 }
 
 /**
@@ -275,7 +276,7 @@ export function resolveString(arg: FunctionArgValue, ctx: FunctionContext): stri
   const val = resolveScalar(arg, ctx);
   if (isFormulaError(val)) return val;
   if (typeof val === 'string') return val;
-  if (typeof val === 'number') return String(val);
+  if (typeof val === 'number') return formatNumberForText(val);
   if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
   return makeError('#VALUE!');
 }
@@ -288,12 +289,7 @@ export function resolveNumber(arg: FunctionArgValue, ctx: FunctionContext): numb
   if (isFormulaError(val)) return val;
   if (typeof val === 'number') return val;
   if (typeof val === 'boolean') return val ? 1 : 0;
-  if (typeof val === 'string') {
-    if (val === '') return 0;
-    const num = Number(val);
-    if (isNaN(num)) return makeError('#VALUE!');
-    return num;
-  }
+  if (typeof val === 'string') return textToNumber(val);
   return makeError('#VALUE!');
 }
 

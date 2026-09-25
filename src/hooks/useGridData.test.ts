@@ -443,6 +443,38 @@ describe('useGridData document title', () => {
     expect(result.current.canUndo).toBe(false);
     expect(result.current.getCellData(0, 0)?.rawValue ?? '').toBe('');
   });
+
+  it('resolves sheet names case-insensitively and rejects case-only duplicate names', () => {
+    const { result, set, show } = setup();
+    act(() => result.current.addSheet());
+    const [first, second] = result.current.sheets;
+    act(() => {
+      result.current.renameSheet(second.id, 'My Sheet');
+    });
+    expect(result.current.renameSheet(first.id, 'MY SHEET')).toBe(false);
+    act(() => result.current.setActiveSheet(second.id));
+    set('A1', '42');
+    act(() => result.current.setActiveSheet(first.id));
+    set('B1', "='my sheet'!A1*2");
+    expect(show('B1')).toBe('84');
+  });
+
+  it('resolves named ranges case-insensitively and rejects case-only duplicate names', () => {
+    const { result, set, show } = setup();
+    set('A1', '5');
+    act(() => {
+      result.current.addNamedRange('Rate', 'A1');
+    });
+    expect(result.current.addNamedRange('RATE', 'A2')).toBe(false);
+    set('B1', '=rate*2');
+    expect(show('B1')).toBe('10');
+    // renaming updates references written in any case
+    act(() => {
+      result.current.updateNamedRange('Rate', 'Price', 'A1');
+    });
+    expect(result.current.getCellData(1, 0)?.formula).toBe('Price*2');
+    expect(show('B1')).toBe('10');
+  });
 });
 
 describe('useGridData review fixes', () => {

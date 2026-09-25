@@ -53,6 +53,19 @@ describe('parseUserInput', () => {
     });
   });
 
+  it('7b. accounting-style parenthesized amounts are negative', () => {
+    expect(parseUserInput('(100)')).toEqual({ value: -100 });
+    expect(parseUserInput('(1,234.5)')).toEqual({
+      value: -1234.5,
+      formatHint: { numberFormat: 'number', pattern: '#,##0.0' },
+    });
+    expect(parseUserInput('(¥1,000)').value).toBe(-1000);
+    expect(parseUserInput('(10%)').value).toBeCloseTo(-0.1, 12);
+    expect(parseUserInput('(-100)')).toEqual({ value: '(-100)' });
+    expect(parseUserInput('(abc)')).toEqual({ value: '(abc)' });
+    expect(parseUserInput('()')).toEqual({ value: '()' });
+  });
+
   it('8. dates get a date hint', () => {
     expect(parseUserInput('2026/1/5')).toEqual({
       value: 46027,
