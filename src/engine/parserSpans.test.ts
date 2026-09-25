@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { getNodeSpan, parse, parseWithTokens } from './parser';
 import { FormulaSyntaxError } from './syntaxError';
 import type { ASTNode } from './types';

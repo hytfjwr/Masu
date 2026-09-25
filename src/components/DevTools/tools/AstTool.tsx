@@ -104,7 +104,7 @@ export const AstTool = memo(function AstTool({
   // Re-read the cache whenever the workbook changes or the cache tab is shown
   const cacheEntries = useMemo(
     () => getCachedAsts(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [version, tab, analysis],
   );
   const filteredCache = useMemo(() => {

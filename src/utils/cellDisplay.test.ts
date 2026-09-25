@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { getCellDisplay } from './cellDisplay';
 import type { CellData } from '../types/grid';
 

@@ -224,7 +224,7 @@ export const DataValidationPanel = memo(function DataValidationPanel({
 
   const groups = useMemo(
     () => computeValidationGroups(cells),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [cells, version],
   );
 

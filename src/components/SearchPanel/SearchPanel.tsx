@@ -95,7 +95,7 @@ export const SearchPanel = memo(function SearchPanel({
       collectSheetCells(s, s.id === activeSheetId ? hiddenRows : undefined),
     );
     return findMatches(cells, deferredSearchText, options);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [sheets, activeSheetId, allSheets, hiddenRows, deferredSearchText, options, dataVersion]);
 
   // Identity of the result set by content: re-renders elsewhere (e.g. moving the active cell) can rebuild
@@ -122,7 +122,7 @@ export const SearchPanel = memo(function SearchPanel({
     } else {
       setCurrentIndex((prev) => Math.min(Math.max(prev, 0), matches.length - 1));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [matchesSignature, querySignature]);
 
   const goNext = useCallback(() => {

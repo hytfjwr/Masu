@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { tokenize } from './tokenizer';
 import { TokenType } from './types';
 import { FormulaSyntaxError } from './syntaxError';

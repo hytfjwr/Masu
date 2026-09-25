@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { computeSparklineCommands } from './renderer';
 import type { DrawCommand, LineCommand, RectCommand, CircleCommand } from './renderer';
 import type { SparklineColors } from '../types/sparkline';

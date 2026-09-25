@@ -33,7 +33,7 @@ export const RecalcHeatmap = memo(function RecalcHeatmap({ sheetId, rectFor }: R
       const { col, row } = parseCellKey(key);
       return { key, ms, t: Math.sqrt(ms / max), rect: rectFor(col, row) };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [sheetId, rectFor, version]);
 
   return (

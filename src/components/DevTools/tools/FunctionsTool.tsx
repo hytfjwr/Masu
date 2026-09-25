@@ -75,7 +75,7 @@ export const FunctionsTool = memo(function FunctionsTool({ host }: { host: DevTo
   const categories = getCategorizedFunctions();
   const usage = useMemo(
     () => countUsage(host),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [host.version, host.sheets],
   );
   const all = useMemo(() => {

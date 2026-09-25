@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { act, renderHook } from '@testing-library/react';
 import { useGridData } from './useGridData';
 import { parseCellKey } from '../utils/coordinates';

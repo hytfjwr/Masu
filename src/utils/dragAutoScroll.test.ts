@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { AUTO_SCROLL_EDGE, clampDragPoint, computeAutoScrollDelta } from './dragAutoScroll';
 import type { DragViewport } from './dragAutoScroll';
 

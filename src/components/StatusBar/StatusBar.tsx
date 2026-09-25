@@ -54,7 +54,7 @@ export const StatusBar = memo(function StatusBar({
     const cellCount = (maxRow - minRow + 1) * (maxCol - minCol + 1);
     if (cellCount <= 1) return null;
     return calcAggregates(deferredRange, getCellData, getCells?.());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [deferredRange, getCellData, getCells, deferredVersion]);
 
   // Aggregates count up/down to their new values when the selection changes

@@ -45,7 +45,7 @@ export const HistoryTool = memo(function HistoryTool({ host }: { host: DevToolsH
   const currentIndex = timeline.findIndex((e) => e.current);
   const now = useMemo(
     () => Date.now(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [timeline],
   );
 
@@ -74,7 +74,7 @@ export const HistoryTool = memo(function HistoryTool({ host }: { host: DevToolsH
         return { entry, i, summary };
       })
       .reverse();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [timeline, host.version]);
 
   return (

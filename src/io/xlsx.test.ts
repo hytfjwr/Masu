@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { exportXlsx, importXlsx } from './xlsx';
 import { createEmptySheet } from '../utils/sheetUtils';
 import type { SheetData } from '../types/grid';

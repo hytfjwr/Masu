@@ -174,29 +174,29 @@ export function useColumnRowSizes(activeSheetId: string): UseColumnRowSizesRetur
   // The active sheet's defaults (only restoreAllSizes changes them, which bumps sizeVersion)
   // The size maps live in a ref and are mutated in place; sizeVersion is what drives recomputation,
   // so reading the ref here during render is intentional.
-  /* eslint-disable react-hooks/refs */
+  /* oxlint-disable react-hooks/refs */
   const defaultColWidth = useMemo(
     () => colDefault(getSheetSizes(activeSheetId)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [activeSheetId, sizeVersion],
   );
   const defaultRowHeight = useMemo(
     () => rowDefault(getSheetSizes(activeSheetId)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [activeSheetId, sizeVersion],
   );
 
   const colOffsetIndex = useMemo(
     () => buildOffsetIndex(getSheetSizes(activeSheetId).colWidths, defaultColWidth),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [activeSheetId, sizeVersion, defaultColWidth],
   );
   const rowOffsetIndex = useMemo(
     () => buildOffsetIndex(getSheetSizes(activeSheetId).rowHeights, defaultRowHeight),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [activeSheetId, sizeVersion, defaultRowHeight],
   );
-  /* eslint-enable react-hooks/refs */
+  /* oxlint-enable react-hooks/refs */
 
   const getColWidth = useCallback(
     (colIndex: number): number => {

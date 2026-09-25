@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { resolveSpill, clearSpillRange } from './spill';
 import type { CellData, CellDataMap } from '../types/grid';
 import type { SpillResult } from './types';

@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { render, fireEvent, cleanup } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import { CellEditor } from './CellEditor';
 
 afterEach(cleanup);

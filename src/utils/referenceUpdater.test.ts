@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { updateReferences, adjustFormulaReferences, toggleAbsoluteRef } from './referenceUpdater';
 
 describe('updateReferences', () => {

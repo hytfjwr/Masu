@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { evaluate, extractReferences } from './evaluator';
 import { parse } from './parser';
 import { isSpillResult } from './types';

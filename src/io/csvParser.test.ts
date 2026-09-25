@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { parseCSV } from './csvParser';
 
 describe('parseCSV', () => {

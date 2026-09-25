@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { computeSortOrder } from './sortRange';
 import { makeError } from '../engine/types';
 import type { FormulaResult } from '../engine/types';

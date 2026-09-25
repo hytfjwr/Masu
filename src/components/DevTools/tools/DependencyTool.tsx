@@ -27,7 +27,7 @@ export const DependencyTool = memo(function DependencyTool({ host }: { host: Dev
   const key = cellKey(host.activeCell.col, host.activeCell.row);
   const graph = useMemo(
     () => buildDependencyGraph(host, host.activeSheetId, key),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [host.activeSheetId, key, host.version],
   );
 

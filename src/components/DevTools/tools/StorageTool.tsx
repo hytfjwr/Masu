@@ -48,18 +48,18 @@ function summarize(json: string): Summary | null {
  * The record can be downloaded or deleted.
  */
 export const StorageTool = memo(function StorageTool({ host }: { host: DevToolsHost }) {
-  const [record, setRecord] = useState<AutosaveRecord | null | 'loading' | 'error'>('loading');
+  // Without IndexedDB there is no record to read
+  const [record, setRecord] = useState<AutosaveRecord | null | 'loading' | 'error'>(() =>
+    isAutosaveAvailable() ? 'loading' : 'error',
+  );
   const [estimate, setEstimate] = useState<StorageEstimate | null>(null);
   const [liveSize, setLiveSize] = useState<number | null>(null);
   const [reload, setReload] = useState(0);
 
   // useEffect required: reads IndexedDB + the storage estimate (async browser APIs); re-read after saves
   useEffect(() => {
+    if (!isAutosaveAvailable()) return;
     let cancelled = false;
-    if (!isAutosaveAvailable()) {
-      setRecord('error');
-      return;
-    }
     loadAutosave().then(
       (r) => {
         if (!cancelled) setRecord(r);

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import type { CellData } from '../../../types/grid';
 import { buildDependencyGraph, splitGlobalKey } from './dependencyGraph';
 

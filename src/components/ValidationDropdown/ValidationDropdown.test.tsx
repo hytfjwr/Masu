@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ValidationDropdown } from './index';
 

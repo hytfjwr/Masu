@@ -94,7 +94,7 @@ export const ChartPanel = memo(function ChartPanel({
 
   const model = useMemo(
     () => buildChartModel(chart, cellGetter, DEFAULT_PALETTE),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [chart, cellGetter, version],
   );
 

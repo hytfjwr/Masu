@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { toTSV, parseTSV, toHTMLTable, parseHTMLTable } from './clipboardFormat';
 
 describe('toTSV / parseTSV', () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { parse } from '../../../engine/parser';
 import { buildVizTree, layoutTree, type PlacedNode } from './astLayout';
 

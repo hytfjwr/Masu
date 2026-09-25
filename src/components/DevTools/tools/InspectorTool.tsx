@@ -71,7 +71,7 @@ export const InspectorTool = memo(function InspectorTool({ host }: { host: DevTo
   const cell = host.getCell(host.activeSheetId, key);
   const deps = useMemo(
     () => host.getDependencyInfo(host.activeSheetId, key),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [host.activeSheetId, key, host.version],
   );
 

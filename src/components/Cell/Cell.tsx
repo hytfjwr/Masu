@@ -155,7 +155,7 @@ export const Cell = memo(function Cell({
 
   const display = useMemo(
     () => getCellDisplay(data, mergedStyle),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [
       data?.rawValue,
       data?.displayValue,
@@ -306,7 +306,7 @@ export const Cell = memo(function Cell({
       s.borderLeftColor = borders.left.color;
     }
     return s;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [
     left,
     top,

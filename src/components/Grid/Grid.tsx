@@ -644,7 +644,7 @@ export function Grid() {
         }
       }
       return values;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      // oxlint-disable-next-line react-hooks/exhaustive-deps
     },
     [getCellData, version],
   );
@@ -700,7 +700,7 @@ export function Grid() {
         },
         evaluateFormulaAt: (formula, c, r) => evaluateFormulaAt(formula, c, r),
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [conditionalFormatRules, version],
   );
   const getCfStyle = useCallback(
@@ -735,7 +735,7 @@ export function Grid() {
 
       const result = validateInput(rule, rawValue, { col, row }, validationCtx);
       return { validationUi, invalidMessage: result.valid ? undefined : result.message };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      // oxlint-disable-next-line react-hooks/exhaustive-deps
     },
     [getCellData, validationCtx, version],
   );
@@ -822,7 +822,7 @@ export function Grid() {
       }
     }
     return hidden;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [filterRange, filterState, filterConditions, rowCount, version]);
 
   // Rows/cols that are not rendered (explicitly hidden, group-collapsed, or filtered out). Overlay positions
@@ -859,7 +859,7 @@ export function Grid() {
         visibleRowHeight,
       ),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [formulaRefs, visibleColWidth, visibleRowHeight, sizeVersion]);
 
   // Content-space rects for the gliding selection cursor (active cell expanded to its merge, plus the
@@ -895,7 +895,7 @@ export function Grid() {
       // Active cell incl. merge span, regardless of pane (precedent arrows target)
       activeRect: active,
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeCell,
     getNormalizedSelection,
@@ -936,7 +936,7 @@ export function Grid() {
       sources,
       target: cursorRects.activeRect,
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isEditing,
     activeFormula,
@@ -1101,7 +1101,7 @@ export function Grid() {
         values.add(cell?.displayValue ?? '');
       }
       return Array.from(values).sort();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      // oxlint-disable-next-line react-hooks/exhaustive-deps
     },
     [filterRange, getDataMap, rowCount, version],
   );
@@ -1452,7 +1452,7 @@ export function Grid() {
   // Memoize to avoid changing the context value on unrelated re-renders
   const activeCellStyle = useMemo(
     () => getCellData(activeCell.col, activeCell.row)?.style,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [getCellData, activeCell.col, activeCell.row, version],
   );
 
@@ -2410,7 +2410,7 @@ export function Grid() {
     for (let r = 0; r <= endRow; r++) top += visibleRowHeight(r);
 
     return { left: left - 3, top: top - 3, endCol, endRow };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCell, selectionRange, getCellData, visibleColWidth, visibleRowHeight, version]);
 
   // Compute fill preview range for highlight (any of the 4 directions)
@@ -2711,7 +2711,7 @@ export function Grid() {
       // ファイル: 新規作成
       newWorkbook: handleNewWorkbook,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `version` is needed: charts/sparklines/rowGroups are read from refs
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- `version` is needed: charts/sparklines/rowGroups are read from refs
     [
       version,
       handleImportFile,

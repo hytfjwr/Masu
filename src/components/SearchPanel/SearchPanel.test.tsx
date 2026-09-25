@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { fireEvent, render } from '@testing-library/react';
 import { SearchPanel } from './SearchPanel';
 import { createEmptySheet } from '../../utils/sheetUtils';

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { findMatches, replaceInText } from './findReplace';
 import type { FindReplaceOptions, SearchableCell } from './findReplace';
 

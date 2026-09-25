@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { serialize, deserialize } from './tabulaSerializer';
 import type { SheetData } from '../types/grid';
 
