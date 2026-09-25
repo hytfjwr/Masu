@@ -505,6 +505,22 @@ describe('useGridData import evaluates formulas', () => {
     act(() => result.current.replaceWorkbook({ sheets: [sheet], activeSheetId: sheet.id }));
     expect(result.current.getCellData(4, 45)?.displayValue).toBe('30');
   });
+
+  it("re-evaluates formulas reading another formula's spill after replaceWorkbook", () => {
+    const { result } = renderHook(() => useGridData());
+    // The readers come first in the map, so the full pass evaluates them before the spill exists
+    const sheet = {
+      ...result.current.sheets[0],
+      cells: new Map([
+        ['C1', { rawValue: '=SUM(A2:A10)', displayValue: '' }],
+        ['C2', { rawValue: '=COUNT(A1:A10)', displayValue: '' }],
+        ['A1', { rawValue: '=SEQUENCE(4)', displayValue: '' }],
+      ]),
+    };
+    act(() => result.current.replaceWorkbook({ sheets: [sheet], activeSheetId: sheet.id }));
+    expect(result.current.getCellData(2, 0)?.displayValue).toBe('9');
+    expect(result.current.getCellData(2, 1)?.displayValue).toBe('4');
+  });
 });
 
 describe('useGridData recalculation caches', () => {

@@ -138,9 +138,8 @@ const MOD: FunctionMeta = {
     if (isFormulaError(nums)) return nums;
     const [dividend, divisor] = nums;
     if (divisor === 0) return makeError('#DIV/0!');
-    // Excel-compatible: result has the sign of the divisor
-    const result = dividend % divisor;
-    return result;
+    // Excel-compatible: result has the sign of the divisor (JS `%` keeps the dividend's sign)
+    return dividend - divisor * Math.floor(dividend / divisor);
   },
 };
 
