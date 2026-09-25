@@ -3032,8 +3032,8 @@ export function useGridData(): UseGridDataReturn {
       } catch {
         return '#ERROR!';
       }
-      // oxlint-disable-next-line react-hooks/exhaustive-deps
     },
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [resolveSheetName, namedRangeResolverFor, getUsedBounds],
   );
 

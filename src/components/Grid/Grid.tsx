@@ -644,8 +644,8 @@ export function Grid() {
         }
       }
       return values;
-      // oxlint-disable-next-line react-hooks/exhaustive-deps
     },
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [getCellData, version],
   );
 
@@ -735,8 +735,8 @@ export function Grid() {
 
       const result = validateInput(rule, rawValue, { col, row }, validationCtx);
       return { validationUi, invalidMessage: result.valid ? undefined : result.message };
-      // oxlint-disable-next-line react-hooks/exhaustive-deps
     },
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [getCellData, validationCtx, version],
   );
 
@@ -1101,8 +1101,8 @@ export function Grid() {
         values.add(cell?.displayValue ?? '');
       }
       return Array.from(values).sort();
-      // oxlint-disable-next-line react-hooks/exhaustive-deps
     },
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [filterRange, getDataMap, rowCount, version],
   );
 
